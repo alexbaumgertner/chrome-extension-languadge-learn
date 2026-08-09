@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/organic-e2487b87-7bbd-4040-a728-11fe5c63a175/styles.css">
+<script src="_ds/organic-e2487b87-7bbd-4040-a728-11fe5c63a175/_ds_bundle.js"></script>
+<style>
+  body { background: var(--color-neutral-200); }
+  a { color: var(--color-accent-700); text-decoration: none; }
+  a:hover { color: var(--color-accent-600); text-decoration: underline; }
+  @keyframes swPulse { 0%,100% { transform: scale(1); opacity: .9 } 50% { transform: scale(1.35); opacity: .35 } }
+</style>
+</helmet>
+
+<div style="min-height:100%;padding:44px 40px 90px;display:flex;flex-direction:column;gap:64px;background:var(--color-neutral-200);font-family:var(--font-body);color:var(--color-text)">
+
+  <header style="display:flex;flex-direction:column;gap:10px;max-width:820px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:34px;height:34px;border-radius:999px;background:var(--color-accent);display:grid;place-items:center;color:var(--color-bg);font-family:var(--font-heading);font-size:17px">S</div>
+      <span style="font-family:var(--font-heading);font-size:20px">Sprachweise</span>
+      <span class="tag tag-accent-2">Chrome-расширение</span>
+    </div>
+    <h1 style="font-size:44px;margin:6px 0 0">Немецкий прямо на страницах, которые вы и так читаете</h1>
+    <p style="font-size:17px;max-width:640px;opacity:.75;text-wrap:pretty">Четыре экрана прототипа: оверлей на живом сайте, попап, админка и прогресс. Упражнения ниже — рабочие: их правда можно решать.</p>
+  </header>
+
+  <section style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:baseline;gap:14px">
+      <span style="font-family:var(--font-heading);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-700)">01 — оверлей</span>
+      <span style="font-size:14px;opacity:.6">Клик по абзацу переключает RU ⇄ DE. В продукте панель свёрнута в ярлык у правого края — здесь раскрыта, «Свернуть» покажет второе состояние.</span>
+    </div>
+
+    <div style="border-radius:calc(var(--radius-lg) * 1.15);overflow:hidden;box-shadow:var(--shadow-lg);background:var(--color-neutral-100);max-width:1240px">
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--color-neutral-300)">
+        <div style="display:flex;gap:6px">
+          <span style="width:11px;height:11px;border-radius:999px;background:var(--color-accent-400)"></span>
+          <span style="width:11px;height:11px;border-radius:999px;background:var(--color-neutral-400)"></span>
+          <span style="width:11px;height:11px;border-radius:999px;background:var(--color-accent-2-400)"></span>
+        </div>
+        <div style="flex:1;background:var(--color-neutral-100);border-radius:999px;padding:5px 14px;font-size:12px;opacity:.65">meridian-post.example / stadt / uferpromenade-2028</div>
+        <button class="btn btn-icon" onClick="{{ togglePanel }}" title="Панель Sprachweise" style="background:var(--color-accent);color:var(--color-bg);font-size:13px">S</button>
+      </div>
+
+      <div style="display:flex;align-items:stretch;min-height:660px">
+        <article style="flex:1;padding:38px 44px 48px;min-width:0">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px">
+            <span style="font-family:var(--font-heading);font-size:15px;letter-spacing:.16em;text-transform:uppercase">MERIDIAN</span>
+            <span style="font-size:12px;opacity:.5">Город · 8 августа</span>
+          </div>
+          <h2 style="font-size:34px;max-width:19ch;margin-bottom:14px">Набережную у старого порта откроют в 2028 году</h2>
+          <p style="font-size:14px;opacity:.55;margin-bottom:26px">Проект обсуждали четыре года — теперь у него есть срок и бюджет.</p>
+
+          <div style="display:flex;flex-direction:column;gap:4px;max-width:62ch">
+            <div onClick="{{ tog1 }}" style="cursor:pointer;border-radius:var(--radius-md);padding:8px 12px;margin-left:-12px" style-hover="background:color-mix(in srgb, var(--color-accent) 9%, transparent)">
+              <p style="display:{{ ru1 }};margin:0;font-size:17px;line-height:1.65">Городской совет утвердил проект новой <span style="background:var(--color-accent-200);border-radius:6px;padding:0 5px;box-shadow:inset 0 -2px 0 var(--color-accent-400)" title="набережная">Uferpromenade</span> — пешеходной зоны длиной 2,4 километра вдоль старого порта.</p>
+              <p style="display:{{ de1 }};margin:0;font-size:17px;line-height:1.65;color:var(--color-accent-900)">Der Stadtrat hat den Entwurf der neuen Uferpromenade beschlossen — eine 2,4 Kilometer lange Fußgängerzone entlang des alten Hafens.</p>
+            </div>
+
+            <div onClick="{{ tog2 }}" style="cursor:pointer;border-radius:var(--radius-md);padding:8px 12px;margin-left:-12px" style-hover="background:color-mix(in srgb, var(--color-accent) 9%, transparent)">
+              <p style="display:{{ ru2 }};margin:0;font-size:17px;line-height:1.65">Работы начнутся весной: сначала строители <span style="background:var(--color-accent-200);border-radius:6px;padding:0 5px;box-shadow:inset 0 -2px 0 var(--color-accent-400)" title="должны">müssen</span> укрепить берег, и только потом можно будет высаживать деревья.</p>
+              <p style="display:{{ de2 }};margin:0;font-size:17px;line-height:1.65;color:var(--color-accent-900)">Die Arbeiten beginnen im Frühjahr: zuerst müssen die Bauarbeiter das Ufer verstärken, erst danach darf man Bäume pflanzen.</p>
+            </div>
+
+            <div onClick="{{ tog3 }}" style="cursor:pointer;border-radius:var(--radius-md);padding:8px 12px;margin-left:-12px" style-hover="background:color-mix(in srgb, var(--color-accent) 9%, transparent)">
+              <p style="display:{{ ru3 }};margin:0;font-size:17px;line-height:1.65">По словам главного архитектора, город хочет закончить первый участок до 2028 года — <span style="background:var(--color-accent-200);border-radius:6px;padding:0 5px;box-shadow:inset 0 -2px 0 var(--color-accent-400)" title="движение, транспорт">Verkehr</span> на прилегающих улицах при этом сохранят.</p>
+              <p style="display:{{ de3 }};margin:0;font-size:17px;line-height:1.65;color:var(--color-accent-900)">Laut dem Chefarchitekten will die Stadt den ersten Abschnitt bis 2028 fertigstellen — der Verkehr in den Nebenstraßen soll dabei bleiben.</p>
+            </div>
+
+            <div onClick="{{ tog4 }}" style="cursor:pointer;border-radius:var(--radius-md);padding:8px 12px;margin-left:-12px" style-hover="background:color-mix(in srgb, var(--color-accent) 9%, transparent)">
+              <p style="display:{{ ru4 }};margin:0;font-size:17px;line-height:1.65">Жители смогут пользоваться <span style="background:var(--color-accent-200);border-radius:6px;padding:0 5px;box-shadow:inset 0 -2px 0 var(--color-accent-400)" title="велосипедная дорожка">Fahrradweg</span> круглый год; ночью часть освещения будут отключать.</p>
+              <p style="display:{{ de4 }};margin:0;font-size:17px;line-height:1.65;color:var(--color-accent-900)">Die Anwohner können den Fahrradweg das ganze Jahr über nutzen; nachts soll ein Teil der Beleuchtung abgeschaltet werden.</p>
+            </div>
+
+            <div onClick="{{ tog5 }}" style="cursor:pointer;border-radius:var(--radius-md);padding:8px 12px;margin-left:-12px" style-hover="background:color-mix(in srgb, var(--color-accent) 9%, transparent)">
+              <p style="display:{{ ru5 }};margin:0;font-size:17px;line-height:1.65">Бюджет проекта — 41 миллион евро, из них девять предоставит <span style="background:var(--color-accent-200);border-radius:6px;padding:0 5px;box-shadow:inset 0 -2px 0 var(--color-accent-400)" title="федеральная земля">Bundesland</span>.</p>
+              <p style="display:{{ de5 }};margin:0;font-size:17px;line-height:1.65;color:var(--color-accent-900)">Das Budget beträgt 41 Millionen Euro, davon soll das Bundesland neun übernehmen.</p>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:10px;margin-top:30px;font-size:13px;opacity:.55">
+            <span style="width:9px;height:9px;border-radius:999px;background:var(--color-accent);animation:swPulse 2.4s ease-in-out infinite"></span>
+            <span>{{ translatedHint }}</span>
+          </div>
+        </article>
+
+        <div style="display:flex;align-items:stretch;background:color-mix(in srgb, var(--color-text) 5%, transparent)">
+          <div onClick="{{ togglePanel }}" style="display:{{ tabDisplay }};width:46px;cursor:pointer;background:var(--color-accent);color:var(--color-bg);align-items:center;justify-content:center;gap:16px;flex-direction:column;padding:22px 0">
+            <span style="writing-mode:vertical-rl;font-family:var(--font-heading);font-size:14px;letter-spacing:.12em">SPRACHWEISE</span>
+            <span style="background:var(--color-bg);color:var(--color-accent-800);border-radius:999px;padding:3px 7px;font-size:12px;font-weight:700">4</span>
+          </div>
+
+          <aside style="display:{{ panelDisplay }};width:412px;flex-direction:column;background:var(--color-bg);box-shadow:var(--shadow-lg)">
+            <div style="padding:18px 20px 14px;display:flex;flex-direction:column;gap:12px;background:var(--color-surface)">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:26px;height:26px;border-radius:999px;background:var(--color-accent);display:grid;place-items:center;color:var(--color-bg);font-family:var(--font-heading);font-size:14px">S</div>
+                <span style="font-family:var(--font-heading);font-size:16px;margin-right:auto">Sprachweise</span>
+                <button class="btn btn-ghost" onClick="{{ togglePanel }}" style="font-size:13px">Свернуть ›</button>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <span class="tag tag-accent">Тема: {{ topic }}</span>
+                <span class="tag tag-accent-2">Словарь: Stadt &amp; Verkehr</span>
+                <span class="tag tag-neutral">🔥 12 дней</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="flex:1;height:8px;border-radius:999px;background:var(--color-neutral-300);overflow:hidden">
+                  <div style="width:{{ progressPct }};height:100%;background:var(--color-accent-2-500);border-radius:999px"></div>
+                </div>
+                <span style="font-size:12px;opacity:.7">{{ solvedLabel }}</span>
+              </div>
+            </div>
+
+            <div style="flex:1;overflow:auto;padding:18px 20px 26px;display:flex;flex-direction:column;gap:16px">
+
+              <div class="card elev-sm" style="background:var(--color-neutral-100)">
+                <span class="card-kicker">01 · из этой статьи</span>
+                <p style="margin:0;font-size:15px;line-height:1.6">Laut dem Chefarchitekten <strong style="background:var(--color-accent-200);border-radius:6px;padding:0 8px">____</strong> die Stadt den ersten Abschnitt bis 2028 fertigstellen.</p>
+                <p style="margin:0;font-size:12px;opacity:.6">Впишите модальный глагол в нужной форме.</p>
+                <div style="display:flex;gap:8px">
+                  <input class="input" value="{{ gapVal }}" onChange="{{ onGap }}" placeholder="напр. muss" style="flex:1;border-color:{{ gapBorder }}">
+                  <button class="btn btn-primary" onClick="{{ checkGap }}">Проверить</button>
+                </div>
+                <p style="margin:0;font-size:13px;color:{{ gapMsgColor }}">{{ gapMsg }}</p>
+              </div>
+
+              <div class="card elev-sm" style="background:var(--color-neutral-100)">
+                <span class="card-kicker">02 · выбор из вариантов</span>
+                <p style="margin:0;font-size:15px;line-height:1.6">Zuerst ____ die Bauarbeiter das Ufer verstärken.</p>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <button class="btn btn-secondary" onClick="{{ hMc0 }}" style="justify-content:flex-start;background:{{ sMc0 }}">müssen</button>
+                  <button class="btn btn-secondary" onClick="{{ hMc1 }}" style="justify-content:flex-start;background:{{ sMc1 }}">dürfen</button>
+                  <button class="btn btn-secondary" onClick="{{ hMc2 }}" style="justify-content:flex-start;background:{{ sMc2 }}">mögen</button>
+                </div>
+                <p style="margin:0;font-size:13px;color:{{ mcMsgColor }}">{{ mcMsg }}</p>
+              </div>
+
+              <div class="card elev-sm" style="background:var(--color-neutral-100)">
+                <span class="card-kicker">03 · соедините пары</span>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                  <button class="btn" onClick="{{ hDe0 }}" style="font-size:13px;background:{{ sDe0 }};border-color:var(--color-divider)">dürfen</button>
+                  <button class="btn" onClick="{{ hRu0 }}" style="font-size:13px;background:{{ sRu0 }};border-color:var(--color-divider)">хотеть</button>
+                  <button class="btn" onClick="{{ hDe1 }}" style="font-size:13px;background:{{ sDe1 }};border-color:var(--color-divider)">wollen</button>
+                  <button class="btn" onClick="{{ hRu1 }}" style="font-size:13px;background:{{ sRu1 }};border-color:var(--color-divider)">быть должным</button>
+                  <button class="btn" onClick="{{ hDe2 }}" style="font-size:13px;background:{{ sDe2 }};border-color:var(--color-divider)">sollen</button>
+                  <button class="btn" onClick="{{ hRu2 }}" style="font-size:13px;background:{{ sRu2 }};border-color:var(--color-divider)">иметь право</button>
+                  <button class="btn" onClick="{{ hDe3 }}" style="font-size:13px;background:{{ sDe3 }};border-color:var(--color-divider)">mögen</button>
+                  <button class="btn" onClick="{{ hRu3 }}" style="font-size:13px;background:{{ sRu3 }};border-color:var(--color-divider)">нравиться</button>
+                </div>
+                <p style="margin:0;font-size:13px;color:{{ matchMsgColor }}">{{ matchMsg }}</p>
+              </div>
+
+              <div class="card elev-sm" style="background:var(--color-neutral-100)">
+                <span class="card-kicker">04 · аудио-диктант</span>
+                <p style="margin:0;font-size:13px;opacity:.7">Прослушайте и запишите предложение целиком.</p>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <button class="btn btn-primary" onClick="{{ playDict }}" style="gap:8px">▶ Прослушать</button>
+                  <button class="btn btn-ghost" onClick="{{ playSlow }}" style="font-size:13px">медленно</button>
+                </div>
+                <div style="display:flex;gap:8px">
+                  <input class="input" value="{{ dictVal }}" onChange="{{ onDict }}" placeholder="Ich …" style="flex:1;border-color:{{ dictBorder }}">
+                  <button class="btn btn-primary" onClick="{{ checkDict }}">ОК</button>
+                </div>
+                <p style="margin:0;font-size:13px;color:{{ dictMsgColor }}">{{ dictMsg }}</p>
+              </div>
+
+              <button class="btn btn-secondary btn-block" onClick="{{ resetAll }}" style="font-size:13px">Сбросить упражнения</button>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:baseline;gap:14px">
+      <span style="font-family:var(--font-heading);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-700)">02 — попап</span>
+      <span style="font-size:14px;opacity:.6">Быстрый вкл/выкл для текущего сайта и путь в админку.</span>
+    </div>
+    <div style="width:380px;border-radius:calc(var(--radius-lg) * 1.15);background:var(--color-bg);box-shadow:var(--shadow-lg);padding:20px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:28px;height:28px;border-radius:999px;background:var(--color-accent);display:grid;place-items:center;color:var(--color-bg);font-family:var(--font-heading);font-size:15px">S</div>
+        <span style="font-family:var(--font-heading);font-size:17px;margin-right:auto">Sprachweise</span>
+        <span class="tag tag-neutral">🔥 12</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:var(--radius-lg);background:var(--color-surface)">
+        <div style="flex:1">
+          <div style="font-family:var(--font-heading);font-size:15px">{{ extTitle }}</div>
+          <div style="font-size:12px;opacity:.65">meridian-post.example</div>
+        </div>
+        <div onClick="{{ toggleExt }}" style="width:52px;height:30px;border-radius:999px;background:{{ extTrack }};padding:3px;cursor:pointer;display:flex;justify-content:{{ extJustify }};transition:background .2s">
+          <span style="width:24px;height:24px;border-radius:999px;background:var(--color-bg);box-shadow:var(--shadow-sm)"></span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;font-size:14px"><span style="opacity:.7">Тема грамматики</span><strong>{{ topic }}</strong></div>
+        <div style="display:flex;justify-content:space-between;font-size:14px"><span style="opacity:.7">Словарь</span><strong>Stadt &amp; Verkehr</strong></div>
+        <div style="display:flex;justify-content:space-between;font-size:14px"><span style="opacity:.7">Сегодня решено</span><strong>{{ solvedLabel }}</strong></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <a class="btn btn-primary" href="#admin" style="flex:1">Настройки</a>
+        <a class="btn btn-secondary" href="#progress" style="flex:1">Прогресс</a>
+      </div>
+      <button class="btn btn-ghost" onClick="{{ toggleExt }}" style="font-size:13px">Не трогать этот сайт 7 дней</button>
+    </div>
+  </section>
+
+  <section id="admin" style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:baseline;gap:14px">
+      <span style="font-family:var(--font-heading);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-700)">03 — админка</span>
+      <span style="font-size:14px;opacity:.6">Отдельная страница в новой вкладке: тема, словарь, правила сайтов, источники.</span>
+    </div>
+    <div style="max-width:1240px;border-radius:calc(var(--radius-lg) * 1.15);background:var(--color-bg);box-shadow:var(--shadow-lg);overflow:hidden">
+      <div class="nav" style="background:var(--color-surface)">
+        <span class="nav-brand">Sprachweise</span>
+        <a href="#admin" aria-current="page">Обучение</a>
+        <a href="#admin">Словарь</a>
+        <a href="#admin">Сайты</a>
+        <a href="#progress">Прогресс</a>
+        <span class="tag tag-accent-2">Синхронизировано</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.35fr 1fr;gap:34px;padding:34px 38px 42px">
+        <div style="display:flex;flex-direction:column;gap:26px;min-width:0">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <h3 style="margin:0">Текущая тема грамматики</h3>
+            <p style="margin:0;font-size:14px;opacity:.7;max-width:52ch">Всё, что расширение показывает на сайтах, строится вокруг одной темы. Меняйте её, когда почувствуете, что тема «улеглась».</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <label for="sw-topic-0" class="radio" style="padding:12px 14px;border-radius:var(--radius-lg);background:var(--color-accent-100)"><input type="radio" id="sw-topic-0" name="sw-topic" defaultChecked="{{ true }}"><span class="dot"></span><span style="display:flex;flex-direction:column"><span style="font-weight:700">Модальные глаголы</span><span style="font-size:12px;opacity:.6">точность 78%</span></span></label>
+              <label for="sw-topic-1" class="radio" style="padding:12px 14px;border-radius:var(--radius-lg);background:var(--color-surface)"><input type="radio" id="sw-topic-1" name="sw-topic"><span class="dot"></span><span style="display:flex;flex-direction:column"><span style="font-weight:700">Akkusativ / Dativ</span><span style="font-size:12px;opacity:.6">точность 64%</span></span></label>
+              <label for="sw-topic-2" class="radio" style="padding:12px 14px;border-radius:var(--radius-lg);background:var(--color-surface)"><input type="radio" id="sw-topic-2" name="sw-topic"><span class="dot"></span><span style="display:flex;flex-direction:column"><span style="font-weight:700">Perfekt (haben/sein)</span><span style="font-size:12px;opacity:.6">точность 71%</span></span></label>
+              <label for="sw-topic-3" class="radio" style="padding:12px 14px;border-radius:var(--radius-lg);background:var(--color-surface)"><input type="radio" id="sw-topic-3" name="sw-topic"><span class="dot"></span><span style="display:flex;flex-direction:column"><span style="font-weight:700">Trennbare Verben</span><span style="font-size:12px;opacity:.6">не начата</span></span></label>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-wrap:wrap;gap:28px">
+            <div class="field">
+              <label>Уровень</label>
+              <div class="seg">
+                <label for="sw-level-0" class="seg-opt"><input type="radio" id="sw-level-0" name="sw-level"><span>A1–A2</span></label>
+                <label for="sw-level-1" class="seg-opt"><input type="radio" id="sw-level-1" name="sw-level" defaultChecked="{{ true }}"><span>B1–B2</span></label>
+                <label for="sw-level-2" class="seg-opt"><input type="radio" id="sw-level-2" name="sw-level"><span>C1+</span></label>
+              </div>
+            </div>
+            <div class="field">
+              <label>Сколько переводить на странице</label>
+              <div class="seg">
+                <label for="sw-dose-0" class="seg-opt"><input type="radio" id="sw-dose-0" name="sw-dose"><span>Немного</span></label>
+                <label for="sw-dose-1" class="seg-opt"><input type="radio" id="sw-dose-1" name="sw-dose" defaultChecked="{{ true }}"><span>Средне</span></label>
+                <label for="sw-dose-2" class="seg-opt"><input type="radio" id="sw-dose-2" name="sw-dose"><span>Максимум</span></label>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <h3 style="margin:0">Словарный запас</h3>
+              <span class="tag tag-accent">Stadt &amp; Verkehr · 84 слова</span>
+              <button class="btn btn-secondary" style="margin-left:auto;font-size:13px">+ Добавить слово</button>
+            </div>
+            <div style="display:flex;gap:8px;max-width:420px">
+              <input class="input" placeholder="Поиск по словам">
+            </div>
+            <table class="table">
+              <thead><tr><th>Слово</th><th>Перевод</th><th>Встречалось</th><th>Статус</th></tr></thead>
+              <tbody>
+                <tr><td><strong>die Uferpromenade</strong></td><td>набережная</td><td>3 раза</td><td><span class="tag tag-accent-2">в активе</span></td></tr>
+                <tr><td><strong>der Verkehr</strong></td><td>движение</td><td>11 раз</td><td><span class="tag tag-accent-2">выучено</span></td></tr>
+                <tr><td><strong>der Fahrradweg</strong></td><td>велодорожка</td><td>4 раза</td><td><span class="tag tag-accent">повторить</span></td></tr>
+                <tr><td><strong>das Bundesland</strong></td><td>федеральная земля</td><td>2 раза</td><td><span class="tag tag-neutral">новое</span></td></tr>
+                <tr><td><strong>verstärken</strong></td><td>укреплять</td><td>1 раз</td><td><span class="tag tag-neutral">новое</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:24px;min-width:0">
+          <div class="card" style="background:var(--color-surface)">
+            <span class="card-kicker">Разрешения</span>
+            <span class="card-title">Правила сайтов</span>
+            <p class="card-body">Расширение молчит везде, кроме сайтов из этого списка.</p>
+            <table class="table" style="font-size:13px">
+              <tbody>
+                <tr><td>meridian-post.example</td><td style="text-align:right"><span class="tag tag-accent-2">включено</span></td></tr>
+                <tr><td>wiki.example</td><td style="text-align:right"><span class="tag tag-accent-2">включено</span></td></tr>
+                <tr><td>mail.example</td><td style="text-align:right"><span class="tag tag-outline">никогда</span></td></tr>
+                <tr><td>bank.example</td><td style="text-align:right"><span class="tag tag-outline">никогда</span></td></tr>
+              </tbody>
+            </table>
+            <button class="btn btn-secondary btn-block" style="font-size:13px">Добавить сайт</button>
+          </div>
+
+          <div class="card" style="background:var(--color-accent-100)">
+            <span class="card-kicker">Источники упражнений</span>
+            <span class="card-title">Смешанный режим</span>
+            <p class="card-body">Первое упражнение собирается из текста статьи, остальные — из базы по теме.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <span class="tag tag-accent">Текст страницы</span>
+              <span class="tag tag-accent">База Modalverben</span>
+              <span class="tag tag-neutral">Свои списки</span>
+            </div>
+          </div>
+
+          <div class="card" style="background:var(--color-surface)">
+            <span class="card-kicker">Расписание</span>
+            <span class="card-title">Когда предлагать</span>
+            <div style="display:flex;flex-direction:column;gap:10px;font-size:14px">
+              <label for="sw-when-0" class="radio"><input type="radio" id="sw-when-0" name="sw-when" defaultChecked="{{ true }}"><span class="dot"></span><span>Только когда я сам открою панель</span></label>
+              <label for="sw-when-1" class="radio"><input type="radio" id="sw-when-1" name="sw-when"><span class="dot"></span><span>Раз в 20 минут чтения</span></label>
+              <label for="sw-when-2" class="radio"><input type="radio" id="sw-when-2" name="sw-when"><span class="dot"></span><span>Каждая новая статья</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="progress" style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:baseline;gap:14px">
+      <span style="font-family:var(--font-heading);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-700)">04 — прогресс</span>
+      <span style="font-size:14px;opacity:.6">Стрик, активный запас, точность по темам и очередь повторений.</span>
+    </div>
+    <div style="max-width:1240px;border-radius:calc(var(--radius-lg) * 1.15);background:var(--color-bg);box-shadow:var(--shadow-lg);padding:34px 38px 42px;display:flex;flex-direction:column;gap:30px">
+      <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:16px">
+        <div class="card" style="background:var(--color-accent-100);gap:2px">
+          <span class="card-kicker">Стрик</span>
+          <span style="font-family:var(--font-heading);font-size:46px;line-height:1">12</span>
+          <span style="font-size:13px;opacity:.7">дней подряд · цель {{ goalLabel }}</span>
+        </div>
+        <div class="card" style="background:var(--color-surface);gap:2px">
+          <span class="card-kicker">В активном запасе</span>
+          <span style="font-family:var(--font-heading);font-size:46px;line-height:1">84</span>
+          <span style="font-size:13px;opacity:.7">слова из 212 встреченных</span>
+        </div>
+        <div class="card" style="background:var(--color-surface);gap:2px">
+          <span class="card-kicker">Выучено</span>
+          <span style="font-family:var(--font-heading);font-size:46px;line-height:1">37</span>
+          <span style="font-size:13px;opacity:.7">+6 за эту неделю</span>
+        </div>
+        <div class="card" style="background:var(--color-accent-2-100);gap:2px">
+          <span class="card-kicker">К повторению</span>
+          <span style="font-family:var(--font-heading);font-size:46px;line-height:1">9</span>
+          <span style="font-size:13px;opacity:.7">из них 3 просрочены</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:34px">
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+          <h3 style="margin:0">Точность по темам</h3>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;justify-content:space-between;font-size:14px"><span>Модальные глаголы</span><strong>78%</strong></div>
+              <div style="height:10px;border-radius:999px;background:var(--color-neutral-300)"><div style="width:78%;height:100%;border-radius:999px;background:var(--color-accent-500)"></div></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;justify-content:space-between;font-size:14px"><span>Perfekt (haben/sein)</span><strong>71%</strong></div>
+              <div style="height:10px;border-radius:999px;background:var(--color-neutral-300)"><div style="width:71%;height:100%;border-radius:999px;background:var(--color-accent-2-500)"></div></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;justify-content:space-between;font-size:14px"><span>Akkusativ / Dativ</span><strong>64%</strong></div>
+              <div style="height:10px;border-radius:999px;background:var(--color-neutral-300)"><div style="width:64%;height:100%;border-radius:999px;background:var(--color-accent-2-500)"></div></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;justify-content:space-between;font-size:14px"><span>Порядок слов в Nebensatz</span><strong>52%</strong></div>
+              <div style="height:10px;border-radius:999px;background:var(--color-neutral-300)"><div style="width:52%;height:100%;border-radius:999px;background:var(--color-accent-400)"></div></div>
+            </div>
+          </div>
+          <p style="margin:0;font-size:14px;opacity:.7;max-width:48ch;text-wrap:pretty">Самая слабая тема подсвечивается — её можно сделать текущей одним нажатием.</p>
+          <button class="btn btn-primary" style="align-self:flex-start">Взять Nebensatz следующей темой</button>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+          <h3 style="margin:0">Очередь повторений</h3>
+          <table class="table">
+            <thead><tr><th>Слово</th><th>Повторов</th><th>Следующий</th></tr></thead>
+            <tbody>
+              <tr><td><strong>der Fahrradweg</strong></td><td>2</td><td><span class="tag tag-accent">сейчас</span></td></tr>
+              <tr><td><strong>die Beleuchtung</strong></td><td>1</td><td><span class="tag tag-accent">сейчас</span></td></tr>
+              <tr><td><strong>der Abschnitt</strong></td><td>3</td><td><span class="tag tag-accent">сейчас</span></td></tr>
+              <tr><td><strong>verstärken</strong></td><td>1</td><td>завтра</td></tr>
+              <tr><td><strong>das Ufer</strong></td><td>4</td><td>через 3 дня</td></tr>
+              <tr><td><strong>der Entwurf</strong></td><td>2</td><td>через 5 дней</td></tr>
+            </tbody>
+          </table>
+          <button class="btn btn-secondary" style="align-self:flex-start">Повторить 3 слова сейчас</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;topic&quot;: { &quot;editor&quot;: &quot;text&quot;, &quot;default&quot;: &quot;Модальные глаголы&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Обучение&quot; },
+  &quot;panelOpenByDefault&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Оверлей&quot; },
+  &quot;enabledHere&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Оверлей&quot; },
+  &quot;exerciseTotal&quot;: { &quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 4, &quot;min&quot;: 2, &quot;max&quot;: 8, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Обучение&quot; },
+  &quot;dailyGoal&quot;: { &quot;editor&quot;: &quot;range&quot;, &quot;default&quot;: 15, &quot;min&quot;: 5, &quot;max&quot;: 45, &quot;step&quot;: 5, &quot;unit&quot;: &quot;мин&quot;, &quot;tsType&quot;: &quot;number&quot;, &quot;section&quot;: &quot;Обучение&quot; }
+}">
+const OK = 'var(--color-accent-2-200)';
+const BAD = 'var(--color-accent-200)';
+const NEUTRAL = 'transparent';
+const SEL = 'var(--color-accent-300)';
+const MSG_OK = 'var(--color-accent-2-700)';
+const MSG_BAD = 'var(--color-accent-700)';
+
+const DE = ['dürfen', 'wollen', 'sollen', 'mögen'];
+const RU = ['хотеть', 'быть должным', 'иметь право', 'нравиться'];
+// dürfen→иметь право (2), wollen→хотеть (0), sollen→быть должным (1), mögen→нравиться (3)
+const PAIR = { 0: 2, 1: 0, 2: 1, 3: 3 };
+const DICT = 'du darfst hier nicht parken';
+
+class Component extends DCLogic {
+  state = {
+    de: {}, panelOpen: null, ext: null,
+    gapVal: '', gap: 'idle',
+    mc: null,
+    selDe: null, matched: {}, matchWrong: null,
+    dictVal: '', dict: 'idle'
+  };
+
+  norm(s) { return (s || '').toLowerCase().replace(/[.,!?;:]/g, '').replace(/\s+/g, ' ').trim(); }
+
+  speak(rate) {
+    try {
+      const u = new SpeechSynthesisUtterance('Du darfst hier nicht parken.');
+      u.lang = 'de-DE'; u.rate = rate;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(u);
+    } catch (e) { /* нет синтеза — не страшно */ }
+  }
+
+  pickDe(i) {
+    if (this.state.matched[i] !== undefined) return;
+    this.setState({ selDe: i, matchWrong: null });
+  }
+
+  pickRu(j) {
+    const { selDe } = this.state;
+    if (selDe === null) { this.setState({ matchWrong: 'no-de' }); return; }
+    if (Object.values(this.state.matched).indexOf(j) !== -1) return;
+    if (PAIR[selDe] === j) {
+      const matched = Object.assign({}, this.state.matched);
+      matched[selDe] = j;
+      this.setState({ matched, selDe: null, matchWrong: null });
+    } else {
+      this.setState({ matchWrong: j });
+    }
+  }
+
+  solvedCount() {
+    let n = 0;
+    if (this.state.gap === 'ok') n++;
+    if (this.state.mc === 0) n++;
+    if (Object.keys(this.state.matched).length === 4) n++;
+    if (this.state.dict === 'ok') n++;
+    return n;
+  }
+
+  renderVals() {
+    const v = {};
+    const topic = this.props.topic || 'Модальные глаголы';
+    const total = this.props.exerciseTotal || 4;
+    const goal = this.props.dailyGoal || 15;
+
+    for (let i = 1; i <= 5; i++) {
+      const on = !!this.state.de[i];
+      v['ru' + i] = on ? 'none' : 'block';
+      v['de' + i] = on ? 'block' : 'none';
+      v['tog' + i] = () => this.setState(s => {
+        const de = Object.assign({}, s.de); de[i] = !de[i]; return { de };
+      });
+    }
+    const nTrans = Object.keys(this.state.de).filter(k => this.state.de[k]).length;
+    v.translatedHint = nTrans === 0
+      ? 'Нажмите на любой абзац — он станет немецким'
+      : 'Переведено абзацев: ' + nTrans + ' из 5 · нажмите снова, чтобы вернуть русский';
+
+    const open = this.state.panelOpen === null
+      ? (this.props.panelOpenByDefault ?? true)
+      : this.state.panelOpen;
+    v.panelDisplay = open ? 'flex' : 'none';
+    v.tabDisplay = open ? 'none' : 'flex';
+    v.togglePanel = () => this.setState({ panelOpen: !open });
+
+    const ext = this.state.ext === null ? (this.props.enabledHere ?? true) : this.state.ext;
+    v.extTitle = ext ? 'Работает на этом сайте' : 'Выключено на этом сайте';
+    v.extTrack = ext ? 'var(--color-accent-2-500)' : 'var(--color-neutral-400)';
+    v.extJustify = ext ? 'flex-end' : 'flex-start';
+    v.toggleExt = () => this.setState({ ext: !ext });
+
+    v.topic = topic;
+    v.goalLabel = goal + ' мин/день';
+    const solved = this.solvedCount();
+    v.solvedLabel = solved + ' из ' + total;
+    v.progressPct = Math.round((solved / total) * 100) + '%';
+
+    v.gapVal = this.state.gapVal;
+    v.onGap = e => this.setState({ gapVal: e.target.value, gap: 'idle' });
+    v.checkGap = () => {
+      const a = this.norm(this.state.gapVal);
+      this.setState({ gap: (a === 'will' || a === 'möchte' || a === 'moechte') ? 'ok' : 'bad' });
+    };
+    v.gapBorder = this.state.gap === 'ok' ? 'var(--color-accent-2-500)'
+      : this.state.gap === 'bad' ? 'var(--color-accent-500)' : 'var(--color-divider)';
+    v.gapMsg = this.state.gap === 'ok' ? 'Верно — will. Город «хочет», значит wollen.'
+      : this.state.gap === 'bad' ? 'Пока нет. Подсказка: в статье город именно хочет успеть.' : '';
+    v.gapMsgColor = this.state.gap === 'bad' ? MSG_BAD : MSG_OK;
+
+    for (let i = 0; i < 3; i++) {
+      v['hMc' + i] = () => this.setState({ mc: i });
+      v['sMc' + i] = this.state.mc === null ? NEUTRAL
+        : this.state.mc === i ? (i === 0 ? OK : BAD)
+        : (this.state.mc !== 0 && i === 0) ? OK : NEUTRAL;
+    }
+    v.mcMsg = this.state.mc === null ? ''
+      : this.state.mc === 0 ? 'Да: сначала рабочие обязаны укрепить берег — müssen.'
+      : 'Не то: речь о необходимости, а не о разрешении или симпатии.';
+    v.mcMsgColor = this.state.mc === 0 ? MSG_OK : MSG_BAD;
+
+    for (let i = 0; i < 4; i++) {
+      v['hDe' + i] = () => this.pickDe(i);
+      v['sDe' + i] = this.state.matched[i] !== undefined ? OK
+        : this.state.selDe === i ? SEL : NEUTRAL;
+      const j = i;
+      v['hRu' + j] = () => this.pickRu(j);
+      const takenBy = Object.keys(this.state.matched).find(k => this.state.matched[k] === j);
+      v['sRu' + j] = takenBy !== undefined ? OK
+        : this.state.matchWrong === j ? BAD : NEUTRAL;
+    }
+    const nm = Object.keys(this.state.matched).length;
+    v.matchMsg = nm === 4 ? 'Все четыре пары собраны.'
+      : this.state.matchWrong === 'no-de' ? 'Сначала выберите немецкое слово слева.'
+      : this.state.matchWrong !== null ? 'Не та пара — попробуйте другое значение.'
+      : nm > 0 ? 'Собрано пар: ' + nm + ' из 4' : 'Выберите слово слева, затем его перевод справа.';
+    v.matchMsgColor = (nm === 4 || this.state.matchWrong === null) ? MSG_OK : MSG_BAD;
+
+    v.dictVal = this.state.dictVal;
+    v.onDict = e => this.setState({ dictVal: e.target.value, dict: 'idle' });
+    v.playDict = () => this.speak(0.95);
+    v.playSlow = () => this.speak(0.6);
+    v.checkDict = () => this.setState({ dict: this.norm(this.state.dictVal) === DICT ? 'ok' : 'bad' });
+    v.dictBorder = this.state.dict === 'ok' ? 'var(--color-accent-2-500)'
+      : this.state.dict === 'bad' ? 'var(--color-accent-500)' : 'var(--color-divider)';
+    v.dictMsg = this.state.dict === 'ok' ? 'Точно: «Du darfst hier nicht parken.»'
+      : this.state.dict === 'bad' ? 'Ещё раз — послушайте медленно. Начинается на «Du …».' : '';
+    v.dictMsgColor = this.state.dict === 'bad' ? MSG_BAD : MSG_OK;
+
+    v.resetAll = () => this.setState({
+      gapVal: '', gap: 'idle', mc: null, selDe: null, matched: {}, matchWrong: null,
+      dictVal: '', dict: 'idle'
+    });
+
+    return v;
+  }
+}
+
+</script>
+</body>
+</html>
