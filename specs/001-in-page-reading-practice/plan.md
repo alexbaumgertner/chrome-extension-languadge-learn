@@ -49,6 +49,10 @@ Technical approach: a WXT-built MV3 extension (content script + background servi
 
 No violations requiring justification — Complexity Tracking table is empty.
 
+**Amendment (implementation, T003)**: `manifest.permissions` is `["storage"]`, not `[]` as originally sketched — `chrome.storage` (the offline-first source of truth Constitution IV names) requires the "storage" permission at the manifest level; it grants no host/site access and carries none of the review-friction cost Principle I guards against, so it doesn't change the PASS verdict above.
+
+**Amendment (implementation, T056)**: `manifest.permissions` also includes `"activeTab"` — the exact permission Principle I's own gate text names ("`activeTab` + `optional_host_permissions`"), needed for the popup to read the current tab's hostname for its enable/disable toggle. Temporary and user-gesture-scoped only; no change to the PASS verdict.
+
 ### Post-Design Re-Check
 
 Re-verified after Phase 1 (`data-model.md`, `contracts/`, `quickstart.md`):
@@ -63,6 +67,21 @@ Re-verified after Phase 1 (`data-model.md`, `contracts/`, `quickstart.md`):
 - **VIII. Performance & Unobtrusive UX** — `TRANSLATE_PARAGRAPH` is async/message-based (no synchronous main-thread network call from the content script); TTS audio is fetched lazily on first play, never prefetched. PASS.
 
 No new violations surfaced by design; Complexity Tracking remains empty.
+
+### Post-Implementation Re-Check (T071)
+
+Re-verified against the finished code and test suite (68 unit + 12 Playwright integration tests, all passing):
+
+- **I. Least Privilege** — `apps/extension/wxt.config.ts`: production manifest is `permissions: ["storage", "activeTab"]`, `optional_host_permissions: ["*://*/*"]`, no `host_permissions` key at all (confirmed via `pnpm -r build` manifest output). `chrome.permissions.request` is called only from `handleSetSiteStatus` in `entrypoints/background.ts`, itself only reachable via the popup's toggle button. PASS.
+- **II. Host Page Integrity** — `lib/dom/substitution.ts`'s `applyVariant`/`restoreOriginal` are the only writers of paragraph `innerHTML`; `tests/integration/substitution-restoration.spec.ts` asserts byte-identical `outerHTML` across 4 markup patterns, `tests/integration/host-rerender.spec.ts` asserts no throw/orphan on a host-driven replacement. All extension chrome (panel, tooltips, error banners) is Shadow-DOM isolated (`createShadowRootUi` for the panel, `lib/dom/shadow-portal.ts` for the rest) — see research.md §1's amendment for the one implementation deviation (inline `<style>` instead of `cssInjectionMode: 'ui'`), which preserves the same isolation guarantee. PASS.
+- **III. Privacy** — `lib/cms/client.ts`'s `translateParagraph` sends only `{text, level, topic}`; background (`entrypoints/background.ts`) is the only module importing it. PASS.
+- **IV. Offline-First** — `tests/integration/offline.spec.ts` proves cached translate/exercise/progress flows work with the CMS unreachable, and a never-cached paragraph gets the distinct `offline-no-cache` message rather than a generic error. PASS.
+- **V. Typed Contracts** — every schema in `packages/shared/src/schemas/*.ts` is exercised by `packages/shared/tests/schemas.test.ts` (32 round-trip tests); `grep` across `packages/shared/src` and `apps/extension/lib`/`entrypoints` finds zero `any` usages. PASS.
+- **VI. Test What Breaks** — all four mandatory areas covered: `tests/unit/paragraph-parser.test.ts`, `tests/integration/substitution-restoration.spec.ts`, `tests/unit/scheduler.test.ts`, `packages/shared/tests/schemas.test.ts`. PASS.
+- **VII. Simplicity** — no scope crept in beyond the plan; the one deliberate simplification (audio-dictation exercises don't claim a specific `affectedVocabId`, since a whole-sentence dictation isn't tied to one target word) is documented inline in `AudioDictationCard.tsx` rather than left implicit. PASS.
+- **VIII. Performance & Unobtrusive UX** — confirmed by code audit (T069): no synchronous XHR anywhere in the codebase; `PLAY_TTS` is sent only from `AudioDictationCard`'s play-button handler, never prefetched. PASS.
+
+No violations found; Complexity Tracking remains empty. Two additive, non-violating manifest-permission amendments are recorded above (`storage`, `activeTab`).
 
 ## Project Structure
 

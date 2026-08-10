@@ -7,6 +7,7 @@ All items below were either fully specified by the spec's Clarifications session
 - **Decision**: Use WXT's `createShadowRootUi` for the right-edge panel, with `cssInjectionMode: 'ui'` so component styles are scoped into the shadow root and never leak to/from the host page.
 - **Rationale**: Satisfies Constitution II/FR-016 (bidirectional style isolation) with a framework-native primitive instead of hand-rolled shadow root management; WXT wires teardown/remount automatically on content-script reinjection.
 - **Alternatives considered**: Manual `attachShadow` + manual React root — rejected, reinvents what WXT already provides and risks missed cleanup on SPA navigation.
+- **Amendment (implementation, T033)**: `cssInjectionMode: 'ui'` was dropped — with no `.css` file imported into the content-script entry, WXT's UI CSS loader tried to fetch a nonexistent stylesheet URL (`chrome-extension://invalid/`) and threw before `onMount` ran, so the panel never rendered. Styles are instead injected as a `<style>` element rendered by `Panel.tsx` itself as the shadow root's first child — shadow roots scope any `<style>` placed inside them regardless of `cssInjectionMode`, so Constitution II's bidirectional isolation guarantee still holds; verified by the Playwright exercise-panel suite.
 
 ## 2. Paragraph detection, substitution, and restoration
 

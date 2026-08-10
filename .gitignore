@@ -3,5 +3,7 @@ node_modules/
 .output/
 .wxt/
 .env*
+test-results/
+playwright-report/
 
 .DS_Store
