@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node.js 20 LTS, pnpm installed
+- Node.js 24, pnpm installed
 - Repo root: `pnpm install` (installs `apps/extension` + `packages/shared` workspaces)
 - A reachable Payload CMS instance implementing `contracts/cms-api-contract.md` (or a local mock server implementing the same three endpoints, for offline-of-CMS development)
 - Chrome (or Chromium) for manual verification; Playwright browsers installed (`pnpm exec playwright install`) for automated integration tests

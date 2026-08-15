@@ -4,7 +4,7 @@ Validates the feature end-to-end (User Stories 1–4) against a running `apps/cm
 
 ## Prerequisites
 
-- Node.js 20+, pnpm (already required by the workspace root `package.json`).
+- Node.js 24+, pnpm (already required by the workspace root `package.json`).
 - A Google Cloud Translation API key (Basic v2, "Cloud Translation API" enabled on the project) and a Gemini API key (Google AI Studio), for real-provider validation. For local/CI validation without real keys, use the mock providers described below.
 - Workspace installed: `pnpm install` from repo root.
 

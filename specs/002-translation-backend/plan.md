@@ -12,7 +12,7 @@ A new backend service (`apps/cms`) that implements the `POST /api/translate` end
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.x, strict mode, Node.js 20 LTS (matches workspace root `engines.node`)
+**Language/Version**: TypeScript 5.x, strict mode, Node.js 24 (matches workspace root `engines.node`)
 
 **Primary Dependencies**: Fastify (HTTP server), `better-sqlite3` (cache + usage-ledger persistence), `zod` via `@sprachweise/shared` (request/response contract validation, reused from `packages/shared/src/schemas/cms.ts`) — no provider SDKs, plain `fetch` to Google Cloud Translation API (Basic v2) and Gemini API REST endpoints (research.md §9)
 

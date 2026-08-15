@@ -14,7 +14,7 @@ Technical approach: a WXT-built MV3 extension (content script + background servi
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.x, strict mode, Node.js 20 LTS for tooling/build
+**Language/Version**: TypeScript 5.x, strict mode, Node.js 24 for tooling/build
 
 **Primary Dependencies**: WXT (extension framework, MV3), React 19, Zod (`packages/shared` contracts), Web Speech API (`SpeechSynthesisUtterance`) for offline/fallback TTS
 
