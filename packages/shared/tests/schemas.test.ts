@@ -7,6 +7,7 @@ import {
   GetProgressSnapshotResponseSchema,
   GetSiteRulesResponseSchema,
   GetSiteStatusResponseSchema,
+  isSafeHtmlSubset,
   LearnerSettingsSchema,
   PlayTtsRequestSchema,
   ProgressProfileSchema,
@@ -357,6 +358,53 @@ describe("cms schemas", () => {
 
   it("TtsRequest rejects an invalid rate", () => {
     const result = TtsRequestSchema.safeParse({ sentence: "Guten Tag.", rate: "fast" });
+    expect(result.success).toBe(false);
+  });
+
+  it("isSafeHtmlSubset accepts plain text and bare strong/em tags", () => {
+    expect(isSafeHtmlSubset("Kurzer Satz.")).toBe(true);
+    expect(isSafeHtmlSubset("Ich <strong>moechte</strong> einen <em>Kaffee</em>.")).toBe(true);
+    expect(isSafeHtmlSubset("<strong>outer <em>inner</em> text</strong>")).toBe(true);
+  });
+
+  it("isSafeHtmlSubset rejects any tag outside the allowlist", () => {
+    expect(isSafeHtmlSubset("<script>alert(1)</script>")).toBe(false);
+    expect(isSafeHtmlSubset("<b>bold</b>")).toBe(false);
+    expect(isSafeHtmlSubset("<div>text</div>")).toBe(false);
+  });
+
+  it("isSafeHtmlSubset rejects any attribute on an allowlisted tag", () => {
+    expect(isSafeHtmlSubset('<strong class="x">text</strong>')).toBe(false);
+    expect(isSafeHtmlSubset('<em onclick="x()">text</em>')).toBe(false);
+  });
+
+  it("isSafeHtmlSubset rejects unclosed or mismatched tags", () => {
+    expect(isSafeHtmlSubset("<strong>text")).toBe(false);
+    expect(isSafeHtmlSubset("text</strong>")).toBe(false);
+    expect(isSafeHtmlSubset("<strong>text</em>")).toBe(false);
+  });
+
+  it("TranslateResponse accepts a safe-subset HTML text with matching spans", () => {
+    const fixture = {
+      text: "Ich <strong>moechte</strong> einen Kaffee.",
+      markedVocab: [{ start: 4, end: 28, german: "<strong>moechte</strong>", russian: "хотел бы" }],
+    };
+    expect(TranslateResponseSchema.parse(fixture)).toEqual(fixture);
+  });
+
+  it("TranslateResponse rejects text with markup outside the safe subset", () => {
+    const result = TranslateResponseSchema.safeParse({
+      text: "Ich <b>moechte</b> einen Kaffee.",
+      markedVocab: [],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("TranslateResponse rejects a markedVocab span whose german field doesn't match the text substring", () => {
+    const result = TranslateResponseSchema.safeParse({
+      text: "Ich moechte einen Kaffee.",
+      markedVocab: [{ start: 4, end: 11, german: "wollte", russian: "хотел бы" }],
+    });
     expect(result.success).toBe(false);
   });
 });

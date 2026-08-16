@@ -14,6 +14,30 @@ const CmsMarkedVocabSpanSchema = z.object({
   russian: z.string().min(1),
 });
 
+const SAFE_HTML_TAG_REGEX = /<\/?[a-zA-Z][^>]*>/g;
+const SAFE_HTML_OPEN_TAGS: Record<string, string> = { "<strong>": "</strong>", "<em>": "</em>" };
+const SAFE_HTML_CLOSE_TAGS = new Set(Object.values(SAFE_HTML_OPEN_TAGS));
+
+/** Allowlist-only check: bare `<strong>`/`<em>`, no attributes, no other elements, no unclosed tags. */
+export function isSafeHtmlSubset(text: string): boolean {
+  const tags = text.match(SAFE_HTML_TAG_REGEX);
+  if (!tags) return true;
+  const stack: string[] = [];
+  for (const tag of tags) {
+    const expectedClose = SAFE_HTML_OPEN_TAGS[tag];
+    if (expectedClose) {
+      stack.push(expectedClose);
+      continue;
+    }
+    if (SAFE_HTML_CLOSE_TAGS.has(tag)) {
+      if (stack.pop() !== tag) return false;
+      continue;
+    }
+    return false;
+  }
+  return stack.length === 0;
+}
+
 export const TranslateResponseSchema = z
   .object({
     text: z.string().min(1),
@@ -22,7 +46,19 @@ export const TranslateResponseSchema = z
   .refine(
     (res) => res.markedVocab.every((span) => span.start < span.end && span.end <= res.text.length),
     { message: "markedVocab spans must be in-bounds with start < end" },
-  );
+  )
+  .refine(
+    (res) =>
+      res.markedVocab.every((span) => res.text.substring(span.start, span.end) === span.german),
+    {
+      message:
+        "markedVocab span german field must exactly match the text substring at its position",
+    },
+  )
+  .refine((res) => isSafeHtmlSubset(res.text), {
+    message:
+      "text must be a safe-subset HTML fragment (only bare <strong>/<em>, no attributes, no other elements)",
+  });
 
 export const ExercisesRequestSchema = z.object({
   variantText: z.string().min(1),

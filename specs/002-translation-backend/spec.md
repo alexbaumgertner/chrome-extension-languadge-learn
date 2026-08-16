@@ -1,4 +1,4 @@
-# Feature Specification: Translation Backend
+ # Feature Specification: Translation Backend
 
 **Feature Branch**: `002-translation-backend`
 
@@ -24,6 +24,14 @@
 ### Session 2026-08-15
 
 - Q: Should the backend's returned German text be plain text only, or a constrained-safe HTML fragment that preserves inline formatting like bold/italic? → A: Safe-subset HTML fragment — restricted to an allowlist (`<strong>`/`<em>` only, no attributes, no other elements), matching the existing CMS contract's documented response shape.
+
+### Session 2026-08-16
+
+- Q: When a call to Google Translate or Gemini times out or errors, should the backend retry it, or fail immediately? → A: One retry with a short timeout before giving up — a failed provider call is retried once after a short timeout; if the retry also fails, the backend returns the upstream-failure result.
+- Q: Does FR-007's "MUST NOT persist or log any data" also cover the web framework's own default access/error logging, or only application code's explicit logging calls? → A: In scope — no learner-submitted text, response text, or full request/response bodies may appear in any log output, application-level or framework-level; framework request/error logging must be configured (or disabled) accordingly.
+- Q: Should validation also check that each vocabulary span's `german` field exactly matches the actual substring of `text` at its `start`/`end` positions, or is checking only that the positions are in-bounds enough? → A: Yes — `german` must exactly equal `text.substring(start, end)`; a mismatch fails validation like any other invalid response (the whole response is discarded, consistent with FR-012's existing all-or-nothing framing).
+- Q: If the backend's own storage (the SQLite cache/usage-ledger file) fails to read or write, should that be treated the same as an external-provider failure, or reported as a distinguishable error? → A: Distinct error — a storage failure is reported separately from an external-provider failure, so operators/tests can tell the two causes apart.
+- Q: Should the spec state explicitly that each provider (translation, level-adaptation) has its own independent usage allowance, checked before either call, rather than describing one unified allowance? → A: Yes — each provider has its own independent allowance, both checked before either call is made, and a request is refused if it would exceed either provider's allowance.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -96,9 +104,10 @@ If the external translation service is slow, unavailable, or returns something u
 ### Edge Cases
 
 - What happens when the paragraph text contains content unsafe to render (e.g., embedded markup) — is it sanitized before or after translation/caching?
-- What happens when the translation/level-adaptation step produces vocabulary spans that don't correspond to actual substrings of the returned German text?
-- What happens when the monthly allowance resets — does usage tracking roll over cleanly with no manual intervention?
+- A vocabulary span whose position is out of bounds, or whose `german` field does not exactly match the text substring at that position, fails validation and discards the entire response (FR-012).
+- What happens when a provider's allowance period resets — does usage tracking roll over cleanly with no manual intervention, for each provider's own independent period?
 - An unrecognized `level` is rejected (FR-003b); an unrecognized `topic` is accepted as an opaque value, not validated against a whitelist (FR-003b).
+- If the backend's own local storage (cache/usage-ledger) fails to read or write, the request fails with a result distinguishable from an external-provider failure (FR-013).
 
 ## Requirements *(mandatory)*
 
@@ -112,12 +121,13 @@ If the external translation service is slow, unavailable, or returns something u
 - **FR-004**: Backend MUST cache every successful translation result, keyed only by a combination of the paragraph text (whitespace-normalized — trimmed and collapsed — before hashing, so trivial formatting differences reuse the same entry), the requested level, and the requested topic — never by learner identity, device identity, site, or URL.
 - **FR-005**: Backend MUST serve a cached result instead of invoking the external translation service whenever an incoming request's text, level, and topic exactly match an existing cache entry.
 - **FR-006**: The cache MUST be shared across all learners and requesting contexts — a cache entry created by one learner's request MUST be reusable by any other learner's matching request.
-- **FR-007**: Backend MUST NOT persist or log any data beyond the paragraph text, level, topic, and the resulting translation — no URLs, learner identifiers, device identifiers, or IP-linked history.
+- **FR-007**: Backend MUST NOT persist or log any data beyond the paragraph text, level, topic, and the resulting translation — no URLs, learner identifiers, device identifiers, or IP-linked history. This applies to every log output the backend produces, including the web framework's own default request/access/error logging, not only explicit application-level logging calls — framework logging MUST be configured (or disabled) so it never prints request/response bodies or full URLs.
 - **FR-008**: Backend MUST coalesce concurrent requests for the same never-before-cached text/level/topic combination so the external translation service is called at most once for that combination.
-- **FR-009**: Backend MUST track cumulative usage of the external translation service against its configured free allowance.
-- **FR-010**: Backend MUST refuse new (non-cached) translation requests once the configured allowance is reached, returning a result distinguishable from a normal translation failure, while continuing to serve cached results.
-- **FR-011**: Backend MUST return a distinguishable failure result — never a partial, malformed, or silently empty success — when the external translation service is unreachable, times out, or returns a response that fails validation.
-- **FR-012**: Backend MUST discard and never cache a response from the external translation service that fails validation (e.g., vocabulary spans that don't correspond to the returned text, or text containing markup outside the safe subset defined in FR-001 — anything beyond bare `<strong>`/`<em>` tags with no attributes counts as unsafe content).
+- **FR-009**: Backend MUST track cumulative usage of each external provider it calls (the translation service and the level-adaptation service) separately, each against its own independently configured free allowance.
+- **FR-010**: Backend MUST check both providers' usage against their respective allowances before making either external call for a new (non-cached) request, and refuse the request — returning a result distinguishable from a normal translation failure, while continuing to serve cached results — if proceeding would exceed either provider's allowance.
+- **FR-011**: Backend MUST return a distinguishable failure result — never a partial, malformed, or silently empty success — when the external translation service is unreachable, times out, or returns a response that fails validation. A provider call that times out or errors MUST be retried exactly once after a short timeout; only a second consecutive failure of the same call produces the failure result.
+- **FR-012**: Backend MUST discard and never cache a response from the external translation service that fails validation (e.g., vocabulary spans whose position is out of bounds, whose `german` field does not exactly equal the substring of the returned text at that span's position, or text containing markup outside the safe subset defined in FR-001 — anything beyond bare `<strong>`/`<em>` tags with no attributes counts as unsafe content). Any single invalid span fails the entire response, not just that span.
+- **FR-013**: Backend MUST report a failure of its own local storage (the cache/usage-ledger persistence layer) as a result distinguishable from an external-provider failure (FR-011) or an allowance-exhausted refusal (FR-010), so operators and tests can tell a storage problem apart from a provider or quota problem.
 
 ### Key Entities
 
@@ -125,7 +135,7 @@ If the external translation service is slow, unavailable, or returns something u
 - **Translation Result**: The German-language rewrite of the requested text at the requested level, together with its marked vocabulary spans.
 - **Marked Vocabulary Span**: A position within a Translation Result's text, the German term at that position, and its Russian meaning.
 - **Cache Entry**: A stored Translation Result, keyed by a content hash of the paragraph text combined with the requested level and topic; shared across all requesters; persists indefinitely with no expiry or eviction.
-- **Usage Ledger**: A running count of external translation service consumption over the current allowance period, used to decide whether a new (non-cached) request may proceed.
+- **Usage Ledger**: A running count of consumption for each external provider (translation service, level-adaptation service) over its own current allowance period, each checked independently to decide whether a new (non-cached) request may proceed.
 
 ## Success Criteria *(mandatory)*
 
@@ -135,7 +145,7 @@ If the external translation service is slow, unavailable, or returns something u
 - **SC-002**: At least 95% of requests for a paragraph/level/topic combination that has already been served once are answered without a new call to the external translation service.
 - **SC-003**: For a typical expected usage pattern (a small, steady population of learners reading ordinary articles), monthly external translation usage stays within the configured free allowance with zero unexpected charges.
 - **SC-004**: When the external translation service is completely unavailable, 100% of requests for already-cached combinations still succeed, and requests for new combinations fail clearly rather than hanging or returning corrupted content.
-- **SC-005**: No cached or logged data ever includes a URL, learner identifier, or device identifier, verifiable by inspecting stored cache entries.
+- **SC-005**: No cached or logged data ever includes a URL, learner identifier, or device identifier, verifiable by inspecting stored cache entries and all log output the backend produces (application-level and framework-level).
 
 ## Assumptions
 
@@ -143,5 +153,5 @@ If the external translation service is slow, unavailable, or returns something u
 - Vocabulary marking is driven by the requested level and topic, not by an individual learner's personal vocabulary history — consistent with the request carrying no learner identity, and with the decision to share cache entries across learners (identical inputs always produce identical output).
 - "Not pricy" is interpreted as: design the system to operate within a translation provider's free usage allowance for the expected traffic volume, treating that allowance as a hard cap. Selecting a specific provider (Google Cloud Translation or an alternative) is an implementation decision made during planning, not part of this specification.
 - The paragraph text a learner's browser extracts and sends is assumed to already exclude non-translatable markup (this matches the extraction behavior specified in the in-page reading practice feature); this backend is not responsible for stripping page markup before translation.
-- A single global allowance period (e.g., calendar month) is assumed for usage tracking; multi-tier or per-provider allowance schemes are out of scope unless a specific provider's plan requires it during implementation.
+- Each external provider (translation service, level-adaptation service) tracks usage against its own independently configured allowance and reset period (e.g., monthly for one, daily for the other); the exact period length per provider is an implementation decision made during planning, matched to that provider's real free-tier terms.
 - Abuse protection beyond the global usage allowance (FR-010) is out of scope for this feature — no per-IP or per-client rate limiting is applied, since requests intentionally carry no identifying signal to throttle by.

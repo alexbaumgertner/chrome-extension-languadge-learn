@@ -27,6 +27,10 @@
   "pnpm": {
     "overrides": {
       "@vitejs/plugin-react": "^4.7.0"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "esbuild"
+    ]
   }
 }
