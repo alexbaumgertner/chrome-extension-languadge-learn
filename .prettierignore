@@ -1,0 +1,15 @@
+node_modules
+dist
+.output
+.wxt
+coverage
+test-results
+playwright-report
+pnpm-lock.yaml
+
+# spec-kit scaffolding, docs, and design handoff material — not project source.
+.claude
+.specify
+specs
+docs
+design_handoff_sprachweise
