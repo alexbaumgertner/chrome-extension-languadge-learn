@@ -42,17 +42,21 @@ export const test = base.extend<Fixtures>({
     await server.close();
   },
 
-  context: async ({ fixtureServer: _fixtureServer, cmsServer: _cmsServer }, use) => {
+  context: async (
+    { fixtureServer: _fixtureServer, cmsServer: _cmsServer, headless, channel },
+    use,
+  ) => {
     if (!fs.existsSync(EXTENSION_PATH)) {
       throw new Error(
         `Extension build not found at ${EXTENSION_PATH}. Run "pnpm test:integration" (it builds first) rather than "playwright test" directly.`,
       );
     }
-    // Headless Chromium silently fails to load unpacked MV3 extensions with
-    // this Playwright/Chrome-for-Testing combination (no service worker ever
-    // registers, no error) — headed mode is required for extension tests.
+    // Extensions need the full Chromium build (channel "chromium", set in
+    // playwright.config.ts): the default chromium-headless-shell silently never
+    // registers the MV3 service worker. Full Chromium loads them in new headless mode.
     const context = await chromium.launchPersistentContext("", {
-      headless: false,
+      channel,
+      headless,
       args: [`--disable-extensions-except=${EXTENSION_PATH}`, `--load-extension=${EXTENSION_PATH}`],
     });
     await use(context);

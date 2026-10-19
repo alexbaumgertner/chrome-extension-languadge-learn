@@ -88,7 +88,7 @@ test("1280×800 screenshots", async () => {
   await backend.listen(CMS_PORT);
 
   const context = await chromium.launchPersistentContext("", {
-    headless: false, // MV3 extensions don't load headless with this Playwright build
+    channel: "chromium", // full Chromium (new headless); the default headless shell can't load extensions
     viewport: { width: 1280, height: 800 },
     deviceScaleFactor: 1,
     args: [`--disable-extensions-except=${EXTENSION_PATH}`, `--load-extension=${EXTENSION_PATH}`],
