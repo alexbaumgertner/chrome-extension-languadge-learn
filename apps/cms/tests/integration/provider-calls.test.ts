@@ -27,14 +27,14 @@ describe("provider call recording", () => {
     );
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({
-      model: "gemini-3.5-flash-lite",
-      thinking_level: "minimal",
+      model: "gemini-3.8-flash",
+      thinking_level: "low",
       status: "ok",
       prompt_tokens: 10,
       output_tokens: 20,
     });
-    // (10 × $0.30 + 20 × $2.50) / 1M
-    expect(Number(rows[0]!.cost_usd)).toBeCloseTo(0.000053, 9);
+    // (10 × $0.75 + 20 × $3.75) / 1M
+    expect(Number(rows[0]!.cost_usd)).toBeCloseTo(0.0000825, 9);
   });
 
   it("records a failed call with status error", async () => {

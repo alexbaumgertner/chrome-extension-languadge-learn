@@ -2,9 +2,9 @@ import { z } from "zod";
 
 const ConfigSchema = z.object({
   GEMINI_API_KEY: z.string().min(1),
-  GEMINI_MODEL: z.string().min(1).default("gemini-3.5-flash-lite"),
+  GEMINI_MODEL: z.string().min(1).default("gemini-3.8-flash"),
   /** Gemini 3.x `thinkingLevel`; empty string omits thinkingConfig for models that reject it. */
-  GEMINI_THINKING_LEVEL: z.enum(["", "minimal", "low", "medium", "high"]).default("minimal"),
+  GEMINI_THINKING_LEVEL: z.enum(["", "minimal", "low", "medium", "high"]).default("low"),
   GEMINI_TIMEOUT_MS: z.coerce.number().int().positive().default(15000),
   DATABASE_URL: z.string().min(1),
   CMS_PORT: z.coerce.number().int().positive().default(8787),

@@ -59,7 +59,8 @@ user against ~$3.30 net of a $4 price.
 
 1. **Gemini-only pipeline.** One structured-output call does translate + CEFR adaptation + Russian
    glosses. Google Translate removed (code, config, secret).
-2. **Model `gemini-3.5-flash-lite`**, set via `GEMINI_MODEL`, minimal thinking.
+2. **Model `gemini-3.8-flash`** (since 2026-10-19; was `gemini-3.5-flash-lite`), set via
+   `GEMINI_MODEL=gemini-3.8-flash` and `GEMINI_THINKING_LEVEL=low` (3.8 rejects `minimal`).
    `apps/cms/scripts/quality-check.ts` runs 20 real Russian paragraphs (news/blog/forum, A2 + B1)
    through the pipeline and writes `quality-report.md` (source / German / glosses) for model
    comparison by switching the env var.
@@ -116,3 +117,8 @@ user against ~$3.30 net of a $4 price.
 - 2026-10-19 — Constitution amended to 2.0.0 (Principle III: random install ID for usage metrics;
   bad-translation report only on click). Plan changed to a private beta; payments deferred until the
   16 Nov 2026 beta review. Spec: `specs/003-private-beta`.
+- 2026-10-19 — Model judge pass (blind, `gemini-3.1-pro-preview`, 20 paragraphs): 3.8-flash 4.86,
+  3.6-flash 4.61, 3.1-flash-lite 4.30, 3.5-flash-lite 4.15. Production switched to
+  `gemini-3.8-flash` / thinking `low` (Vercel production env). Prompt v2 glosses nouns with article
+  and separable verbs with prefix (`lemma` field). Per-call model/tokens/cost/latency now recorded
+  in `provider_calls`. Cache key includes model, thinking level and prompt version.

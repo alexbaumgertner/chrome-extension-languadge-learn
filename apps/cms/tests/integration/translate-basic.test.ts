@@ -98,7 +98,7 @@ describe("POST /api/translate — User Story 1 (leveled, glossed translation)", 
     });
 
     expect(providers.apiKeys).toEqual(["test-gemini-key"]);
-    expect(providers.urls[0]).toContain("/models/gemini-3.5-flash-lite:generateContent");
+    expect(providers.urls[0]).toContain("/models/gemini-3.8-flash:generateContent");
     expect(providers.urls[0]).not.toContain("key=");
   });
 });
