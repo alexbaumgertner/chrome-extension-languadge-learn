@@ -6,17 +6,15 @@ import {
   ExerciseSchema,
   GermanVariantSchema,
   GetProgressSnapshotResponseSchema,
-  GetSiteRulesResponseSchema,
-  GetSiteStatusResponseSchema,
   InstallIdSchema,
+  PageActionMessageSchema,
+  RecordClientErrorRequestSchema,
   ReportRequestSchema,
   isSafeHtmlSubset,
   LearnerSettingsSchema,
   ProgressProfileSchema,
   RequestMessageSchema,
   ReviewQueueEntrySchema,
-  SetSiteStatusResponseSchema,
-  SiteRuleSchema,
   StorageChangedMessageSchema,
   SubmitExerciseAttemptResponseSchema,
   TranslateParagraphResponseSchema,
@@ -46,20 +44,6 @@ describe("storage schemas", () => {
       currentTopic: "dative-case",
       translationDensity: "medium",
     });
-    expect(result.success).toBe(false);
-  });
-
-  it("SiteRule round-trips a valid fixture", () => {
-    const fixture = {
-      hostname: "spiegel.de",
-      status: "enabled",
-      grantedPermissionOrigin: "https://spiegel.de/*",
-    };
-    expect(SiteRuleSchema.parse(fixture)).toEqual(fixture);
-  });
-
-  it("SiteRule rejects a missing field", () => {
-    const result = SiteRuleSchema.safeParse({ hostname: "spiegel.de", status: "enabled" });
     expect(result.success).toBe(false);
   });
 
@@ -245,7 +229,7 @@ describe("message schemas", () => {
   });
 
   it("TranslateParagraphResponse accepts both ok and error shapes", () => {
-    const errorFixture = { ok: false, reason: "offline-no-cache" };
+    const errorFixture = { ok: false, reason: "offline" };
     expect(TranslateParagraphResponseSchema.parse(errorFixture)).toEqual(errorFixture);
   });
 
@@ -269,16 +253,6 @@ describe("message schemas", () => {
     expect(SubmitExerciseAttemptResponseSchema.parse(fixture)).toEqual(fixture);
   });
 
-  it("GetSiteStatusResponse rejects an invalid status", () => {
-    const result = GetSiteStatusResponseSchema.safeParse({ status: "maybe" });
-    expect(result.success).toBe(false);
-  });
-
-  it("SetSiteStatusResponse accepts the permission-denied shape", () => {
-    const fixture = { ok: false, reason: "permission-denied" };
-    expect(SetSiteStatusResponseSchema.parse(fixture)).toEqual(fixture);
-  });
-
   it("GetProgressSnapshotResponse rejects a missing vocab array", () => {
     const result = GetProgressSnapshotResponseSchema.safeParse({
       profile: {
@@ -293,26 +267,38 @@ describe("message schemas", () => {
     expect(result.success).toBe(false);
   });
 
-  it("GetSiteRulesResponse round-trips a valid fixture and rejects a malformed entry", () => {
-    const fixture = {
-      siteRules: {
-        "spiegel.de": {
-          hostname: "spiegel.de",
-          status: "enabled",
-          grantedPermissionOrigin: "*://spiegel.de/*",
-        },
-      },
-    };
-    expect(GetSiteRulesResponseSchema.parse(fixture)).toEqual(fixture);
-    const result = GetSiteRulesResponseSchema.safeParse({
-      siteRules: { "spiegel.de": { hostname: "spiegel.de", status: "maybe" } },
-    });
-    expect(result.success).toBe(false);
-  });
-
   it("StorageChangedMessage round-trips a valid fixture", () => {
     const fixture = { type: "STORAGE_CHANGED", slice: "progress" } as const;
     expect(StorageChangedMessageSchema.parse(fixture)).toEqual(fixture);
+  });
+
+  it("PageActionMessage accepts the three actions and nothing else", () => {
+    for (const action of ["status", "translate-selection", "restore"]) {
+      expect(PageActionMessageSchema.parse({ type: "PAGE_ACTION", action })).toBeTruthy();
+    }
+    expect(
+      PageActionMessageSchema.safeParse({ type: "PAGE_ACTION", action: "enable" }).success,
+    ).toBe(false);
+  });
+
+  it("TranslateParagraphResponse distinguishes offline from an unavailable service", () => {
+    for (const reason of ["offline", "unavailable", "limit", "too-long", "failed"]) {
+      expect(TranslateParagraphResponseSchema.parse({ ok: false, reason })).toEqual({
+        ok: false,
+        reason,
+      });
+    }
+    expect(
+      TranslateParagraphResponseSchema.safeParse({ ok: false, reason: "offline-no-cache" }).success,
+    ).toBe(false);
+  });
+
+  it("RecordClientError only carries a fixed error code", () => {
+    const fixture = { type: "RECORD_CLIENT_ERROR", error: "translate-too-long" } as const;
+    expect(RecordClientErrorRequestSchema.parse(fixture)).toEqual(fixture);
+    expect(
+      RecordClientErrorRequestSchema.safeParse({ type: "RECORD_CLIENT_ERROR", error: "x" }).success,
+    ).toBe(false);
   });
 });
 

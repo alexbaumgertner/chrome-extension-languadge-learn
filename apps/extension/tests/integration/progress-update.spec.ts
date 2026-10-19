@@ -4,24 +4,21 @@ import { FIXTURE_ORIGIN } from "./ports";
 const LONG = (label: string): string =>
   `${label} padded well past the eighty character minimum threshold so the parser treats this as real article content.`;
 
-async function dispatchClick(locator: import("@playwright/test").Locator): Promise<void> {
-  await locator.evaluate((el) => el.dispatchEvent(new MouseEvent("click", { bubbles: true })));
-}
-
 test("solving exercises updates streak, active vocabulary, accuracy, and the review queue", async ({
   context,
   fixtureServer,
-  enableSite,
+  selectText,
+  clickMenu,
   extensionId,
 }) => {
-  await enableSite("127.0.0.1");
   fixtureServer.setHtml(`<!doctype html>
 <html><body><article><p id="target">${LONG("Progress update variant")}</p></article></body></html>`);
   const page = await context.newPage();
   await page.goto(FIXTURE_ORIGIN);
 
   const target = page.locator("#target");
-  await dispatchClick(target);
+  await selectText(page, "#target");
+  await clickMenu(page, "translate");
   await expect(target.locator(".sw-vocab").first()).toBeVisible();
 
   const panel = page.locator(".sw-panel");

@@ -6,7 +6,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const PRODUCTION_API = "https://sprachweise.vercel.app";
-const EXPECTED_PERMISSIONS = ["activeTab", "scripting", "storage"];
+const EXPECTED_PERMISSIONS = ["activeTab", "contextMenus", "scripting", "storage"];
 const root = new URL("..", import.meta.url).pathname;
 const out = join(root, ".output");
 
@@ -27,9 +27,10 @@ check(
   `unexpected permissions: ${manifest.permissions}`,
 );
 check(
-  JSON.stringify(manifest.optional_host_permissions) === JSON.stringify(["*://*/*"]),
-  "optional_host_permissions changed",
+  !manifest.optional_host_permissions,
+  `optional_host_permissions present: ${manifest.optional_host_permissions}`,
 );
+check(manifest.commands?.["translate-selection"], "no translate-selection keyboard command");
 check(manifest.icons?.["128"], "no 128px icon");
 check(manifest.version !== "0.0.0", "version is 0.0.0");
 for (const locale of readdirSync(join(out, "chrome-mv3/_locales"))) {
@@ -42,7 +43,8 @@ for (const locale of readdirSync(join(out, "chrome-mv3/_locales"))) {
 
 const background = readFileSync(join(out, "chrome-mv3/background.js"), "utf8");
 check(background.includes(PRODUCTION_API), `background does not call ${PRODUCTION_API}`);
-check(!/127\.0\.0\.1|localhost:8787/.test(background), "background points at a local API");
+check(!/127\.0\.0\.1|localhost:/.test(background), "background points at a local API");
+check(!background.includes("sprachweiseTest"), "background exposes the test hooks");
 
 if (problems.length) {
   console.error(`\nStore package rejected:\n- ${problems.join("\n- ")}`);

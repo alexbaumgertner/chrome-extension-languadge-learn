@@ -8,18 +8,17 @@ test("translating sends a paragraph_translated event with the install ID; the tr
   context,
   fixtureServer,
   cmsServer,
-  enableSite,
+  selectText,
+  clickMenu,
   serviceWorker,
 }) => {
-  await enableSite("127.0.0.1");
   fixtureServer.setHtml(
     `<!doctype html><html><body><article><p id="target">${PARAGRAPH}</p></article></body></html>`,
   );
   const page = await context.newPage();
   await page.goto(FIXTURE_ORIGIN);
-  await page
-    .locator("#target")
-    .evaluate((el) => el.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+  await selectText(page, "#target");
+  await clickMenu(page, "translate");
   await expect(page.locator("#target .sw-vocab").first()).toBeVisible();
 
   const installId = await serviceWorker.evaluate(

@@ -14,17 +14,13 @@ function articlePage(targetInner: string): string {
 </body></html>`;
 }
 
-async function dispatchClick(locator: import("@playwright/test").Locator): Promise<void> {
-  await locator.evaluate((el) => el.dispatchEvent(new MouseEvent("click", { bubbles: true })));
-}
-
 test.describe("substitution / restoration fidelity", () => {
   test("plain paragraph round-trips byte-identical after translate + restore", async ({
     context,
     fixtureServer,
-    enableSite,
+    selectText,
+    clickMenu,
   }) => {
-    await enableSite("127.0.0.1");
     fixtureServer.setHtml(articlePage(LONG("Plain paragraph variant")));
     const page = await context.newPage();
     await page.goto(FIXTURE_ORIGIN);
@@ -33,13 +29,14 @@ test.describe("substitution / restoration fidelity", () => {
     const before = await target.evaluate((el) => el.outerHTML);
     const siblingBefore = await page.locator("#sibling").evaluate((el) => el.outerHTML);
 
-    await dispatchClick(target);
+    await selectText(page, "#target");
+    await clickMenu(page, "translate");
     await expect(target.locator(".sw-vocab").first()).toBeVisible();
 
     const siblingAfterTranslate = await page.locator("#sibling").evaluate((el) => el.outerHTML);
     expect(siblingAfterTranslate).toBe(siblingBefore);
 
-    await dispatchClick(target);
+    await clickMenu(page, "restore");
     await expect(target.locator(".sw-vocab")).toHaveCount(0);
     const after = await target.evaluate((el) => el.outerHTML);
     expect(after).toBe(before);
@@ -48,9 +45,9 @@ test.describe("substitution / restoration fidelity", () => {
   test("paragraph with a link round-trips byte-identical", async ({
     context,
     fixtureServer,
-    enableSite,
+    selectText,
+    clickMenu,
   }) => {
-    await enableSite("127.0.0.1");
     fixtureServer.setHtml(
       articlePage(
         `${LONG("Paragraph with a link variant")} See <a href="https://example.com">this source</a> for details.`,
@@ -62,10 +59,11 @@ test.describe("substitution / restoration fidelity", () => {
     const target = page.locator("#target");
     const before = await target.evaluate((el) => el.outerHTML);
 
-    await dispatchClick(target);
+    await selectText(page, "#target");
+    await clickMenu(page, "translate");
     await expect(target.locator(".sw-vocab").first()).toBeVisible();
 
-    await dispatchClick(target);
+    await clickMenu(page, "restore");
     const after = await target.evaluate((el) => el.outerHTML);
     expect(after).toBe(before);
   });
@@ -73,9 +71,9 @@ test.describe("substitution / restoration fidelity", () => {
   test("paragraph with inline bold/italic round-trips byte-identical", async ({
     context,
     fixtureServer,
-    enableSite,
+    selectText,
+    clickMenu,
   }) => {
-    await enableSite("127.0.0.1");
     fixtureServer.setHtml(
       articlePage(
         `${LONG("Paragraph with formatting variant")} <strong>Important</strong> and <em>emphasized</em> text follows here.`,
@@ -87,10 +85,11 @@ test.describe("substitution / restoration fidelity", () => {
     const target = page.locator("#target");
     const before = await target.evaluate((el) => el.outerHTML);
 
-    await dispatchClick(target);
+    await selectText(page, "#target");
+    await clickMenu(page, "translate");
     await expect(target.locator(".sw-vocab").first()).toBeVisible();
 
-    await dispatchClick(target);
+    await clickMenu(page, "restore");
     const after = await target.evaluate((el) => el.outerHTML);
     expect(after).toBe(before);
   });
@@ -98,9 +97,9 @@ test.describe("substitution / restoration fidelity", () => {
   test("nested list item round-trips byte-identical", async ({
     context,
     fixtureServer,
-    enableSite,
+    selectText,
+    clickMenu,
   }) => {
-    await enableSite("127.0.0.1");
     fixtureServer.setHtml(`<!doctype html>
 <html><body>
 <article>
@@ -114,10 +113,11 @@ test.describe("substitution / restoration fidelity", () => {
     const target = page.locator("#target");
     const before = await target.evaluate((el) => el.outerHTML);
 
-    await dispatchClick(target);
+    await selectText(page, "#target");
+    await clickMenu(page, "translate");
     await expect(target.locator(".sw-vocab").first()).toBeVisible();
 
-    await dispatchClick(target);
+    await clickMenu(page, "restore");
     const after = await target.evaluate((el) => el.outerHTML);
     expect(after).toBe(before);
   });
@@ -125,21 +125,23 @@ test.describe("substitution / restoration fidelity", () => {
   test("clicking a vocabulary span reveals its meaning without restoring the paragraph", async ({
     context,
     fixtureServer,
-    enableSite,
+    selectText,
+    clickMenu,
   }) => {
-    await enableSite("127.0.0.1");
     fixtureServer.setHtml(articlePage(LONG("Vocab reveal variant")));
     const page = await context.newPage();
     await page.goto(FIXTURE_ORIGIN);
 
     const target = page.locator("#target");
-    await dispatchClick(target);
+    await selectText(page, "#target");
+    await clickMenu(page, "translate");
     const vocabSpan = target.locator(".sw-vocab").first();
     await expect(vocabSpan).toBeVisible();
 
     await vocabSpan.evaluate((el) => el.dispatchEvent(new MouseEvent("click", { bubbles: true })));
 
-    // Still translated (not restored) — vocab click must not toggle the paragraph.
+    // The gloss appears, and the paragraph stays translated.
+    await expect(page.getByText("хотел бы")).toBeVisible();
     await expect(target.locator(".sw-vocab").first()).toBeVisible();
   });
 });

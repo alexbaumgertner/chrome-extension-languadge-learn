@@ -9,13 +9,7 @@ import {
   type StorageChangedMessage,
   type TranslateParagraphResponse,
 } from "@sprachweise/shared";
-import {
-  getAllSiteRules,
-  getLearnerSettings,
-  getSiteRule,
-  setLearnerSettings,
-  setSiteRule,
-} from "@/lib/storage/settings";
+import { getLearnerSettings, setLearnerSettings } from "@/lib/storage/settings";
 import {
   getAllReviewQueue,
   getAllVocabulary,
@@ -35,8 +29,8 @@ import {
 } from "@/lib/storage/content-cache";
 import {
   CmsFetchError,
+  classifyTranslateFailure,
   generateExercises,
-  isNetworkError,
   sendReport,
   translateParagraph,
 } from "@/lib/cms/client";
@@ -45,10 +39,13 @@ import { checkExerciseAnswer } from "@/lib/exercises/match";
 import { recordVocabEncounters, vocabIdFor } from "@/lib/vocab/upsert";
 import { flushEvents, recordEvent, recordInstallIfNew } from "@/lib/metrics/events";
 import {
-  injectIntoOpenTabs,
-  originPatternFor,
-  syncContentScriptRegistration,
-} from "@/lib/content-script-registration";
+  RESTORE_MENU_ID,
+  TRANSLATE_COMMAND,
+  TRANSLATE_MENU_ID,
+  createContextMenus,
+  refreshRestoreMenu,
+  runPageAction,
+} from "@/lib/page-actions";
 
 async function handleTranslateParagraph(
   message: Extract<RequestMessage, { type: "TRANSLATE_PARAGRAPH" }>,
@@ -100,13 +97,13 @@ async function handleTranslateParagraph(
       await putCachedVariant(cacheKey, variant);
       cmsVocab = translated.markedVocab;
     } catch (error) {
-      const offline = isNetworkError(error);
+      const failure = await classifyTranslateFailure(error);
       void recordEvent({
         name: "client_error",
-        error: offline ? "translate-offline" : "translate-failed",
-        httpStatus: httpStatusOf(error),
+        error: failure.code,
+        httpStatus: failure.httpStatus,
       });
-      return { ok: false, reason: offline ? "offline-no-cache" : "fetch-failed" };
+      return { ok: false, reason: failure.reason };
     }
   }
 
@@ -219,56 +216,6 @@ async function handleReportBadTranslation(
   }
 }
 
-async function handleGetSiteStatus(
-  message: Extract<RequestMessage, { type: "GET_SITE_STATUS" }>,
-): Promise<{ status: "enabled" | "disabled" | "undecided" }> {
-  const rule = await getSiteRule(message.hostname);
-  if (rule?.status === "enabled") {
-    const origin = rule.grantedPermissionOrigin ?? originPatternFor(message.hostname);
-    const stillGranted = await chrome.permissions.contains({ origins: [origin] });
-    if (!stillGranted) {
-      // Out-of-band revocation (chrome://extensions) — treat as disabled for
-      // this response without necessarily rewriting the stored rule yet.
-      return { status: "disabled" };
-    }
-  }
-  return { status: rule?.status ?? "undecided" };
-}
-
-async function handleSetSiteStatus(
-  message: Extract<RequestMessage, { type: "SET_SITE_STATUS" }>,
-): Promise<{ ok: true } | { ok: false; reason: "permission-denied" }> {
-  const origin = originPatternFor(message.hostname);
-
-  if (message.status === "enabled") {
-    const granted = await chrome.permissions.request({ origins: [origin] });
-    if (!granted) {
-      return { ok: false, reason: "permission-denied" };
-    }
-    await setSiteRule({
-      hostname: message.hostname,
-      status: "enabled",
-      grantedPermissionOrigin: origin,
-    });
-    // Register for later loads first, then start it in the tabs already open on this site.
-    await syncContentScriptRegistration();
-    await injectIntoOpenTabs(origin).catch((err: unknown) =>
-      console.error("Sprachweise: injecting into open tabs failed", err),
-    );
-    return { ok: true };
-  }
-
-  await setSiteRule({
-    hostname: message.hostname,
-    status: "disabled",
-    grantedPermissionOrigin: null,
-  });
-  await chrome.permissions.remove({ origins: [origin] }).catch(() => {
-    // Best-effort release — leaving it granted isn't a correctness issue, GET_SITE_STATUS still gates on the stored rule.
-  });
-  return { ok: true };
-}
-
 /**
  * Parses and dispatches every inbound cross-context message. A message that
  * fails schema validation gets a typed error back to the sender — never a
@@ -290,11 +237,13 @@ async function dispatch(message: RequestMessage): Promise<unknown> {
     case "SUBMIT_EXERCISE_ATTEMPT":
       return handleSubmitExerciseAttempt(message);
 
-    case "GET_SITE_STATUS":
-      return handleGetSiteStatus(message);
+    case "TRANSLATIONS_CHANGED":
+      await refreshRestoreMenu();
+      return { ok: true };
 
-    case "SET_SITE_STATUS":
-      return handleSetSiteStatus(message);
+    case "RECORD_CLIENT_ERROR":
+      void recordEvent({ name: "client_error", error: message.error, httpStatus: null });
+      return { ok: true };
 
     case "GET_LEARNER_SETTINGS":
       return getLearnerSettings();
@@ -305,9 +254,6 @@ async function dispatch(message: RequestMessage): Promise<unknown> {
 
     case "REPORT_BAD_TRANSLATION":
       return handleReportBadTranslation(message);
-
-    case "GET_SITE_RULES":
-      return { siteRules: await getAllSiteRules() };
 
     case "GET_PROGRESS_SNAPSHOT": {
       const [profile, vocabRecord, reviewQueueRecord] = await Promise.all([
@@ -328,7 +274,6 @@ async function dispatch(message: RequestMessage): Promise<unknown> {
 
 const STORAGE_KEY_TO_SLICE: Record<string, StorageChangedMessage["slice"]> = {
   settings: "settings",
-  siteRules: "siteRules",
   vocabulary: "vocab",
   reviewQueue: "vocab",
   progress: "progress",
@@ -349,6 +294,32 @@ function broadcastStorageChanged(slice: StorageChangedMessage["slice"]): void {
   });
 }
 
+function onMenuClicked(info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.Tab): void {
+  if (tab?.id === undefined) return;
+  const frameId = info.frameId ?? 0;
+  if (info.menuItemId === TRANSLATE_MENU_ID) {
+    void runPageAction(tab.id, frameId, "translate-selection");
+  } else if (info.menuItemId === RESTORE_MENU_ID) {
+    void runPageAction(tab.id, frameId, "restore");
+  }
+}
+
+/** The keyboard-shortcut fallback for sites that replace the context menu. Top frame only. */
+function onCommand(command: string, tab?: chrome.tabs.Tab): void {
+  if (command === TRANSLATE_COMMAND && tab?.id !== undefined) {
+    void runPageAction(tab.id, 0, "translate-selection");
+  }
+}
+
+/**
+ * Builds before the context-menu trigger registered a content script per enabled site and kept
+ * site rules; neither is used any more. Clears them for installs updated from such a build.
+ */
+async function removeSiteRuleLeftovers(): Promise<void> {
+  await chrome.storage.local.remove("siteRules");
+  await chrome.scripting.unregisterContentScripts();
+}
+
 export default defineBackground(() => {
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     routeMessage(message).then(sendResponse);
@@ -363,21 +334,34 @@ export default defineBackground(() => {
       if (slice) slices.add(slice);
     }
     for (const slice of slices) broadcastStorageChanged(slice);
-    if (changes.siteRules) void syncContentScriptRegistration();
   });
 
-  // Registered scripts persist across sessions; re-syncing on install/update/startup and on any
-  // permission change keeps them equal to the granted enabled origins regardless.
-  chrome.runtime.onInstalled.addListener(() => {
-    void syncContentScriptRegistration();
+  chrome.contextMenus.onClicked.addListener(onMenuClicked);
+  chrome.commands.onCommand.addListener(onCommand);
+
+  // "Restore original" follows the tab the learner is looking at.
+  chrome.tabs.onActivated.addListener(() => void refreshRestoreMenu());
+  chrome.windows.onFocusChanged.addListener(() => void refreshRestoreMenu());
+  chrome.tabs.onUpdated.addListener((_tabId, changeInfo, tab) => {
+    if (tab.active && changeInfo.status !== undefined) void refreshRestoreMenu();
+  });
+
+  chrome.runtime.onInstalled.addListener((details) => {
+    void createContextMenus();
     void recordInstallIfNew();
+    if (details.reason === "update") {
+      void removeSiteRuleLeftovers().catch((err: unknown) =>
+        console.error("Sprachweise: removing site-rule leftovers failed", err),
+      );
+    }
   });
-  chrome.runtime.onStartup.addListener(() => {
-    void syncContentScriptRegistration();
-    void flushEvents();
-  });
-  chrome.permissions.onAdded.addListener(() => void syncContentScriptRegistration());
-  chrome.permissions.onRemoved.addListener(() => void syncContentScriptRegistration());
+  chrome.runtime.onStartup.addListener(() => void flushEvents());
+
+  // Playwright can't click Chrome's native context menu or press an extension shortcut, so test
+  // builds expose the same handlers. Compiled out of production builds.
+  if (import.meta.env.WXT_TEST_MODE === "true") {
+    Object.assign(globalThis, { sprachweiseTest: { onMenuClicked, onCommand } });
+  }
 
   console.log("Sprachweise background worker started", { id: browser.runtime.id });
 });

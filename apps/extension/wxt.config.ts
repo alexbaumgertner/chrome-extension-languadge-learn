@@ -1,13 +1,8 @@
 import { defineConfig } from "wxt";
 
-// Integration tests need the content script to actually run against a local
-// fixture origin without simulating Chrome's native permission-grant dialog.
-// This adds that single origin to host_permissions ONLY for test builds
-// (pnpm test:integration sets WXT_TEST_MODE) — the production manifest keeps
-// zero default host permissions (Constitution I). Scheme-wildcarded and
-// port-free to exactly match the pattern shape SET_SITE_STATUS/GET_SITE_STATUS
-// request and check at runtime (`*://<hostname>/*`) — chrome.permissions.contains
-// requires an exact-or-broader match, and match patterns don't encode ports.
+// Integration tests can't click Chrome's context menu, so they never get the activeTab grant a
+// real menu click gives. Test builds (pnpm test:integration sets WXT_TEST_MODE) therefore get the
+// fixture page's host as a host permission; the production manifest has none (Constitution I).
 const testOrigin =
   process.env.WXT_TEST_MODE === "true" && process.env.WXT_TEST_ORIGIN
     ? `*://${new URL(process.env.WXT_TEST_ORIGIN).hostname}/*`
@@ -23,18 +18,23 @@ export default defineConfig({
     name: "__MSG_extName__",
     description: "__MSG_extDescription__",
     default_locale: "en",
-    // "storage" is a zero-host-access permission (chrome.storage.local /
-    // IndexedDB only, no site data) required by Constitution IV's
-    // offline-first design — it carries none of the trust cost the
-    // least-privilege gate (Constitution I) is guarding against.
-    // "activeTab" is the exact permission Constitution I's own gate names
-    // ("activeTab + optional_host_permissions") — temporary, user-gesture-only
-    // access to the current tab, needed for the popup to read its hostname.
-    // "scripting" registers the content script at runtime for exactly the origins the user granted
-    // via the popup (chrome.scripting.registerContentScripts), instead of a manifest content script
-    // on *://*/*, which Chrome reports at install as access to all websites. No install warning.
-    permissions: ["storage", "activeTab", "scripting"],
-    optional_host_permissions: ["*://*/*"],
+    // No host permissions at all. Page access comes only from activeTab, which Chrome grants for
+    // one tab when the learner picks our context-menu item or presses our shortcut; the
+    // background then injects the content script into that tab (lib/page-actions.ts).
+    // - "storage": chrome.storage.local / IndexedDB for progress and cached translations
+    //   (Constitution IV). No site data.
+    // - "activeTab": the temporary, gesture-only access above.
+    // - "scripting": chrome.scripting.executeScript, to inject the content script on that gesture.
+    // - "contextMenus": the "Translate to German" and "Restore original text" items.
+    // None of the four shows an install or update warning.
+    permissions: ["storage", "activeTab", "scripting", "contextMenus"],
+    // The fallback for sites that replace the right-click menu. Also grants activeTab.
+    commands: {
+      "translate-selection": {
+        suggested_key: { default: "Alt+Shift+G" },
+        description: "__MSG_commandTranslate__",
+      },
+    },
     ...(testOrigin ? { host_permissions: [testOrigin] } : {}),
   },
 });
