@@ -4,7 +4,7 @@
 
 - [ ] T1 Model quality judge pass (pick the launch model) — **STOP for the owner's choice**
 - [ ] T2 Shared schemas: `installId` on translate request; report request; report message (+ tests)
-- [ ] T3 Extension: generate/persist install ID on first run; send with translate only
+- [x] T3 Extension: generate/persist install ID on first run; send only with metric events (not with translate or reports)
 - [ ] T4 Backend: `install_daily_usage` counting (hit / miss / failure; never fails the request)
 - [ ] T5 Backend: `POST /api/report` + `translation_reports` (no install ID)
 - [ ] T6 Extension: "Плохой перевод" button with thank-you / retry

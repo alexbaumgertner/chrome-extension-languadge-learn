@@ -36,6 +36,7 @@ import { generateExercises, isNetworkError, translateParagraph } from "@/lib/cms
 import { mapCmsExercisesToEntities } from "@/lib/exercises/generate";
 import { checkExerciseAnswer } from "@/lib/exercises/match";
 import { recordVocabEncounters, vocabIdFor } from "@/lib/vocab/upsert";
+import { getOrCreateInstallId } from "@/lib/metrics/install-id";
 import {
   originPatternFor,
   syncContentScriptRegistration,
@@ -295,7 +296,10 @@ export default defineBackground(() => {
 
   // Registered scripts persist across sessions; re-syncing on install/update/startup and on any
   // permission change keeps them equal to the granted enabled origins regardless.
-  chrome.runtime.onInstalled.addListener(() => void syncContentScriptRegistration());
+  chrome.runtime.onInstalled.addListener(() => {
+    void syncContentScriptRegistration();
+    void getOrCreateInstallId();
+  });
   chrome.runtime.onStartup.addListener(() => void syncContentScriptRegistration());
   chrome.permissions.onAdded.addListener(() => void syncContentScriptRegistration());
   chrome.permissions.onRemoved.addListener(() => void syncContentScriptRegistration());

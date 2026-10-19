@@ -7,6 +7,7 @@ import {
   GetProgressSnapshotResponseSchema,
   GetSiteRulesResponseSchema,
   GetSiteStatusResponseSchema,
+  InstallIdSchema,
   isSafeHtmlSubset,
   LearnerSettingsSchema,
   ProgressProfileSchema,
@@ -23,6 +24,15 @@ import {
 } from "../src/index";
 
 describe("storage schemas", () => {
+  it("InstallId accepts crypto.randomUUID() output and rejects anything else", () => {
+    for (let i = 0; i < 20; i++) expect(InstallIdSchema.parse(crypto.randomUUID())).toBeTruthy();
+    expect(InstallIdSchema.safeParse("").success).toBe(false);
+    expect(InstallIdSchema.safeParse("not-a-uuid").success).toBe(false);
+    // UUID v1 (time + MAC based) is not random, and upper case is not what randomUUID emits.
+    expect(InstallIdSchema.safeParse("6ba7b810-9dad-11d1-80b4-00c04fd430c8").success).toBe(false);
+    expect(InstallIdSchema.safeParse("3F2504E0-4F89-41D3-9A0C-0305E82C3301").success).toBe(false);
+  });
+
   it("LearnerSettings round-trips a valid fixture", () => {
     const fixture = { level: "B1-B2", currentTopic: "dative-case", translationDensity: "medium" };
     expect(LearnerSettingsSchema.parse(fixture)).toEqual(fixture);
