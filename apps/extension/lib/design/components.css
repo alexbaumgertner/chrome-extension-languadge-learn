@@ -236,6 +236,9 @@
   padding: 3px 10px;
   border-radius: 999px;
 }
+.tag-icon {
+  gap: 4px;
+}
 .tag-accent {
   background: var(--color-accent-100);
   color: var(--color-accent-800);
