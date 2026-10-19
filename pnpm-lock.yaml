@@ -54,6 +54,9 @@ importers:
       '@electric-sql/pglite':
         specifier: ^0.5.10
         version: 0.5.10
+      esbuild:
+        specifier: ^0.28.2
+        version: 0.28.2
       tsx:
         specifier: ^4.19.2
         version: 4.23.12
