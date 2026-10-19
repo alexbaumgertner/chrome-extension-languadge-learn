@@ -1,5 +1,7 @@
 import {
   RequestMessageSchema,
+  type CmsExercisesRequest,
+  type Exercise,
   type GermanVariant,
   type ProgressProfile,
   type RequestMessage,
@@ -48,42 +50,75 @@ async function handleTranslateParagraph(
     return { ok: true, variant: cachedVariant, exercises: cachedExercises };
   }
 
+  let variant = cachedVariant;
+  let cmsVocab: CmsMarkedVocab;
+  if (variant) {
+    cmsVocab = await cmsVocabFromVariant(variant);
+  } else {
+    try {
+      const translated = await translateParagraph(
+        message.paragraphText,
+        message.level,
+        message.topic,
+      );
+      const vocabIdByGerman = await recordVocabEncounters(translated.markedVocab, Date.now());
+
+      variant = {
+        id: cacheKey,
+        contentHash: message.contentHash,
+        level: message.level,
+        topic: message.topic,
+        text: translated.text,
+        markedVocab: translated.markedVocab.map((span) => ({
+          start: span.start,
+          end: span.end,
+          vocabId: vocabIdByGerman[span.german] ?? vocabIdFor(span.german),
+        })),
+        fetchedAt: Date.now(),
+      };
+      await putCachedVariant(cacheKey, variant);
+      cmsVocab = translated.markedVocab;
+    } catch (error) {
+      return { ok: false, reason: isNetworkError(error) ? "offline-no-cache" : "fetch-failed" };
+    }
+  }
+
+  // A failed exercise fetch never discards a good translation: the paragraph still renders, and
+  // the next click on it retries just the exercises from the cached variant (no new translation).
+  let exercises: Exercise[] = [];
   try {
-    const translated = await translateParagraph(
-      message.paragraphText,
+    const cmsExercises = await generateExercises(
+      variant.text,
+      cmsVocab,
       message.level,
       message.topic,
     );
-    const vocabIdByGerman = await recordVocabEncounters(translated.markedVocab, Date.now());
+    exercises = mapCmsExercisesToEntities(cmsExercises, message.contentHash);
+    await putCachedExercises(cacheKey, exercises);
+  } catch {
+    // Left uncached on purpose so it's retried.
+  }
 
-    const variant: GermanVariant = {
-      id: cacheKey,
-      contentHash: message.contentHash,
-      level: message.level,
-      topic: message.topic,
-      text: translated.text,
-      markedVocab: translated.markedVocab.map((span) => ({
+  return { ok: true, variant, exercises };
+}
+
+type CmsMarkedVocab = CmsExercisesRequest["markedVocab"];
+
+/** Rebuilds the CMS-shaped glossed spans for a cached variant from the local vocabulary store. */
+async function cmsVocabFromVariant(variant: GermanVariant): Promise<CmsMarkedVocab> {
+  const vocab = await getAllVocabulary();
+  return variant.markedVocab.flatMap((span) => {
+    const russian = vocab[span.vocabId]?.russian;
+    if (!russian) return [];
+    return [
+      {
         start: span.start,
         end: span.end,
-        vocabId: vocabIdByGerman[span.german] ?? vocabIdFor(span.german),
-      })),
-      fetchedAt: Date.now(),
-    };
-    await putCachedVariant(cacheKey, variant);
-
-    const cmsExercises = await generateExercises(
-      translated.text,
-      translated.markedVocab,
-      message.level,
-      message.topic,
-    );
-    const exercises = mapCmsExercisesToEntities(cmsExercises, message.contentHash);
-    await putCachedExercises(cacheKey, exercises);
-
-    return { ok: true, variant, exercises };
-  } catch (error) {
-    return { ok: false, reason: isNetworkError(error) ? "offline-no-cache" : "fetch-failed" };
-  }
+        german: variant.text.slice(span.start, span.end),
+        russian,
+      },
+    ];
+  });
 }
 
 async function handleSubmitExerciseAttempt(
