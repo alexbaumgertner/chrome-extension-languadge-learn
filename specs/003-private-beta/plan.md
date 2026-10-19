@@ -23,7 +23,8 @@ density, model, prompt version, created_at; no install ID). Extension: install I
 offline event queue in `chrome.storage.local`.
 **Testing**: vitest + PGlite (backend), vitest + Playwright (extension), as in Phase 1.
 **Target Platform**: Chrome MV3; Vercel (fra1).
-**Constraints**: constitution 2.0.0; no secrets in repo.
+**Constraints**: constitution 2.0.0 (3.0.0 from 2026-10-19: I and III amended for the
+context-menu trigger); no secrets in repo.
 
 **Key design points**
 - `installId` (UUID v4, `crypto.randomUUID`) travels only in `POST /api/events`
@@ -99,8 +100,8 @@ offline event queue in `chrome.storage.local`.
 | Principle | Status |
 | --- | --- |
 | I. Least Privilege | **Conflict found (pre-existing)**: the manifest declares a static content script on `*://*/*`; Chrome counts content-script matches as host access, so installs show an all-sites warning even though `host_permissions` is empty. Fix (FR-010) by registering scripts per granted origin; adds `scripting`, justified in the listing. To verify in a clean profile. **Update 2026-10-19 (context-menu trigger)**: stricter than the principle's own floor — `optional_host_permissions` removed; page access comes only from `activeTab` on a menu click or shortcut. Added `contextMenus` (justified: it is the trigger; no warning) and `commands` (no permission). `getPermissionWarningsByManifest` on the production manifest (Chrome 151): install `[]`; update from the draft adds only `contextMenus` → `[]`. |
-| II. Host Page Integrity | OK — report button renders in Shadow DOM next to the paragraph, like the existing inline error. Partial-range replacement only touches the selected block and restores it byte-identically. |
-| III. Privacy (2.0.0) | OK in app code: install ID only on translate, never in cache keys, logs, or reports; report only on click. **Flag**: Vercel's platform request logs record client IPs outside app control — disclose in the privacy policy. **Update 2026-10-19**: the consent gesture is now choosing "Translate to German (Sprachweise)" for a selection (the principle's text still says "clicking a paragraph"; same meaning, wording to be amended); the extension cannot read the page before that choice, and a selection is capped at 1,500 characters. New client_error codes are fixed strings, no text. |
+| II. Host Page Integrity | OK — report button renders in Shadow DOM next to the paragraph, like the existing inline error. Partial-range replacement only touches the selected block and restores it byte-identically. **Update 2026-10-19 (review of PR #5)**: selections resolve to leaf blocks; code, form fields and text outside a leaf refuse the whole selection; validate → request → commit; Restore cancels an in-flight translation and leaves blocks the host changed. Written into II by constitution 3.0.0. |
+| III. Privacy (2.0.0) | OK in app code: install ID only on translate, never in cache keys, logs, or reports; report only on click. **Flag**: Vercel's platform request logs record client IPs outside app control — disclose in the privacy policy. **Update 2026-10-19**: the consent gesture is now choosing "Translate to German (Sprachweise)" for a selection or pressing the command (constitution 3.0.0 amends the wording); the extension cannot read the page before that choice, and a selection is capped at 1,500 characters. New client_error codes are fixed strings, no text. |
 | IV. Offline-First | OK — metrics never block translation; a metrics write failure must not fail the request. |
 | V. Typed Contracts | New zod schemas for `installId`, the report request, and the report message. |
 | VI. Test What Breaks | Tests: usage counting (hit/miss/failure), install-ID validation, report endpoint, admin auth. |
