@@ -105,3 +105,40 @@ export const PANEL_CSS = `${DESIGN_CSS}
 }
 .sw-report-btn { font-size: 13px; padding: 6px 14px; }
 `;
+
+/** Inherited text styles a host page could push into a portal; reset to ours. */
+const PORTAL_TEXT =
+  "font-family: var(--font-body); font-size: 13px; line-height: 1.4; font-weight: 400; " +
+  "font-style: normal; letter-spacing: normal; text-transform: none; text-align: left;";
+
+/**
+ * Notices below the selection: info and error. The handoff has no toast pattern, so these are
+ * derived from its tags (`.tag-accent` colours for errors) and cards (surface, radius, shadow).
+ */
+export const NOTICE_CSS = `${DESIGN_CSS}
+.msg {
+  ${PORTAL_TEXT}
+  display: flex; gap: 10px; align-items: center; max-width: 360px;
+  padding: 9px 12px 9px 16px; border-radius: var(--radius-md); box-shadow: var(--shadow-md);
+}
+.info { background: var(--color-surface); color: var(--color-text); }
+.error {
+  background: var(--color-accent-100); color: var(--color-accent-800);
+  box-shadow: inset 0 0 0 1px var(--color-accent-300), var(--shadow-md);
+}
+.msg button {
+  display: inline-grid; place-items: center; flex: none; width: 24px; height: 24px; padding: 0;
+  border: none; border-radius: 999px; background: none; color: inherit; cursor: pointer;
+}
+.msg button:hover { background: color-mix(in srgb, var(--color-accent) 14%, transparent); }
+.msg button:active { background: color-mix(in srgb, var(--color-accent) 24%, transparent); }
+`;
+
+/** A glossed word's meaning (the handoff asks for a themed tooltip instead of the native one). */
+export const TOOLTIP_CSS = `${DESIGN_CSS}
+.tip {
+  ${PORTAL_TEXT}
+  background: var(--color-text); color: var(--color-bg); padding: 6px 12px;
+  border-radius: var(--radius-md); box-shadow: var(--shadow-md);
+}
+`;

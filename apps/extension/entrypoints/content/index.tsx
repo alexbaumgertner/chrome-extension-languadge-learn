@@ -28,6 +28,8 @@ import { sendMessage } from "@/lib/messaging/send";
 import { loadFonts, unloadFonts } from "@/lib/design/load-fonts";
 import { setExerciseSession } from "@/lib/state/exercise-session";
 import Panel from "./overlay/Panel";
+import { NOTICE_CSS, TOOLTIP_CSS } from "./overlay/styles";
+import { X_ICON_SVG } from "@/lib/design/icons";
 
 type FailureReason = Extract<TranslateParagraphResponse, { ok: false }>["reason"];
 
@@ -79,11 +81,7 @@ let vocabDictionaryPromise: Promise<Record<string, VocabularyItem>> | null = nul
 /** A small dismissible message below `anchor`, or at the top of the viewport without one. */
 function showNotice(anchor: Element | null, message: string, tone: "error" | "info"): void {
   notice?.remove();
-  const portal = createShadowPortal(
-    ".msg{padding:6px 10px;border-radius:6px;font:13px/1.4 system-ui,sans-serif;display:flex;gap:8px;align-items:center;max-width:340px;box-shadow:0 1px 4px rgba(0,0,0,.15);}" +
-      ".error{background:#fdecea;color:#611a15;}.info{background:#eef2f6;color:#1f2933;}" +
-      "button{border:none;background:none;cursor:pointer;font-weight:bold;font-size:14px;color:inherit;padding:0;}",
-  );
+  const portal = createShadowPortal(NOTICE_CSS);
   const wrap = document.createElement("div");
   wrap.className = `msg ${tone}`;
   wrap.setAttribute("role", tone === "error" ? "alert" : "status");
@@ -92,7 +90,7 @@ function showNotice(anchor: Element | null, message: string, tone: "error" | "in
   wrap.append(text);
   if (tone === "error") {
     const dismiss = document.createElement("button");
-    dismiss.textContent = "×";
+    dismiss.innerHTML = X_ICON_SVG; // a constant, not page or server content
     dismiss.setAttribute("aria-label", "Dismiss");
     dismiss.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -248,9 +246,7 @@ async function revealVocab(span: HTMLElement): Promise<void> {
   const item = dictionary[vocabId];
 
   activeTooltip?.remove();
-  const portal = createShadowPortal(
-    ".tip{background:#1f2933;color:#fff;padding:5px 10px;border-radius:6px;font:13px/1.4 system-ui,sans-serif;}",
-  );
+  const portal = createShadowPortal(TOOLTIP_CSS);
   const tip = document.createElement("div");
   tip.className = "tip";
   tip.textContent = item?.russian ?? "…";
