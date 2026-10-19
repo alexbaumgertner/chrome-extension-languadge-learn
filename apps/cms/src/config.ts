@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRANSLATE_MAX_CHARS } from "@sprachweise/shared";
 
 const ConfigSchema = z.object({
   GEMINI_API_KEY: z.string().min(1),
@@ -8,7 +9,7 @@ const ConfigSchema = z.object({
   GEMINI_TIMEOUT_MS: z.coerce.number().int().positive().default(15000),
   DATABASE_URL: z.string().min(1),
   CMS_PORT: z.coerce.number().int().positive().default(8787),
-  TRANSLATE_MAX_CHARS: z.coerce.number().int().positive().default(5000),
+  TRANSLATE_MAX_CHARS: z.coerce.number().int().positive().default(TRANSLATE_MAX_CHARS),
   /** Global budget kill switch across all users (cache hits don't count). */
   GEMINI_DAILY_REQUEST_ALLOWANCE: z.coerce.number().int().positive().default(1500),
   /**

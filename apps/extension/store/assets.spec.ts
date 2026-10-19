@@ -68,7 +68,7 @@ function articleHtml(): string {
     header b { font: 600 15px system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
     h1 { font-size: 38px; line-height: 1.2; margin: 36px 0 6px; }
     .by { font: 14px system-ui, sans-serif; color: #777; margin-bottom: 26px; }
-    p { margin: 0 0 22px; cursor: pointer; }
+    p { margin: 0 0 22px; }
   </style></head>
   <body><header><div><b>Путевые заметки</b></div></header>
   <main><h1>${ARTICLE.title}</h1><div class="by">Анна К. · 6 мин чтения</div>${paragraphs}</main>
@@ -95,23 +95,26 @@ test("1280×800 screenshots", async () => {
   });
   try {
     const worker = context.serviceWorkers()[0] ?? (await context.waitForEvent("serviceworker"));
-    await worker.evaluate(async () => {
-      await chrome.storage.local.set({
-        siteRules: {
-          "127.0.0.1": { hostname: "127.0.0.1", status: "enabled", grantedPermissionOrigin: null },
-        },
-      });
-    });
-    await expect
-      .poll(() =>
-        worker.evaluate(async () => (await chrome.scripting.getRegisteredContentScripts()).length),
-      )
-      .toBe(1);
-
     const page = await context.newPage();
     await page.goto(FIXTURE_ORIGIN);
     const first = page.locator("#p0");
-    await first.evaluate((el) => el.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    // Select the first paragraph and pick "Translate to German" (the test build exposes the menu
+    // handler, since Playwright can't click Chrome's native context menu).
+    await first.evaluate((el) => getSelection()!.selectAllChildren(el));
+    await worker.evaluate(async (pattern) => {
+      const [tab] = await chrome.tabs.query({ url: pattern });
+      const hooks = (
+        globalThis as unknown as {
+          sprachweiseTest: {
+            onMenuClicked(info: chrome.contextMenus.OnClickData, tab: chrome.tabs.Tab): void;
+          };
+        }
+      ).sprachweiseTest;
+      hooks.onMenuClicked(
+        { menuItemId: "sprachweise-translate", frameId: 0, editable: false, pageUrl: tab!.url! },
+        tab!,
+      );
+    }, `${FIXTURE_ORIGIN}/*`);
     await expect(first.locator(".sw-vocab").first()).toBeVisible();
     const panel = page.locator(".sw-panel");
     await expect(panel.locator(".sw-card").first()).toBeVisible();

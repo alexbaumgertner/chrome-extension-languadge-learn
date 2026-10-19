@@ -13,22 +13,19 @@ function articlePage(targetInner: string): string {
 </body></html>`;
 }
 
-async function dispatchClick(locator: import("@playwright/test").Locator): Promise<void> {
-  await locator.evaluate((el) => el.dispatchEvent(new MouseEvent("click", { bubbles: true })));
-}
-
 test("exercise panel: traceability, lenient matching, wrong-answer feedback, collapse/reopen state", async ({
   context,
   fixtureServer,
-  enableSite,
+  selectText,
+  clickMenu,
 }) => {
-  await enableSite("127.0.0.1");
   fixtureServer.setHtml(articlePage(LONG("Exercise panel variant")));
   const page = await context.newPage();
   await page.goto(FIXTURE_ORIGIN);
 
   const target = page.locator("#target");
-  await dispatchClick(target);
+  await selectText(page, "#target");
+  await clickMenu(page, "translate");
   await expect(target.locator(".sw-vocab").first()).toBeVisible();
 
   const variantText = await target.evaluate((el) => el.textContent ?? "");

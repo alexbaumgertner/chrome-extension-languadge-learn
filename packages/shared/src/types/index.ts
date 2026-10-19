@@ -6,22 +6,20 @@ import type {
   GetLearnerSettingsResponseSchema,
   GetProgressSnapshotRequestSchema,
   GetProgressSnapshotResponseSchema,
-  GetSiteRulesRequestSchema,
-  GetSiteRulesResponseSchema,
-  GetSiteStatusRequestSchema,
-  GetSiteStatusResponseSchema,
+  PageActionMessageSchema,
+  PageActionResponseSchema,
+  RecordClientErrorRequestSchema,
   ReportBadTranslationRequestSchema,
   ReportBadTranslationResponseSchema,
   RequestMessageSchema,
   SetLearnerSettingsRequestSchema,
   SetLearnerSettingsResponseSchema,
-  SetSiteStatusRequestSchema,
-  SetSiteStatusResponseSchema,
   StorageChangedMessageSchema,
   SubmitExerciseAttemptRequestSchema,
   SubmitExerciseAttemptResponseSchema,
   TranslateParagraphRequestSchema,
   TranslateParagraphResponseSchema,
+  TranslationsChangedMessageSchema,
 } from "../schemas/messages";
 import type {
   ClientErrorCodeSchema,
@@ -47,8 +45,6 @@ import type {
   MultipleChoiceExerciseSchema,
   ProgressProfileSchema,
   ReviewQueueEntrySchema,
-  SiteRuleSchema,
-  SiteStatusSchema,
   TopicAccuracySchema,
   TranslationDensitySchema,
   VocabStatusSchema,
@@ -59,11 +55,9 @@ import type {
 // storage.ts
 export type Level = z.infer<typeof LevelSchema>;
 export type TranslationDensity = z.infer<typeof TranslationDensitySchema>;
-export type SiteStatus = z.infer<typeof SiteStatusSchema>;
 export type VocabStatus = z.infer<typeof VocabStatusSchema>;
 export type ExerciseKind = z.infer<typeof ExerciseKindSchema>;
 export type LearnerSettings = z.infer<typeof LearnerSettingsSchema>;
-export type SiteRule = z.infer<typeof SiteRuleSchema>;
 export type VocabularyItem = z.infer<typeof VocabularyItemSchema>;
 export type ReviewQueueEntry = z.infer<typeof ReviewQueueEntrySchema>;
 export type TopicAccuracy = z.infer<typeof TopicAccuracySchema>;
@@ -85,19 +79,17 @@ export type ReportBadTranslationRequest = z.infer<typeof ReportBadTranslationReq
 export type ReportBadTranslationResponse = z.infer<typeof ReportBadTranslationResponseSchema>;
 export type SubmitExerciseAttemptRequest = z.infer<typeof SubmitExerciseAttemptRequestSchema>;
 export type SubmitExerciseAttemptResponse = z.infer<typeof SubmitExerciseAttemptResponseSchema>;
-export type GetSiteStatusRequest = z.infer<typeof GetSiteStatusRequestSchema>;
-export type GetSiteStatusResponse = z.infer<typeof GetSiteStatusResponseSchema>;
-export type SetSiteStatusRequest = z.infer<typeof SetSiteStatusRequestSchema>;
-export type SetSiteStatusResponse = z.infer<typeof SetSiteStatusResponseSchema>;
 export type GetLearnerSettingsRequest = z.infer<typeof GetLearnerSettingsRequestSchema>;
 export type GetLearnerSettingsResponse = z.infer<typeof GetLearnerSettingsResponseSchema>;
 export type SetLearnerSettingsRequest = z.infer<typeof SetLearnerSettingsRequestSchema>;
 export type SetLearnerSettingsResponse = z.infer<typeof SetLearnerSettingsResponseSchema>;
 export type GetProgressSnapshotRequest = z.infer<typeof GetProgressSnapshotRequestSchema>;
 export type GetProgressSnapshotResponse = z.infer<typeof GetProgressSnapshotResponseSchema>;
-export type GetSiteRulesRequest = z.infer<typeof GetSiteRulesRequestSchema>;
-export type GetSiteRulesResponse = z.infer<typeof GetSiteRulesResponseSchema>;
 export type StorageChangedMessage = z.infer<typeof StorageChangedMessageSchema>;
+export type TranslationsChangedMessage = z.infer<typeof TranslationsChangedMessageSchema>;
+export type RecordClientErrorRequest = z.infer<typeof RecordClientErrorRequestSchema>;
+export type PageActionMessage = z.infer<typeof PageActionMessageSchema>;
+export type PageActionResponse = z.infer<typeof PageActionResponseSchema>;
 export type RequestMessage = z.infer<typeof RequestMessageSchema>;
 export type AnyMessage = z.infer<typeof AnyMessageSchema>;
 

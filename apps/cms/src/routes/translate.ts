@@ -31,11 +31,9 @@ export function registerTranslateRoute(app: FastifyInstance, cfg: Config, db: Db
     // `topic` is still accepted for wire compatibility but no longer shapes the output.
     const { text, level } = parsed.data;
 
+    // Its own status and code, so the extension can tell the learner to select less.
     if (text.length > cfg.TRANSLATE_MAX_CHARS) {
-      return reply.status(400).send({
-        error: "invalid-request",
-        detail: `text exceeds the configured maximum length of ${cfg.TRANSLATE_MAX_CHARS} characters`,
-      });
+      return reply.status(413).send({ error: "text-too-long", maxChars: cfg.TRANSLATE_MAX_CHARS });
     }
 
     try {

@@ -1,14 +1,12 @@
 import { useState } from "react";
 import ProgressView from "./ProgressView";
 import SettingsView from "./SettingsView";
-import SiteRulesView from "./SiteRulesView";
 
-type Tab = "progress" | "settings" | "siteRules";
+type Tab = "progress" | "settings";
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: "progress", label: "Progress" },
   { id: "settings", label: "Settings" },
-  { id: "siteRules", label: "Site Rules" },
 ];
 
 export default function App() {
@@ -25,7 +23,6 @@ export default function App() {
       </nav>
       {tab === "progress" && <ProgressView />}
       {tab === "settings" && <SettingsView />}
-      {tab === "siteRules" && <SiteRulesView />}
     </div>
   );
 }

@@ -1,27 +1,31 @@
 <!--
 Sync Impact Report
-- Version change: 1.0.0 → 2.0.0 (MAJOR: Principle III redefined)
+- Version change: 2.0.0 → 3.0.0 (MAJOR: Principles I and III redefined)
 - Modified principles:
-  - III. Privacy — redefined. Previously "never a user identifier"; now requests MAY carry a
-    random, non-identifying install ID used only for usage metrics (and later usage limits), and
-    a "bad translation" report MAY send the selected fragment and its output, only on an explicit
-    user click. URL, browsing history, email and account data stay forbidden. Progress in
-    chrome.storage unchanged. "or TTS" dropped (no server TTS).
-  - IV. Offline-First, V. Typed Contracts — wording only ("CMS" → "backend").
-- Modified sections:
-  - Preamble and Technology Constraints — "Payload CMS" replaced with the actual backend:
-    Fastify on Vercel (`apps/cms`), Neon Postgres, Gemini-only translation pipeline.
+  - I. Least Privilege — redefined. Page access is `activeTab` only; `optional_host_permissions`
+    are no longer an allowed route. The gesture is choosing the extension's context-menu item for
+    a selection or pressing its keyboard command; script injection happens only then.
+  - II. Host Page Integrity — clarified: a selection resolves to leaf blocks; what is replaced and
+    what is refused is spelled out; nothing changes before a translation is committed; Restore
+    leaves content the host changed since.
+  - III. Privacy — redefined consent: the context-menu choice or the keyboard command for the
+    current selection (was "clicking a paragraph"), for that selection only.
+  - VI. Test What Breaks — "the paragraph parser" → "selection resolution" (the parser is gone).
+- Modified sections: Development Workflow (same rename).
 - Added sections: none
 - Removed sections: none
-- Rationale: the private beta needs per-install usage metrics (how many people use it, how
-  often, where translation fails); that is impossible with fully anonymous requests. The install
-  ID is random and carries no personal data, which keeps the data-minimization intent of III.
-  Payments, license keys and paid limits are deferred (see docs/ship-first-dollar.md); any
-  future identifier beyond the install ID needs another amendment.
+- Rationale: the trigger moved from per-site enabling plus paragraph clicks to a context-menu item
+  on a selection (specs/003-private-beta, FR-015–FR-021). That needs no host permission at all,
+  so Principle I can forbid them outright; the consent gesture and the replaced unit changed with
+  it. Review of PR #5 showed the replaced unit has to be pinned down (leaf blocks, refusals).
 - Templates requiring follow-up: none — plan/spec/tasks templates read this file at runtime.
-- Superseded artifacts: specs/002-translation-backend (spec.md, plan.md) predate this amendment
-  and describe the Google Translate + SQLite + identity-free design; see docs/ship-first-dollar.md.
+- Superseded artifacts: specs/003-private-beta/plan.md constitution check noted the old wording;
+  updated with this amendment.
 - Deferred TODOs: none
+
+Previous amendment (1.0.0 → 2.0.0): Principle III allowed a random install ID for usage metrics
+and a "bad translation" report on an explicit click; the backend became Fastify on Vercel, Neon
+Postgres and Gemini.
 -->
 
 # Sprachweise Constitution
@@ -32,10 +36,12 @@ pages, backed by a small translation API (`apps/cms`).
 ## Core Principles
 
 ### I. Least Privilege
-No `<all_urls>`, no default `host_permissions`. Page access comes only from
-`activeTab` plus `optional_host_permissions` requested by an explicit user
-gesture. Any new manifest permission requires a written justification in the
-plan that introduces it.
+No `<all_urls>`, no `host_permissions`, no `optional_host_permissions`, no
+manifest content scripts. Page access comes only from `activeTab`, granted
+when the user chooses the extension's context-menu item for a selection or
+presses its keyboard command; the content script is injected on demand at
+that moment, into that tab only. Any new manifest permission requires a
+written justification in the plan that introduces it.
 
 **Rationale**: Broad host permissions are the single biggest trust and
 review-friction cost a browser extension can carry; requiring justification
@@ -44,16 +50,30 @@ keeps the permission surface auditable and minimal by default.
 ### II. Host Page Integrity
 The extension MUST NOT break the host page. All extension UI lives in a
 Shadow DOM with isolated styles. Text substitution is reversible: the
-original DOM is fully restored when the extension is turned off. No
-mutations occur outside the blocks the user explicitly selected.
+original DOM is restored byte-identically on "Restore original" or when the
+extension is turned off — except where the host changed a block after the
+extension wrote it, which is left as the host made it.
+
+A selection is resolved to leaf blocks (paragraph-like elements with no
+block-level element inside). A leaf the selection covers completely is
+replaced whole, unless it holds a form field, media or a script; otherwise
+exactly the selected text inside the leaf is replaced. A container holding
+other blocks is never replaced. The whole selection is refused, and nothing
+changes, when it includes code or a form field, when the text to replace
+would contain a script or style, when selected text sits outside every leaf
+block, or when it exceeds the length cap. Ranges are never split around
+excluded content. Order is validate → request → commit: no mutation happens
+before a translation has arrived, and none outside what was selected.
 
 **Rationale**: The extension is a guest on someone else's page; any
 non-reversible or leaking mutation erodes user trust and can break the host
 site in ways users will blame on the browser, not the extension.
 
 ### III. Privacy
-Page content never leaves the device without explicit consent; clicking a
-paragraph is that consent for that paragraph only. A request to the backend
+Page content never leaves the device without explicit consent; choosing the
+extension's context-menu item for a selection, or pressing its keyboard
+command, is that consent for that selection only (for text already shown in
+German, the original of that block). A request to the backend
 MAY carry only:
 - the selected fragment, for translation;
 - a random, non-identifying install ID generated by the extension, used only
@@ -89,12 +109,12 @@ places malformed data silently corrupts extension state; schema validation
 at every boundary turns silent corruption into an immediate, typed failure.
 
 ### VI. Test What Breaks
-Mandatory tests: DOM substitution and restoration, the paragraph parser, the
+Mandatory tests: DOM substitution and restoration, selection resolution, the
 SRS scheduler, and the contract schemas. Do not test markup or thin
 wrappers. Every bug fix starts with a failing test.
 
 **Rationale**: Test effort should track actual failure risk — the
-substitution engine, parser, scheduler, and contracts are where a bug
+substitution engine, selection resolution, scheduler, and contracts are where a bug
 corrupts user data or the host page; markup and thin wrappers are not.
 
 ### VII. Simplicity (YAGNI)
@@ -135,11 +155,10 @@ to an uninstall.
 
 - Any PR or plan introducing a new manifest permission MUST include the
   justification required by Principle I.
-- Any change touching DOM substitution/restoration, the paragraph parser,
+- Any change touching DOM substitution/restoration, selection resolution,
   the SRS scheduler, or a Zod contract schema MUST ship with a test that
   fails before the change and passes after (Principle VI).
-- Code review MUST verify: no host permissions beyond `activeTab` without
-  written justification, no `any` at a typed boundary, Shadow DOM isolation
+- Code review MUST verify: no page access beyond `activeTab`, no `any` at a typed boundary, Shadow DOM isolation
   preserved, and offline behavior unaffected.
 
 ## Governance
@@ -157,4 +176,4 @@ All plans (`/speckit-plan`) and reviews MUST verify compliance with these
 principles before implementation proceeds; unjustified complexity or added
 permissions must be flagged and resolved, not waived silently.
 
-**Version**: 2.0.0 | **Ratified**: 2026-08-09 | **Last Amended**: 2026-10-19
+**Version**: 3.0.0 | **Ratified**: 2026-08-09 | **Last Amended**: 2026-10-19

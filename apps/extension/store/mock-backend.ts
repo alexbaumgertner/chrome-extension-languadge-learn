@@ -1,4 +1,4 @@
-import http from "node:http";
+import { createLoopbackServer, withCors } from "../tests/integration/loopback-server";
 import { generateExercises } from "../../cms/src/exercises/generate";
 import { markVocab } from "../../cms/src/pipeline/mark-vocab";
 
@@ -28,39 +28,32 @@ const GLOSSES = [
 
 /** The extension's backend for screenshots: real exercise generator, canned translation. */
 export function createStoreMockBackend() {
-  const server = http.createServer((req, res) => {
-    let body = "";
-    req.on("data", (chunk: Buffer) => (body += chunk.toString()));
-    req.on("end", () => {
-      res.setHeader("Content-Type", "application/json");
-      if (req.url === "/api/translate") {
-        res.end(
-          JSON.stringify({
-            text: GERMAN,
-            markedVocab: markVocab(GERMAN, GLOSSES),
-            cache: "miss",
-            model: "gemini-3.8-flash",
-            promptVersion: "2",
-          }),
-        );
-        return;
-      }
-      if (req.url === "/api/exercises") {
-        const { variantText, markedVocab } = JSON.parse(body);
-        res.end(JSON.stringify({ exercises: generateExercises(variantText, markedVocab) }));
-        return;
-      }
-      res.statusCode = 204; // /api/events, /api/report
-      res.end();
-    });
-  });
-  return {
-    listen: (port: number) =>
-      new Promise<void>((resolve) => server.listen(port, "127.0.0.1", resolve)),
-    close: () =>
-      new Promise<void>((resolve) => {
-        server.close(() => resolve());
-        server.closeAllConnections();
-      }),
-  };
+  return createLoopbackServer(
+    withCors((req, res) => {
+      let body = "";
+      req.on("data", (chunk: Buffer) => (body += chunk.toString()));
+      req.on("end", () => {
+        res.setHeader("Content-Type", "application/json");
+        if (req.url === "/api/translate") {
+          res.end(
+            JSON.stringify({
+              text: GERMAN,
+              markedVocab: markVocab(GERMAN, GLOSSES),
+              cache: "miss",
+              model: "gemini-3.8-flash",
+              promptVersion: "2",
+            }),
+          );
+          return;
+        }
+        if (req.url === "/api/exercises") {
+          const { variantText, markedVocab } = JSON.parse(body);
+          res.end(JSON.stringify({ exercises: generateExercises(variantText, markedVocab) }));
+          return;
+        }
+        res.statusCode = 204; // /api/events, /api/report
+        res.end();
+      });
+    }),
+  );
 }

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ClientErrorCodeSchema } from "./cms";
 import {
   ExerciseSchema,
   GermanVariantSchema,
@@ -6,8 +7,6 @@ import {
   LevelSchema,
   ProgressProfileSchema,
   ReviewQueueEntrySchema,
-  SiteRuleSchema,
-  SiteStatusSchema,
   VocabularyItemSchema,
 } from "./storage";
 
@@ -27,7 +26,12 @@ export const TranslateParagraphResponseSchema = z.union([
   }),
   z.object({
     ok: z.literal(false),
-    reason: z.enum(["fetch-failed", "offline-no-cache"]),
+    /**
+     * What the learner is told: `offline` no network (and nothing cached); `unavailable` the
+     * service can't be reached, refused the response (CORS) or failed (5xx); `limit` the daily
+     * allowance is used up; `too-long` over TRANSLATE_MAX_CHARS; `failed` anything else.
+     */
+    reason: z.enum(["offline", "unavailable", "limit", "too-long", "failed"]),
   }),
 ]);
 
@@ -52,26 +56,6 @@ export const SubmitExerciseAttemptResponseSchema = z.object({
   updatedProgress: ProgressProfileSchema,
 });
 
-export const GetSiteStatusRequestSchema = z.object({
-  type: z.literal("GET_SITE_STATUS"),
-  hostname: z.string().min(1),
-});
-
-export const GetSiteStatusResponseSchema = z.object({
-  status: SiteStatusSchema,
-});
-
-export const SetSiteStatusRequestSchema = z.object({
-  type: z.literal("SET_SITE_STATUS"),
-  hostname: z.string().min(1),
-  status: z.enum(["enabled", "disabled"]),
-});
-
-export const SetSiteStatusResponseSchema = z.union([
-  z.object({ ok: z.literal(true) }),
-  z.object({ ok: z.literal(false), reason: z.literal("permission-denied") }),
-]);
-
 export const GetLearnerSettingsRequestSchema = z.object({
   type: z.literal("GET_LEARNER_SETTINGS"),
 });
@@ -95,20 +79,6 @@ export const GetProgressSnapshotResponseSchema = z.object({
   reviewQueue: z.array(ReviewQueueEntrySchema),
 });
 
-/**
- * Not in the original contract draft — added for the options page's Site
- * Rules view (T059): it needs to list every known Site Rule, not just check
- * one hostname, and per the storage-access architecture only background may
- * read chrome.storage directly.
- */
-export const GetSiteRulesRequestSchema = z.object({
-  type: z.literal("GET_SITE_RULES"),
-});
-
-export const GetSiteRulesResponseSchema = z.object({
-  siteRules: z.record(z.string(), SiteRuleSchema),
-});
-
 /** Content → background on the "Плохой перевод" click; background adds output, level, density, model. */
 export const ReportBadTranslationRequestSchema = z.object({
   type: z.literal("REPORT_BAD_TRANSLATION"),
@@ -120,32 +90,60 @@ export const ReportBadTranslationResponseSchema = z.object({ ok: z.boolean() });
 
 export const StorageChangedMessageSchema = z.object({
   type: z.literal("STORAGE_CHANGED"),
-  slice: z.enum(["progress", "settings", "siteRules", "vocab"]),
+  slice: z.enum(["progress", "settings", "vocab"]),
+});
+
+/**
+ * Content → background: something on the page was translated or restored, so the "Restore
+ * original" menu item may need to appear or hide. The background asks the active tab itself.
+ */
+export const TranslationsChangedMessageSchema = z.object({
+  type: z.literal("TRANSLATIONS_CHANGED"),
+});
+
+/** Content → background: a failure that never reached the network (e.g. an over-long selection). */
+export const RecordClientErrorRequestSchema = z.object({
+  type: z.literal("RECORD_CLIENT_ERROR"),
+  error: ClientErrorCodeSchema,
+});
+
+/**
+ * Background → content, after the context menu or keyboard shortcut: `translate-selection`
+ * translates the current selection, `restore` restores everything translated on the page,
+ * `status` only answers (also tells the background the script is already running).
+ */
+export const PageActionMessageSchema = z.object({
+  type: z.literal("PAGE_ACTION"),
+  action: z.enum(["status", "translate-selection", "restore"]),
+});
+
+export const PageActionResponseSchema = z.object({
+  ok: z.literal(true),
+  hasTranslations: z.boolean(),
 });
 
 /** Every message sent from content/popup/options to the background router. */
 export const RequestMessageSchema = z.discriminatedUnion("type", [
   TranslateParagraphRequestSchema,
   SubmitExerciseAttemptRequestSchema,
-  GetSiteStatusRequestSchema,
-  SetSiteStatusRequestSchema,
   GetLearnerSettingsRequestSchema,
   SetLearnerSettingsRequestSchema,
   GetProgressSnapshotRequestSchema,
-  GetSiteRulesRequestSchema,
   ReportBadTranslationRequestSchema,
+  TranslationsChangedMessageSchema,
+  RecordClientErrorRequestSchema,
 ]);
 
 /** Every message crossing a chrome.runtime boundary, including the background-originated broadcast. */
 export const AnyMessageSchema = z.discriminatedUnion("type", [
   TranslateParagraphRequestSchema,
   SubmitExerciseAttemptRequestSchema,
-  GetSiteStatusRequestSchema,
-  SetSiteStatusRequestSchema,
   GetLearnerSettingsRequestSchema,
   SetLearnerSettingsRequestSchema,
   GetProgressSnapshotRequestSchema,
-  GetSiteRulesRequestSchema,
   ReportBadTranslationRequestSchema,
+  TranslationsChangedMessageSchema,
+  RecordClientErrorRequestSchema,
   StorageChangedMessageSchema,
+  PageActionMessageSchema,
 ]);

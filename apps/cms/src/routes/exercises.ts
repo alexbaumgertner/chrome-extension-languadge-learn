@@ -12,10 +12,12 @@ export function registerExercisesRoute(app: FastifyInstance, cfg: Config): void 
     }
     const { variantText, markedVocab } = parsed.data;
 
-    if (variantText.length > cfg.TRANSLATE_MAX_CHARS) {
+    // The German rewrite of a text at the translate cap can run longer than its source.
+    const maxChars = 2 * cfg.TRANSLATE_MAX_CHARS;
+    if (variantText.length > maxChars) {
       return reply.status(400).send({
         error: "invalid-request",
-        detail: `variantText exceeds the configured maximum length of ${cfg.TRANSLATE_MAX_CHARS} characters`,
+        detail: `variantText exceeds the configured maximum length of ${maxChars} characters`,
       });
     }
 

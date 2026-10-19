@@ -1,6 +1,9 @@
 {
   "extName": { "message": "Sprachweise" },
   "extDescription": {
-    "message": "Click a paragraph on a site you enable to read it in German at your level, then practice with exercises built from it."
-  }
+    "message": "Select text on any page, right-click, and read it in German at your level. Then practice with exercises built from it."
+  },
+  "menuTranslate": { "message": "Translate to German (Sprachweise)" },
+  "menuRestore": { "message": "Restore original text (Sprachweise)" },
+  "commandTranslate": { "message": "Translate the selected text to German" }
 }
