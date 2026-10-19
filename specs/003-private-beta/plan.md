@@ -31,6 +31,25 @@ Extension: install ID in `chrome.storage.local`.
 - Store: replace the static all-sites content script with per-origin
   `chrome.scripting.registerContentScripts` (adds `scripting`), privacy policy as a static page.
 
+## Constraints (recorded 2026-10-19)
+
+- **No custom domain for the beta.** Everything is served from `https://sprachweise.vercel.app`.
+  The privacy policy lives at `https://sprachweise.vercel.app/privacy` (a route, not
+  `/privacy.html`), and it MUST disclose that Vercel's platform request logs record visitor IPs.
+- **One API base URL.** The backend base URL is a single build-time value
+  (`WXT_CMS_BASE_URL`, read only in `apps/extension/lib/config.ts`, production default
+  `https://sprachweise.vercel.app`). It is never hardcoded anywhere else in the extension.
+- **No backend host in `host_permissions`.** Server-side CORS for the extension origin already
+  lets the background worker call the API, so the backend host MUST NOT be added to
+  `host_permissions`. A later domain change then needs no new permission, which Chrome would
+  otherwise answer by disabling the extension until each user re-approves it.
+- **Per-request latency is stored.** Every translation request (cache hit or miss) records its
+  latency in ms, so `/admin/metrics` can show p50/p95. Phase 1 already stores provider-call
+  latency in `provider_calls`; the beta adds end-to-end request latency.
+- **Model pricing.** Production runs `gemini-3.8-flash` (thinking `low`) at about $0.0012–0.0016
+  per new paragraph. Its price doubles on 1 Jan 2027 (to about $0.0023–0.003). Revisit the model and
+  pricing at the 16 Nov review.
+
 ## Constitution Check
 
 | Principle | Status |
@@ -52,7 +71,7 @@ apps/cms/src/
 ├── routes/report.ts   # POST /api/report
 ├── routes/admin.ts    # GET /admin/metrics (Basic auth)
 └── routes/translate.ts  # requires installId, records usage
-apps/cms/public/privacy.html
+apps/cms/public/privacy.html   # served at /privacy
 apps/extension/
 ├── lib/install-id.ts
 ├── entrypoints/content/   # "Плохой перевод" button
