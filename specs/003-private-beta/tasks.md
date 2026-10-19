@@ -11,5 +11,5 @@
 - [ ] T7 Backend: `/admin/metrics` behind `ADMIN_PASSWORD` (daily totals, per-install, reports)
 - [x] T8 Backend: 90-day retention cleanup (on the first write of each day, events in T4, reports in T5; no cron needed)
 - [x] T9 Extension: per-origin content script registration; verify no install-time warning
-- [ ] T10 Privacy policy page; `STORE_LISTING.md` (RU/EN short copy, permission justifications)
+- [x] T10 Privacy policy at `/privacy` (RU + EN, server route) — store listing moved to T11 (`docs/store-listing.md`)
 - [ ] T11 Deploy, smoke test, production zip, unlisted store submission checklist; PR

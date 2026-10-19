@@ -1,0 +1,193 @@
+/**
+ * Privacy policy served at /privacy (FR-012), Russian then English. Every statement here must match
+ * the code: what the extension sends (lib/cms/client.ts, lib/metrics/events.ts), what the server
+ * stores (src/db.ts) and for how long (RETENTION_DAYS, the write-once translation cache). Gemini's
+ * and Vercel's handling is linked, not paraphrased.
+ */
+const UPDATED_RU = "19 октября 2026";
+const UPDATED_EN = "19 October 2026";
+const CONTACT = "TODO_CONTACT_EMAIL";
+
+const GEMINI_TERMS = "https://ai.google.dev/gemini-api/terms";
+const GOOGLE_PRIVACY = "https://policies.google.com/privacy";
+const VERCEL_PRIVACY = "https://vercel.com/legal/privacy-notice";
+const CWS_POLICY = "https://developer.chrome.com/docs/webstore/program-policies/limited-use";
+
+const link = (href: string, text: string) => `<a href="${href}" rel="noopener">${text}</a>`;
+
+const RU = `
+<section lang="ru" id="ru">
+<h1>Политика конфиденциальности Sprachweise</h1>
+<p class="meta">Обновлено: ${UPDATED_RU} · <a href="#en">English version below</a></p>
+
+<p>Sprachweise — расширение для Chrome: вы кликаете абзац на сайте, где сами включили
+расширение, и читаете его по-немецки на своём уровне. Здесь описано, какие данные уходят
+с вашего устройства, где они хранятся и сколько.</p>
+
+<h2>Что отправляется на наш сервер</h2>
+<ul>
+<li><strong>Текст абзаца, по которому вы кликнули</strong>, и выбранный уровень (A1–A2, B1–B2, C1+).
+Только этот абзац и только после клика. Адрес страницы, остальной текст страницы и список сайтов
+не отправляются.</li>
+<li><strong>Метрики использования</strong> со <strong>случайным идентификатором установки</strong>
+(UUID, который расширение создаёт при установке; он не связан с вашим именем, почтой, устройством
+или аккаунтом). С ним уходят только события: установка; абзац переведён (взят ли перевод из общего
+кэша и сколько миллисекунд занял запрос); упражнение выполнено; ошибка (код ошибки и HTTP-статус).
+Сервер сохраняет только день (UTC), без точного времени. Идентификатор никогда не отправляется
+вместе с текстом абзаца и не используется ни для чего, кроме подсчёта использования.</li>
+<li><strong>Отчёт «Плохой перевод»</strong> — только если вы нажали эту кнопку: исходный абзац,
+его немецкий перевод, уровень, плотность перевода, название модели и версия промпта. Без
+идентификатора установки.</li>
+</ul>
+
+<h2>Перевод через Google Gemini</h2>
+<p>Чтобы перевести абзац, наш сервер передаёт его текст и уровень в Google Gemini API. Больше
+ничего (ни идентификатор установки, ни ваш IP-адрес) мы Google не передаём. Google обрабатывает
+эти данные по своим правилам: ${link(GEMINI_TERMS, "Gemini API Additional Terms of Service")}
+(раздел «How Google Uses Your Data») и ${link(GOOGLE_PRIVACY, "Политика конфиденциальности Google")}.</p>
+
+<h2>Что мы храним и сколько</h2>
+<p>База данных — Neon Postgres во Франкфурте (ЕС), сервер — Vercel, регион Франкфурт.</p>
+<ul>
+<li><strong>Кэш переводов</strong>: хэш SHA-256 текста абзаца (не сам текст), немецкий перевод и
+русские подсказки к словам. Кэш общий для всех пользователей и ни с кем не связан: если кто-то
+кликнет тот же абзац на том же уровне, перевод возьмётся из кэша. Хранится без срока, пока мы его
+не очистим.</li>
+<li><strong>События метрик</strong> (см. выше): удаляются автоматически через 90 дней.</li>
+<li><strong>Отчёты «Плохой перевод»</strong>: удаляются автоматически через 90 дней.</li>
+<li><strong>Технические счётчики</strong>: число вызовов Gemini в день, модель, количество токенов,
+стоимость и длительность вызова. Без текста и без идентификатора установки.</li>
+</ul>
+
+<h2>Журналы хостинга (Vercel)</h2>
+<p>Наш сервер работает на Vercel. Vercel автоматически ведёт журналы запросов к серверу, в том
+числе с <strong>IP-адресом</strong>, временем и адресом запроса (например, <code>/api/translate</code>),
+и хранит их ограниченное время по своим правилам: ${link(VERCEL_PRIVACY, "Vercel Privacy Notice")}.
+Тело запроса (текст абзаца, идентификатор установки) в эти журналы не попадает. Мы не копируем
+IP-адреса в свою базу, и журналы нашего приложения их не записывают.</p>
+
+<h2>Что остаётся на вашем устройстве</h2>
+<p>Настройки, список включённых сайтов, словарь, прогресс, упражнения, сохранённые переводы,
+идентификатор установки и ещё не отправленные события хранятся в хранилище расширения
+(<code>chrome.storage</code>, IndexedDB) и удаляются вместе с расширением.</p>
+<p>Диктант озвучивает немецкие предложения встроенным синтезом речи браузера. Если Chrome
+использует онлайн-голос Google, Chrome сам отправляет это предложение в Google.</p>
+
+<h2>Чего мы не собираем</h2>
+<p>Адреса страниц, историю просмотров, список ваших сайтов, имя, почту, аккаунты, платёжные
+данные. Мы не продаём и не передаём данные для рекламы. Использование данных, полученных
+расширением, соответствует ${link(CWS_POLICY, "Chrome Web Store User Data Policy")}, включая
+требования Limited Use.</p>
+
+<h2>Разрешения расширения</h2>
+<p><code>storage</code> — хранить ваши данные локально; <code>activeTab</code> — узнать адрес
+текущей вкладки, когда вы открываете меню расширения; <code>scripting</code> — запускать
+расширение на сайтах, которые вы включили. Доступ к сайту Chrome запрашивает отдельно, когда вы
+нажимаете «Enable on this site».</p>
+
+<h2>Ваш выбор</h2>
+<p>Выключите расширение на сайте — клики перестанут отправлять текст. Удалите расширение —
+локальные данные удалятся, а события на сервере удалятся через 90 дней. Вопросы и просьбы об
+удалении: <a href="mailto:${CONTACT}">${CONTACT}</a>.</p>
+</section>`;
+
+const EN = `
+<section lang="en" id="en">
+<h1>Sprachweise privacy policy</h1>
+<p class="meta">Last updated: ${UPDATED_EN}</p>
+
+<p>Sprachweise is a Chrome extension: you click a paragraph on a site where you enabled it and
+read that paragraph in German at your level. This page explains what leaves your device, where it
+is stored and for how long.</p>
+
+<h2>What is sent to our server</h2>
+<ul>
+<li><strong>The text of the paragraph you clicked</strong> and your chosen level (A1–A2, B1–B2, C1+).
+Only that paragraph, and only after your click. The page address, the rest of the page and your
+list of sites are not sent.</li>
+<li><strong>Usage metrics</strong> with a <strong>random install ID</strong> (a UUID the extension
+creates when installed; it is not derived from your name, email, device or any account). Only these
+events are sent with it: install; paragraph translated (whether it came from the shared cache and
+how many milliseconds the request took); exercise completed; error (an error code and HTTP status).
+The server keeps only the day (UTC), not the exact time. The install ID is never sent together with
+paragraph text and is used for nothing but counting usage.</li>
+<li><strong>A "Плохой перевод" (bad translation) report</strong>, only when you click that button: the
+source paragraph, its German translation, the level, the translation density, the model name and
+the prompt version. No install ID.</li>
+</ul>
+
+<h2>Translation by Google Gemini</h2>
+<p>To translate a paragraph, our server sends its text and level to the Google Gemini API. Nothing
+else (no install ID, not your IP address) is passed to Google. Google handles this data under its own
+terms: the ${link(GEMINI_TERMS, "Gemini API Additional Terms of Service")} (section "How Google Uses
+Your Data") and the ${link(GOOGLE_PRIVACY, "Google Privacy Policy")}.</p>
+
+<h2>What we store and for how long</h2>
+<p>Database: Neon Postgres in Frankfurt (EU). Server: Vercel, Frankfurt region.</p>
+<ul>
+<li><strong>Translation cache</strong>: a SHA-256 hash of the paragraph text (not the text itself), the
+German translation and the Russian word glosses. The cache is shared by all users and linked to no
+one: if anyone clicks the same paragraph at the same level, the cached translation is served. Kept
+with no expiry until we clear it.</li>
+<li><strong>Metric events</strong> (above): deleted automatically after 90 days.</li>
+<li><strong>Bad translation reports</strong>: deleted automatically after 90 days.</li>
+<li><strong>Technical counters</strong>: Gemini calls per day, model, token counts, cost and call
+duration. No text and no install ID.</li>
+</ul>
+
+<h2>Hosting logs (Vercel)</h2>
+<p>Our server runs on Vercel. Vercel automatically keeps request logs, including your
+<strong>IP address</strong>, the time and the requested path (for example <code>/api/translate</code>),
+for a limited period under its own rules: ${link(VERCEL_PRIVACY, "Vercel Privacy Notice")}. Request
+bodies (paragraph text, install ID) are not part of these logs. We do not copy IP addresses into our
+database, and our application logs do not record them.</p>
+
+<h2>What stays on your device</h2>
+<p>Settings, enabled sites, vocabulary, progress, exercises, saved translations, the install ID and
+not-yet-sent events are kept in extension storage (<code>chrome.storage</code>, IndexedDB) and are
+removed with the extension.</p>
+<p>Dictation exercises speak German sentences with your browser's built-in speech synthesis. If
+Chrome uses an online Google voice, Chrome itself sends that sentence to Google.</p>
+
+<h2>What we never collect</h2>
+<p>Page addresses, browsing history, your list of sites, name, email, accounts, payment data. We do
+not sell data or use it for advertising. The use of information received by the extension adheres to
+the ${link(CWS_POLICY, "Chrome Web Store User Data Policy")}, including the Limited Use requirements.</p>
+
+<h2>Extension permissions</h2>
+<p><code>storage</code> keeps your data locally; <code>activeTab</code> reads the current tab's address
+when you open the extension's menu; <code>scripting</code> runs the extension on the sites you
+enabled. Chrome asks for access to a site separately, when you click "Enable on this site".</p>
+
+<h2>Your choices</h2>
+<p>Disable the extension on a site and clicks there send nothing. Uninstall it and local data is
+removed; server-side events expire after 90 days. Questions and deletion requests:
+<a href="mailto:${CONTACT}">${CONTACT}</a>.</p>
+</section>`;
+
+export const PRIVACY_POLICY_HTML = `<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sprachweise — Privacy policy</title>
+<style>
+  :root { color-scheme: light dark; --fg: #1f2933; --muted: #52606d; --bg: #fff; --rule: #e4e7eb; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg: #e4e7eb; --muted: #9aa5b1; --bg: #15191e; --rule: #323f4b; }
+  }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 1.6rem; line-height: 1.25; margin: 0 0 4px; }
+  h2 { font-size: 1.1rem; margin: 28px 0 8px; }
+  .meta { color: var(--muted); margin: 0 0 20px; font-size: 0.9rem; }
+  section + section { border-top: 1px solid var(--rule); margin-top: 48px; padding-top: 32px; }
+  li { margin-bottom: 8px; }
+  a { color: inherit; }
+  code { font-size: 0.9em; }
+</style>
+</head>
+<body><main>${RU}${EN}</main></body>
+</html>
+`;

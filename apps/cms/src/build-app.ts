@@ -5,6 +5,7 @@ import { createNeonDb, withSchema, type Db } from "./db";
 import { registerEventsRoute } from "./routes/events";
 import { registerExercisesRoute } from "./routes/exercises";
 import { registerReportRoute } from "./routes/report";
+import { PRIVACY_POLICY_HTML } from "./privacy/policy";
 import { registerTranslateRoute } from "./routes/translate";
 
 /**
@@ -42,6 +43,12 @@ export function buildApp(cfg: Config = config, db: Db = createNeonDb(cfg)): Fast
   registerEventsRoute(app, schemaDb);
   registerReportRoute(app, schemaDb);
   app.get("/api/health", async () => ({ ok: true }));
+  app.get("/privacy", async (_request, reply) =>
+    reply
+      .type("text/html; charset=utf-8")
+      .header("cache-control", "public, max-age=3600")
+      .send(PRIVACY_POLICY_HTML),
+  );
 
   return app;
 }
