@@ -42,6 +42,19 @@ const SKIPPED_ANCESTOR_SELECTOR =
 
 const EDITABLE_SELECTOR = '[contenteditable]:not([contenteditable="false"]),input,textarea';
 
+/**
+ * Content the learner can see that a translation can't carry: replacing it would turn code into
+ * prose or drop a form control. A selection crossing any of it is refused, never split.
+ */
+const VISIBLE_EXCLUDED_SELECTOR = `code,pre,kbd,samp,textarea,input,select,button,${EDITABLE_SELECTOR}`;
+/** Controls: selected by covering the element itself, not text inside it. */
+const CONTROL_SELECTOR = "textarea,input,select,button";
+/**
+ * Not rendered, so a selection over a script between paragraphs is fine; but one inside what gets
+ * replaced would be deleted with it.
+ */
+const HIDDEN_EXCLUDED_SELECTOR = "script,style,noscript,template";
+
 export type SelectionTarget =
   /** Inside one block and not all of it: replace exactly `range`. */
   | { kind: "range"; block: HTMLElement; range: Range; text: string }
@@ -49,10 +62,12 @@ export type SelectionTarget =
   | { kind: "blocks"; blocks: HTMLElement[] };
 
 export type SelectionProblem =
-  /** Nothing readable selected (collapsed, whitespace only, or only code/controls). */
+  /** Nothing readable selected (collapsed or whitespace only). */
   | "empty"
   /** The selection is in an editable field — translating it would rewrite the learner's input. */
-  | "editable";
+  | "editable"
+  /** The selection includes code or a form field (`VISIBLE_EXCLUDED_SELECTOR` and the like). */
+  | "excluded";
 
 interface TextPiece {
   node: Text;
@@ -113,12 +128,61 @@ function trimmedRange(pieces: TextPiece[]): Range {
   return range;
 }
 
-export function resolveSelection(range: Range): SelectionTarget | { problem: SelectionProblem } {
-  if (range.collapsed) return { problem: "empty" };
-  const pieces = selectedPieces(range);
-  if (pieces.some((p) => p.node.parentElement?.closest(EDITABLE_SELECTOR))) {
-    return { problem: "editable" };
+function elementOf(node: Node): Element | null {
+  return node.nodeType === Node.ELEMENT_NODE ? (node as Element) : node.parentElement;
+}
+
+/** Whether `range` takes in some of `el`: the control itself, or non-blank text inside it. */
+function rangeTakesIn(range: Range, el: Element): boolean {
+  if (!range.intersectsNode(el)) return false;
+  if (el.matches(CONTROL_SELECTOR)) return true;
+  const walker = el.ownerDocument.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  for (let n = walker.nextNode() as Text | null; n; n = walker.nextNode() as Text | null) {
+    if (!range.intersectsNode(n)) continue;
+    const start = n === range.startContainer ? range.startOffset : 0;
+    const end = n === range.endContainer ? range.endOffset : n.data.length;
+    if (n.data.slice(start, end).trim().length > 0) return true;
   }
+  return false;
+}
+
+/** Whether the selection includes visible code or a form field, or starts or ends inside one. */
+function crossesExcluded(range: Range): boolean {
+  for (const node of [range.startContainer, range.endContainer]) {
+    if (elementOf(node)?.closest(VISIBLE_EXCLUDED_SELECTOR)) return true;
+  }
+  const root = elementOf(range.commonAncestorContainer);
+  if (!root) return false;
+  return [...root.querySelectorAll(VISIBLE_EXCLUDED_SELECTOR)].some((el) =>
+    rangeTakesIn(range, el),
+  );
+}
+
+/** Whether replacing `target` would delete excluded content along with the text. */
+function replacesExcluded(target: SelectionTarget): boolean {
+  if (target.kind === "blocks") {
+    const selector = `${VISIBLE_EXCLUDED_SELECTOR},${HIDDEN_EXCLUDED_SELECTOR}`;
+    return target.blocks.some((b) => b.querySelector(selector));
+  }
+  return [...target.block.querySelectorAll(HIDDEN_EXCLUDED_SELECTOR)].some((el) =>
+    target.range.intersectsNode(el),
+  );
+}
+
+export function resolveSelection(range: Range): SelectionTarget | { problem: SelectionProblem } {
+  const target = resolveTarget(range);
+  if ("kind" in target && replacesExcluded(target)) return { problem: "excluded" };
+  return target;
+}
+
+function resolveTarget(range: Range): SelectionTarget | { problem: SelectionProblem } {
+  if (range.collapsed) return { problem: "empty" };
+  const inEditable = [range.startContainer, range.endContainer].every((n) =>
+    elementOf(n)?.closest(EDITABLE_SELECTOR),
+  );
+  if (inEditable) return { problem: "editable" };
+  if (crossesExcluded(range)) return { problem: "excluded" };
+  const pieces = selectedPieces(range);
 
   const pieceBlocks = pieces.map((p) => nearestBlock(p.node));
   const blocks = [...new Set(pieceBlocks.filter((b): b is HTMLElement => b !== null))];

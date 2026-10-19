@@ -73,10 +73,52 @@ describe("resolveSelection", () => {
     expect(blocksOf(result)).toEqual(["outer"]);
   });
 
-  it("ignores code, scripts and whitespace-only text", () => {
-    document.body.innerHTML = `<p id="p1">Text</p><pre id="code">const x = 1;</pre><p id="p2">Mehr</p>`;
-    const result = resolveSelection(rangeOver(text("p1"), 0, text("p2"), 4));
-    expect(blocksOf(result)).toEqual(["p1", "p2"]);
+  it("rejects a selection that crosses code or a form field", () => {
+    for (const html of [
+      `<p id="p1">Text</p><pre>const x = 1;</pre><p id="p2">Mehr</p>`,
+      `<p id="p1">Text mit <code>npm i</code> darin</p><p id="p2">Mehr</p>`,
+      `<p id="p1">Drücke <kbd>Strg</kbd> und</p><p id="p2">Mehr</p>`,
+      `<p id="p1">Name: <input value="x"> bitte</p><p id="p2">Mehr</p>`,
+      `<p id="p1">Wähle <select><option>A</option></select> aus</p><p id="p2">Mehr</p>`,
+      `<p id="p1">Text</p><textarea>Entwurf</textarea><p id="p2">Mehr</p>`,
+      `<p id="p1">Text</p><div contenteditable="true">Entwurf</div><p id="p2">Mehr</p>`,
+    ]) {
+      document.body.innerHTML = html;
+      expect(resolveSelection(rangeOver(text("p1"), 0, text("p2"), 4)), html).toEqual({
+        problem: "excluded",
+      });
+    }
+  });
+
+  it("rejects a selection made inside code", () => {
+    document.body.innerHTML = `<p>Siehe <code id="c">const wert = 1;</code></p>`;
+    const node = text("c");
+    expect(resolveSelection(rangeOver(node, 0, node, 5))).toEqual({ problem: "excluded" });
+  });
+
+  it("rejects a selection whose replaced text would hide a script or style", () => {
+    document.body.innerHTML = `<p id="p1">Vorher <script>window.x = 1;</script>nachher und mehr.</p>`;
+    const p = document.getElementById("p1")!;
+    expect(resolveSelection(rangeOver(p.firstChild!, 2, p.lastChild!, 5))).toEqual({
+      problem: "excluded",
+    });
+  });
+
+  it("ignores a script between paragraphs: it isn't visible and nothing replaces it", () => {
+    document.body.innerHTML = `<p id="p1">Text</p><script>window.x = 1;</script><p id="p2">Mehr</p>`;
+    expect(blocksOf(resolveSelection(rangeOver(text("p1"), 0, text("p2"), 4)))).toEqual([
+      "p1",
+      "p2",
+    ]);
+  });
+
+  it("accepts a selection next to code that doesn't include it", () => {
+    document.body.innerHTML = `<p id="p1">Erst <code>npm i</code> dann der ausgewählte Teil.</p>`;
+    const p = document.getElementById("p1")!;
+    expect(resolveSelection(rangeOver(p.lastChild!, 6, p.lastChild!, 26))).toMatchObject({
+      kind: "range",
+      text: "der ausgewählte Teil",
+    });
   });
 
   it("reports an empty problem for a collapsed or whitespace-only selection", () => {

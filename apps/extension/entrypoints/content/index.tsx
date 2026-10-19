@@ -2,6 +2,7 @@ import ReactDOM from "react-dom/client";
 import {
   PageActionMessageSchema,
   TRANSLATE_MAX_CHARS,
+  type ClientErrorCode,
   type GetProgressSnapshotResponse,
   type LearnerSettings,
   type PageActionResponse,
@@ -55,6 +56,12 @@ const FAILURE_MESSAGES: Record<FailureReason, string> = {
 const SELECTION_MESSAGES: Record<SelectionProblem, string> = {
   empty: "Select the text you want to translate first.",
   editable: "Sprachweise doesn't translate text you're typing.",
+  excluded: "Selection includes code or form fields — select plain text only.",
+};
+
+/** Refusals worth counting: the learner selected something real that the extension can't take. */
+const SELECTION_ERROR_CODES: Partial<Record<SelectionProblem, ClientErrorCode>> = {
+  excluded: "selection-excluded",
 };
 
 const PAGE_CHANGED_MESSAGE = "The page changed while translating. Select the text again.";
@@ -147,7 +154,9 @@ async function translateSelection(): Promise<void> {
   const range = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
   const items = range ? translationItems(range) : "empty";
   if (typeof items === "string") {
-    showNotice(null, SELECTION_MESSAGES[items], "info");
+    const code = SELECTION_ERROR_CODES[items];
+    if (code) void sendMessage({ type: "RECORD_CLIENT_ERROR", error: code });
+    showNotice(null, SELECTION_MESSAGES[items], code ? "error" : "info");
     return;
   }
 

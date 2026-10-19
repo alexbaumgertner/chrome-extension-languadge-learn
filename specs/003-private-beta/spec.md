@@ -144,6 +144,11 @@ is byte-identical to before.
 - Metrics page during an empty day → shows zeros, not an error.
 - Selection in an editable field (input, textarea, contenteditable) → refused with a message;
   the learner's own text is never rewritten.
+- Selection that includes code (`code`, `pre`, `kbd`, `samp`) or a form field (input, textarea,
+  select, button, contenteditable), or whose replaced text would contain a script or style →
+  the whole selection is refused ("Selection includes code or form fields — select plain text
+  only"), `selection-excluded` is recorded, nothing is sent. Ranges are never split around it. A
+  script between selected paragraphs is not visible and not replaced, so it doesn't count.
 - Selection already showing German → the original of that block is translated again (served from
   the local cache), never the German.
 - The page changes the selected text while the translation is in flight → the German is not

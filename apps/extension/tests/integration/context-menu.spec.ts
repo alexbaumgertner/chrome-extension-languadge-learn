@@ -235,3 +235,29 @@ test("Restore while a translation is in flight wins: the late answer changes not
   expect(await tab.locator("article").evaluate((el) => el.innerHTML)).toBe(original);
   await expect(tab.locator(".sw-panel .sw-card")).toHaveCount(0);
 });
+
+test("a selection that includes code is refused with a clear message; nothing is sent or changed", async ({
+  context,
+  fixtureServer,
+  cmsServer,
+  selectText,
+  clickMenu,
+}) => {
+  fixtureServer.setHtml(
+    page(`<p id="a">Installiere es mit <code>npm i sprachweise</code> im Terminal.</p>`),
+  );
+  const tab = await context.newPage();
+  await tab.goto(FIXTURE_ORIGIN);
+  const before = await tab.locator("article").evaluate((el) => el.innerHTML);
+  await selectText(tab, "#a");
+  await clickMenu(tab, "translate");
+
+  await expect(
+    tab.getByText("Selection includes code or form fields — select plain text only."),
+  ).toBeVisible();
+  expect(cmsServer.callCounts.translate).toBe(0);
+  expect(await tab.locator("article").evaluate((el) => el.innerHTML)).toBe(before);
+  await expect
+    .poll(() => cmsServer.requests.events.flatMap((b) => b.events))
+    .toContainEqual(expect.objectContaining({ name: "client_error", error: "selection-excluded" }));
+});

@@ -126,6 +126,8 @@ export const ExercisesResponseSchema = z.object({
  * `cors` the backend answered but the browser refused the response (missing CORS grant);
  * `server-error` a 5xx; `limit` the daily allowance (429); `too-long` the selection exceeds
  * TRANSLATE_MAX_CHARS (not sent at all, or a 413); `failed` anything else (other 4xx, bad schema).
+ * Selection codes: the extension refused the selection before sending anything — `excluded` it
+ * includes code or a form field.
  */
 export const ClientErrorCodeSchema = z.enum([
   "translate-failed",
@@ -135,6 +137,7 @@ export const ClientErrorCodeSchema = z.enum([
   "translate-server-error",
   "translate-limit",
   "translate-too-long",
+  "selection-excluded",
   "exercises-failed",
   "report-failed",
 ]);
