@@ -105,7 +105,15 @@ async function doTranslate(
   }
 
   if (!response.ok) {
-    throw new UpstreamFailureError(`Gemini call failed: ${response.status}`);
+    // Google's error message (e.g. unknown model, unsupported thinkingLevel) never echoes the
+    // learner's text, so it's safe to surface for diagnosis.
+    const detail = await response
+      .json()
+      .then((b: { error?: { message?: string } }) => b.error?.message ?? "")
+      .catch(() => "");
+    throw new UpstreamFailureError(
+      `Gemini call failed: ${response.status}${detail ? ` ${detail.slice(0, 200)}` : ""}`,
+    );
   }
 
   const body = (await response.json()) as GeminiResponse;
