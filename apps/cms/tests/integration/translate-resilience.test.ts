@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { buildApp } from "../../src/server";
+import { buildTestApp } from "../helpers/test-app";
 import { createMockProviders, type MockProvidersController } from "./mock-providers";
 
 describe("POST /api/translate — User Story 4 (resilience)", () => {
@@ -15,7 +15,7 @@ describe("POST /api/translate — User Story 4 (resilience)", () => {
   });
 
   it("Scenario 1: an already-cached combination still succeeds once providers become unreachable", async () => {
-    const app = buildApp();
+    const app = buildTestApp();
     const payload = { text: "Gecachter Satz.", level: "A1-A2", topic: "cache" };
 
     const primed = await app.inject({ method: "POST", url: "/api/translate", payload });
@@ -29,7 +29,7 @@ describe("POST /api/translate — User Story 4 (resilience)", () => {
 
   it("Scenario 2: a new combination returns a clear 502 upstream-failure, not a hang or partial body", async () => {
     providers.setMode("fail");
-    const app = buildApp();
+    const app = buildTestApp();
 
     const response = await app.inject({
       method: "POST",
@@ -42,7 +42,7 @@ describe("POST /api/translate — User Story 4 (resilience)", () => {
   });
 
   it("retries a transient failure once and still succeeds", async () => {
-    const app = buildApp();
+    const app = buildTestApp();
     providers.failNext("gemini", 1);
 
     const response = await app.inject({
@@ -57,7 +57,7 @@ describe("POST /api/translate — User Story 4 (resilience)", () => {
 
   it("Scenario 3: a malformed/unsafe provider response is discarded, returns 502, and caches nothing", async () => {
     providers.setMode("malformed");
-    const app = buildApp();
+    const app = buildTestApp();
     const payload = { text: "Fehlerhafte Antwort.", level: "A1-A2", topic: "broken" };
 
     const response = await app.inject({ method: "POST", url: "/api/translate", payload });

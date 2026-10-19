@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { buildApp } from "../../src/server";
+import { buildTestApp } from "../helpers/test-app";
 import { createMockProviders, type MockProvidersController } from "./mock-providers";
 
 describe("POST /api/translate — User Story 1 (leveled, glossed translation)", () => {
@@ -20,7 +20,7 @@ describe("POST /api/translate — User Story 1 (leveled, glossed translation)", 
   });
 
   it("Scenario 1: returns a German rewrite plus marked vocabulary spans with Russian meanings", async () => {
-    const app = buildApp();
+    const app = buildTestApp();
     const response = await app.inject({
       method: "POST",
       url: "/api/translate",
@@ -39,7 +39,7 @@ describe("POST /api/translate — User Story 1 (leveled, glossed translation)", 
   });
 
   it("Scenario 2: rejects a request with missing/empty text, level, or topic without calling any provider", async () => {
-    const app = buildApp();
+    const app = buildTestApp();
     const cases = [
       { text: "", level: "B1-B2", topic: "food" },
       { level: "B1-B2", topic: "food" },
@@ -60,7 +60,7 @@ describe("POST /api/translate — User Story 1 (leveled, glossed translation)", 
   });
 
   it("Scenario 3: the same text at two different levels produces different rewrites", async () => {
-    const app = buildApp();
+    const app = buildTestApp();
     const text = "Der Bundestag hat heute ein neues Gesetz beschlossen.";
 
     const a1 = await app.inject({
@@ -80,7 +80,7 @@ describe("POST /api/translate — User Story 1 (leveled, glossed translation)", 
   });
 
   it("Scenario 4: a short/generic paragraph still returns a valid rewrite with an empty vocab list, never an error", async () => {
-    const app = buildApp();
+    const app = buildTestApp();
     const response = await app.inject({
       method: "POST",
       url: "/api/translate",

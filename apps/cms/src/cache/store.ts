@@ -1,4 +1,4 @@
-import type Database from "better-sqlite3";
+import type { Db } from "../db";
 
 export interface CachedTranslation {
   text: string;
@@ -7,23 +7,23 @@ export interface CachedTranslation {
 
 interface CacheEntryRow {
   result_text: string;
-  marked_vocab_json: string;
+  marked_vocab: CachedTranslation["markedVocab"];
 }
 
-export function getCacheEntry(db: Database.Database, key: string): CachedTranslation | undefined {
-  const row = db
-    .prepare("SELECT result_text, marked_vocab_json FROM cache_entries WHERE cache_key = ?")
-    .get(key) as CacheEntryRow | undefined;
+export async function getCacheEntry(db: Db, key: string): Promise<CachedTranslation | undefined> {
+  const [row] = await db.query<CacheEntryRow>(
+    "SELECT result_text, marked_vocab FROM cache_entries WHERE cache_key = $1",
+    [key],
+  );
   if (!row) return undefined;
-  return {
-    text: row.result_text,
-    markedVocab: JSON.parse(row.marked_vocab_json) as CachedTranslation["markedVocab"],
-  };
+  return { text: row.result_text, markedVocab: row.marked_vocab };
 }
 
 /** Write-once: never updates or deletes an existing row (FR-004 — indefinite persistence, no eviction). */
-export function putCacheEntry(db: Database.Database, key: string, entry: CachedTranslation): void {
-  db.prepare(
-    "INSERT OR IGNORE INTO cache_entries (cache_key, result_text, marked_vocab_json, created_at) VALUES (?, ?, ?, ?)",
-  ).run(key, entry.text, JSON.stringify(entry.markedVocab), new Date().toISOString());
+export async function putCacheEntry(db: Db, key: string, entry: CachedTranslation): Promise<void> {
+  await db.query(
+    `INSERT INTO cache_entries (cache_key, result_text, marked_vocab) VALUES ($1, $2, $3::jsonb)
+     ON CONFLICT (cache_key) DO NOTHING`,
+    [key, entry.text, JSON.stringify(entry.markedVocab)],
+  );
 }

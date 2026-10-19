@@ -1,5 +1,6 @@
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 import { config, type Config } from "./config";
+import { createNeonDb, withSchema, type Db } from "./db";
 import { registerTranslateRoute } from "./routes/translate";
 
 /**
@@ -9,7 +10,7 @@ import { registerTranslateRoute } from "./routes/translate";
  * forbids, so the request serializer is overridden to strip it down to method/url only. Logging
  * is disabled entirely in tests to keep output quiet.
  */
-export function buildApp(cfg: Config = config): FastifyInstance {
+export function buildApp(cfg: Config = config, db: Db = createNeonDb(cfg)): FastifyInstance {
   const app = Fastify({
     logger:
       process.env.NODE_ENV === "test"
@@ -22,7 +23,7 @@ export function buildApp(cfg: Config = config): FastifyInstance {
           },
   });
 
-  registerTranslateRoute(app, cfg);
+  registerTranslateRoute(app, cfg, withSchema(db));
 
   return app;
 }

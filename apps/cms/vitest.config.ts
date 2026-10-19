@@ -13,7 +13,7 @@ export default defineConfig({
     env: {
       GOOGLE_TRANSLATE_API_KEY: "test-google-key",
       GEMINI_API_KEY: "test-gemini-key",
-      CMS_DB_PATH: ":memory:",
+      DATABASE_URL: "postgres://unused-in-tests",
     },
   },
 });

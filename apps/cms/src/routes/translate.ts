@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { ZodError } from "zod";
 import { TranslateRequestSchema, TranslateResponseSchema } from "@sprachweise/shared";
 import type { Config } from "../config";
-import { openDb } from "../db";
+import type { Db } from "../db";
 import { cacheKey } from "../cache/key";
 import { getCacheEntry, putCacheEntry, type CachedTranslation } from "../cache/store";
 import { createCoalescingMap } from "../cache/coalesce";
@@ -13,8 +13,7 @@ import { glossVocab } from "../pipeline/gloss-vocab";
 
 class AllowanceExhaustedError extends Error {}
 
-export function registerTranslateRoute(app: FastifyInstance, cfg: Config): void {
-  const db = openDb(cfg);
+export function registerTranslateRoute(app: FastifyInstance, cfg: Config, db: Db): void {
   const coalescing = createCoalescingMap<CachedTranslation>();
 
   app.post("/api/translate", async (request, reply) => {
@@ -33,7 +32,7 @@ export function registerTranslateRoute(app: FastifyInstance, cfg: Config): void 
 
     try {
       const key = cacheKey(text, level, topic);
-      const cached = getCacheEntry(db, key);
+      const cached = await getCacheEntry(db, key);
       if (cached) {
         return reply.status(200).send(cached);
       }
@@ -41,7 +40,11 @@ export function registerTranslateRoute(app: FastifyInstance, cfg: Config): void 
       const result = await coalescing.run(key, async () => {
         // Reserved once per actual pipeline run (inside the coalescing callback), not once per
         // incoming HTTP request, so concurrent coalesced callers never double-reserve (FR-008/FR-010).
-        const reserved = reserveUsage(db, { translateChars: text.length, geminiRequests: 1 }, cfg);
+        const reserved = await reserveUsage(
+          db,
+          { translateChars: text.length, geminiRequests: 1 },
+          cfg,
+        );
         if (!reserved) {
           throw new AllowanceExhaustedError();
         }
@@ -58,7 +61,7 @@ export function registerTranslateRoute(app: FastifyInstance, cfg: Config): void 
         // FR-012: any validation failure (span bounds/content mismatch, unsafe HTML) discards the
         // whole response — nothing below this line runs, so nothing is cached, on a thrown ZodError.
         const validated = TranslateResponseSchema.parse({ text: adaptedText, markedVocab });
-        putCacheEntry(db, key, validated);
+        await putCacheEntry(db, key, validated);
         return validated;
       });
 
@@ -71,7 +74,7 @@ export function registerTranslateRoute(app: FastifyInstance, cfg: Config): void 
       if (err instanceof UpstreamFailureError || err instanceof ZodError) {
         return reply.status(502).send({ error: "upstream-failure" });
       }
-      // FR-013: anything else (e.g. the local SQLite cache/usage-ledger store itself failing) is
+      // FR-013: anything else (e.g. the Postgres cache/usage-ledger store itself failing) is
       // reported as a distinguishable internal failure, not conflated with an upstream provider issue.
       request.log.error({ err }, "translate request failed with an unexpected internal error");
       return reply.status(503).send({ error: "internal-failure" });

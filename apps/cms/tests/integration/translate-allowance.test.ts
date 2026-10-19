@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { buildApp } from "../../src/server";
+import { buildTestApp } from "../helpers/test-app";
 import { loadConfig } from "../../src/config";
 import { createMockProviders, type MockProvidersController } from "./mock-providers";
 
@@ -17,7 +17,7 @@ describe("POST /api/translate — User Story 3 (allowance enforcement)", () => {
 
   it("Scenario 1 & 2: usage increases per distinct request, then a request past the cap is refused with no provider call", async () => {
     const cfg = loadConfig({ ...process.env, GEMINI_DAILY_REQUEST_ALLOWANCE: "2" });
-    const app = buildApp(cfg);
+    const app = buildTestApp(cfg);
 
     const first = await app.inject({
       method: "POST",
@@ -45,7 +45,7 @@ describe("POST /api/translate — User Story 3 (allowance enforcement)", () => {
 
   it("Scenario 3: a request for an already-cached combination still succeeds once the allowance is exhausted", async () => {
     const cfg = loadConfig({ ...process.env, GEMINI_DAILY_REQUEST_ALLOWANCE: "1" });
-    const app = buildApp(cfg);
+    const app = buildTestApp(cfg);
     const cachedPayload = { text: "Bereits uebersetzt.", level: "B1-B2", topic: "x" };
 
     const primed = await app.inject({
