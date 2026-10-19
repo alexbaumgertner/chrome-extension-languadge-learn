@@ -1,20 +1,14 @@
 import { useState } from "react";
-import type { AudioDictationExercise, Level } from "@sprachweise/shared";
+import type { AudioDictationExercise } from "@sprachweise/shared";
 import { playDictationAudio } from "@/lib/audio/play-dictation";
 import type { OnAnswer } from "./types";
 
 export default function AudioDictationCard({
   exercise,
   onAnswer,
-  contentHash,
-  level,
-  topic,
 }: {
   exercise: AudioDictationExercise;
   onAnswer: OnAnswer;
-  contentHash: string;
-  level: Level;
-  topic: string;
 }) {
   const [value, setValue] = useState("");
   const [result, setResult] = useState<"correct" | "incorrect" | null>(
@@ -25,7 +19,7 @@ export default function AudioDictationCard({
   async function play(rate: "normal" | "slow"): Promise<void> {
     setPlaying(true);
     try {
-      await playDictationAudio(exercise.prompt.audioSentence, rate, contentHash, level, topic);
+      await playDictationAudio(exercise.prompt.audioSentence, rate);
     } finally {
       setPlaying(false);
     }

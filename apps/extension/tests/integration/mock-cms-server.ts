@@ -64,7 +64,7 @@ function buildExercisesResponse(variantText: string) {
   };
 }
 
-/** Implements the three contracts/cms-api-contract.md endpoints with deterministic canned fixtures. */
+/** Implements the CMS endpoints the extension calls (/api/translate, /api/exercises) with deterministic canned fixtures. */
 export function createMockCmsServer() {
   let mode: MockCmsMode = "ok";
 
@@ -93,12 +93,6 @@ export function createMockCmsServer() {
         const parsed = JSON.parse(body || "{}") as { variantText?: string };
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify(buildExercisesResponse(parsed.variantText ?? "")));
-        return;
-      }
-
-      if (req.url === "/api/tts" && req.method === "POST") {
-        res.setHeader("Content-Type", "audio/mpeg");
-        res.end(Buffer.from([0, 1, 2, 3]));
         return;
       }
 

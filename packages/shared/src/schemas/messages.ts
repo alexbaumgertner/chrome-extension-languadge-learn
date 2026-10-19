@@ -96,26 +96,6 @@ export const GetProgressSnapshotResponseSchema = z.object({
 });
 
 /**
- * Not in the original contract draft — added per research.md §8 / T038: the
- * content script never talks to the network or IndexedDB directly, so
- * playing dictation audio (cache-or-fetch) has to round-trip through
- * background like every other CMS-backed capability.
- */
-export const PlayTtsRequestSchema = z.object({
-  type: z.literal("PLAY_TTS"),
-  sentence: z.string().min(1),
-  rate: z.enum(["normal", "slow"]),
-  contentHash: z.string().min(1),
-  level: LevelSchema,
-  topic: z.string().min(1),
-});
-
-export const PlayTtsResponseSchema = z.union([
-  z.object({ ok: z.literal(true), audioDataUrl: z.string().min(1), mimeType: z.string().min(1) }),
-  z.object({ ok: z.literal(false), reason: z.enum(["fetch-failed", "offline-no-cache"]) }),
-]);
-
-/**
  * Not in the original contract draft — added for the options page's Site
  * Rules view (T059): it needs to list every known Site Rule, not just check
  * one hostname, and per the storage-access architecture only background may
@@ -143,7 +123,6 @@ export const RequestMessageSchema = z.discriminatedUnion("type", [
   GetLearnerSettingsRequestSchema,
   SetLearnerSettingsRequestSchema,
   GetProgressSnapshotRequestSchema,
-  PlayTtsRequestSchema,
   GetSiteRulesRequestSchema,
 ]);
 
@@ -156,7 +135,6 @@ export const AnyMessageSchema = z.discriminatedUnion("type", [
   GetLearnerSettingsRequestSchema,
   SetLearnerSettingsRequestSchema,
   GetProgressSnapshotRequestSchema,
-  PlayTtsRequestSchema,
   GetSiteRulesRequestSchema,
   StorageChangedMessageSchema,
 ]);

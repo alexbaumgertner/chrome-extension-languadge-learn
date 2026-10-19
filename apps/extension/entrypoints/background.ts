@@ -1,7 +1,6 @@
 import {
   RequestMessageSchema,
   type GermanVariant,
-  type PlayTtsResponse,
   type ProgressProfile,
   type RequestMessage,
   type StorageChangedMessage,
@@ -26,53 +25,15 @@ import {
   contentCacheKey,
   findExerciseById,
   getCachedExercises,
-  getCachedTtsAudio,
   getCachedVariant,
   markExerciseAnswered,
   putCachedExercises,
-  putCachedTtsAudio,
   putCachedVariant,
-  ttsCacheKey,
 } from "@/lib/storage/content-cache";
-import {
-  fetchTtsAudio,
-  generateExercises,
-  isNetworkError,
-  translateParagraph,
-} from "@/lib/cms/client";
+import { generateExercises, isNetworkError, translateParagraph } from "@/lib/cms/client";
 import { mapCmsExercisesToEntities } from "@/lib/exercises/generate";
 import { checkExerciseAnswer } from "@/lib/exercises/match";
 import { recordVocabEncounters, vocabIdFor } from "@/lib/vocab/upsert";
-
-async function blobToDataUrl(blob: Blob, mimeType: string): Promise<string> {
-  const buffer = await blob.arrayBuffer();
-  let binary = "";
-  for (const byte of new Uint8Array(buffer)) binary += String.fromCharCode(byte);
-  return `data:${mimeType};base64,${btoa(binary)}`;
-}
-
-async function handlePlayTts(
-  message: Extract<RequestMessage, { type: "PLAY_TTS" }>,
-): Promise<PlayTtsResponse> {
-  const cacheKey = ttsCacheKey(message.contentHash, message.level, message.topic, message.rate);
-
-  const cached = await getCachedTtsAudio(cacheKey);
-  if (cached) {
-    return {
-      ok: true,
-      audioDataUrl: await blobToDataUrl(cached.blob, cached.mimeType),
-      mimeType: cached.mimeType,
-    };
-  }
-
-  try {
-    const { blob, mimeType } = await fetchTtsAudio(message.sentence, message.rate);
-    await putCachedTtsAudio(cacheKey, blob, mimeType);
-    return { ok: true, audioDataUrl: await blobToDataUrl(blob, mimeType), mimeType };
-  } catch (error) {
-    return { ok: false, reason: isNetworkError(error) ? "offline-no-cache" : "fetch-failed" };
-  }
-}
 
 async function handleTranslateParagraph(
   message: Extract<RequestMessage, { type: "TRANSLATE_PARAGRAPH" }>,
@@ -235,9 +196,6 @@ async function dispatch(message: RequestMessage): Promise<unknown> {
     case "SET_LEARNER_SETTINGS":
       await setLearnerSettings(message.settings);
       return { ok: true };
-
-    case "PLAY_TTS":
-      return handlePlayTts(message);
 
     case "GET_SITE_RULES":
       return { siteRules: await getAllSiteRules() };

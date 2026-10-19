@@ -10,8 +10,6 @@ import type {
   GetSiteRulesResponseSchema,
   GetSiteStatusRequestSchema,
   GetSiteStatusResponseSchema,
-  PlayTtsRequestSchema,
-  PlayTtsResponseSchema,
   RequestMessageSchema,
   SetLearnerSettingsRequestSchema,
   SetLearnerSettingsResponseSchema,
@@ -29,7 +27,6 @@ import type {
   ExercisesResponseSchema,
   TranslateRequestSchema,
   TranslateResponseSchema,
-  TtsRequestSchema,
 } from "../schemas/cms";
 import type {
   AudioDictationExerciseSchema,
@@ -90,8 +87,6 @@ export type SetLearnerSettingsRequest = z.infer<typeof SetLearnerSettingsRequest
 export type SetLearnerSettingsResponse = z.infer<typeof SetLearnerSettingsResponseSchema>;
 export type GetProgressSnapshotRequest = z.infer<typeof GetProgressSnapshotRequestSchema>;
 export type GetProgressSnapshotResponse = z.infer<typeof GetProgressSnapshotResponseSchema>;
-export type PlayTtsRequest = z.infer<typeof PlayTtsRequestSchema>;
-export type PlayTtsResponse = z.infer<typeof PlayTtsResponseSchema>;
 export type GetSiteRulesRequest = z.infer<typeof GetSiteRulesRequestSchema>;
 export type GetSiteRulesResponse = z.infer<typeof GetSiteRulesResponseSchema>;
 export type StorageChangedMessage = z.infer<typeof StorageChangedMessageSchema>;
@@ -104,4 +99,3 @@ export type CmsTranslateResponse = z.infer<typeof TranslateResponseSchema>;
 export type CmsExercisesRequest = z.infer<typeof ExercisesRequestSchema>;
 export type CmsExercise = z.infer<typeof CmsExerciseSchema>;
 export type CmsExercisesResponse = z.infer<typeof ExercisesResponseSchema>;
-export type CmsTtsRequest = z.infer<typeof TtsRequestSchema>;

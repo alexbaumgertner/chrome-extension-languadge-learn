@@ -103,8 +103,3 @@ export const CmsExerciseSchema = z.discriminatedUnion("kind", [
 export const ExercisesResponseSchema = z.object({
   exercises: z.array(CmsExerciseSchema).min(0).max(4),
 });
-
-export const TtsRequestSchema = z.object({
-  sentence: z.string().min(1),
-  rate: z.enum(["normal", "slow"]),
-});

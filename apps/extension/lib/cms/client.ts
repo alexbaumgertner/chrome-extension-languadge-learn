@@ -71,20 +71,3 @@ export async function generateExercises(
   );
   return response.exercises;
 }
-
-export async function fetchTtsAudio(
-  sentence: string,
-  rate: "normal" | "slow",
-): Promise<{ blob: Blob; mimeType: string }> {
-  const res = await fetch(`${CMS_BASE_URL}/api/tts`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ sentence, rate }),
-  });
-  if (!res.ok) {
-    throw new CmsFetchError(`/api/tts responded ${res.status}`);
-  }
-  const mimeType = res.headers.get("Content-Type") ?? "audio/mpeg";
-  const blob = await res.blob();
-  return { blob, mimeType };
-}

@@ -9,7 +9,6 @@ import {
   GetSiteStatusResponseSchema,
   isSafeHtmlSubset,
   LearnerSettingsSchema,
-  PlayTtsRequestSchema,
   ProgressProfileSchema,
   RequestMessageSchema,
   ReviewQueueEntrySchema,
@@ -20,7 +19,6 @@ import {
   TranslateParagraphResponseSchema,
   TranslateRequestSchema,
   TranslateResponseSchema,
-  TtsRequestSchema,
   VocabularyItemSchema,
 } from "../src/index";
 
@@ -283,19 +281,6 @@ describe("message schemas", () => {
     expect(result.success).toBe(false);
   });
 
-  it("PlayTtsRequest round-trips a valid fixture and rejects a bad rate", () => {
-    const fixture = {
-      type: "PLAY_TTS",
-      sentence: "Guten Tag.",
-      rate: "slow",
-      contentHash: "abc123",
-      level: "B1-B2",
-      topic: "dative-case",
-    } as const;
-    expect(PlayTtsRequestSchema.parse(fixture)).toEqual(fixture);
-    expect(PlayTtsRequestSchema.safeParse({ ...fixture, rate: "fast" }).success).toBe(false);
-  });
-
   it("GetSiteRulesResponse round-trips a valid fixture and rejects a malformed entry", () => {
     const fixture = {
       siteRules: {
@@ -354,11 +339,6 @@ describe("cms schemas", () => {
   it("ExercisesResponse accepts zero exercises", () => {
     const fixture = { exercises: [] };
     expect(ExercisesResponseSchema.parse(fixture)).toEqual(fixture);
-  });
-
-  it("TtsRequest rejects an invalid rate", () => {
-    const result = TtsRequestSchema.safeParse({ sentence: "Guten Tag.", rate: "fast" });
-    expect(result.success).toBe(false);
   });
 
   it("isSafeHtmlSubset accepts plain text and bare strong/em tags", () => {

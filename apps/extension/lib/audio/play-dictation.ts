@@ -1,47 +1,55 @@
-import type { Level, PlayTtsResponse } from "@sprachweise/shared";
-import { sendMessage } from "@/lib/messaging/send";
+const RATES = { normal: 0.95, slow: 0.6 } as const;
 
-function fallbackSpeak(sentence: string, rate: "normal" | "slow"): void {
-  try {
-    const utterance = new SpeechSynthesisUtterance(sentence);
-    utterance.lang = "de-DE";
-    utterance.rate = rate === "slow" ? 0.6 : 0.95;
-    window.speechSynthesis.speak(utterance);
-  } catch {
-    // Synthesis unavailable on this device — degrade silently (research.md §8).
-  }
+/** `getVoices()` is empty until Chrome has loaded them; wait briefly for `voiceschanged`. */
+function loadVoices(synth: SpeechSynthesis): Promise<SpeechSynthesisVoice[]> {
+  const voices = synth.getVoices();
+  if (voices.length > 0) return Promise.resolve(voices);
+  return new Promise((resolve) => {
+    const done = () => {
+      synth.removeEventListener("voiceschanged", done);
+      resolve(synth.getVoices());
+    };
+    synth.addEventListener("voiceschanged", done);
+    setTimeout(done, 1000);
+  });
 }
 
 /**
- * Plays a dictation sentence via the CMS-backed (cached) TTS audio when
- * available, falling back to the browser's native SpeechSynthesis — which
- * works fully offline — on any fetch failure or missing cache entry.
+ * Prefers Chrome's network "Google Deutsch" voice (the most natural one available without a
+ * server), then any de-DE voice, then any German voice. Undefined lets the browser pick from
+ * `utterance.lang`.
  */
-export async function playDictationAudio(
-  sentence: string,
-  rate: "normal" | "slow",
-  contentHash: string,
-  level: Level,
-  topic: string,
-): Promise<void> {
-  const response = await sendMessage<PlayTtsResponse>({
-    type: "PLAY_TTS",
-    sentence,
-    rate,
-    contentHash,
-    level,
-    topic,
+export function pickGermanVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | undefined {
+  const german = voices.filter((v) => v.lang.toLowerCase().replace("_", "-").startsWith("de"));
+  return (
+    german.find((v) => /google/i.test(v.name) && v.lang.replace("_", "-") === "de-DE") ??
+    german.find((v) => v.lang.replace("_", "-") === "de-DE") ??
+    german[0]
+  );
+}
+
+/**
+ * Speaks a dictation sentence with the browser's own speech synthesis — no server TTS. Resolves
+ * when speech ends (or fails), so callers can disable the play buttons meanwhile. Degrades
+ * silently on devices without synthesis.
+ */
+export async function playDictationAudio(sentence: string, rate: "normal" | "slow"): Promise<void> {
+  const synth = window.speechSynthesis;
+  if (!synth) return;
+  const voice = pickGermanVoice(await loadVoices(synth));
+
+  await new Promise<void>((resolve) => {
+    try {
+      synth.cancel();
+      const utterance = new SpeechSynthesisUtterance(sentence);
+      utterance.lang = "de-DE";
+      if (voice) utterance.voice = voice;
+      utterance.rate = RATES[rate];
+      utterance.onend = () => resolve();
+      utterance.onerror = () => resolve();
+      synth.speak(utterance);
+    } catch {
+      resolve();
+    }
   });
-
-  if (!response.ok) {
-    fallbackSpeak(sentence, rate);
-    return;
-  }
-
-  try {
-    const audio = new Audio(response.audioDataUrl);
-    await audio.play();
-  } catch {
-    fallbackSpeak(sentence, rate);
-  }
 }

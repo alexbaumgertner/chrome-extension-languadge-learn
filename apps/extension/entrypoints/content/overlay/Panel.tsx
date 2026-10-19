@@ -122,9 +122,6 @@ export default function Panel() {
                       key={exercise.id}
                       exercise={exercise}
                       onAnswer={handleAnswer}
-                      contentHash={session.sourceParagraphHash}
-                      level={settings.level}
-                      topic={settings.currentTopic}
                     />
                   );
               }
