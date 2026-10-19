@@ -1,0 +1,19 @@
+/*
+ * Bundled fonts for extension pages (OFL-1.1, see fonts/OFL-*.txt). Latin only: neither face
+ * ships Cyrillic. The in-page UI can't use @font-face (Chrome ignores it inside shadow roots);
+ * it registers the same files through load-fonts.ts.
+ */
+@font-face {
+  font-family: "Sprachweise Caprasimo";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/caprasimo-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Sprachweise Figtree";
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url("./fonts/figtree-latin-wght-normal.woff2") format("woff2");
+}
