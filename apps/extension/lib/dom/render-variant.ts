@@ -1,16 +1,27 @@
 import type { GermanVariant } from "@sprachweise/shared";
+import { HOST_TOKENS } from "@/lib/design/host-page-styles";
 
 export const VOCAB_SPAN_CLASS = "sw-vocab";
+
+const {
+  "--color-accent-200": CHIP_FILL,
+  "--color-accent-400": CHIP_EDGE,
+  "--color-accent-900": CHIP_INK,
+} = HOST_TOKENS;
 
 /**
  * Inline styles rather than an injected stylesheet class — this markup lives
  * in the host page's light DOM (it must inherit the paragraph's own
  * font-size/line-height), so it can't be Shadow-DOM isolated the way actual
  * extension chrome (panel/popup/tooltips) is. Inline styles avoid leaking
- * into, or being overridden unpredictably by, host page CSS.
+ * into, or being overridden unpredictably by, host page CSS. The look is the
+ * design handoff's vocabulary chip; it sets its own ink so it reads on dark
+ * pages too.
  */
 const VOCAB_SPAN_STYLE =
-  "border-bottom:2px dotted currentColor;cursor:pointer;text-decoration:none;";
+  `background:${CHIP_FILL};color:${CHIP_INK};border-radius:6px;padding:0 5px;` +
+  `box-shadow:inset 0 -2px 0 ${CHIP_EDGE};-webkit-box-decoration-break:clone;` +
+  "box-decoration-break:clone;cursor:pointer;text-decoration:none;";
 
 function escapeAttr(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;");

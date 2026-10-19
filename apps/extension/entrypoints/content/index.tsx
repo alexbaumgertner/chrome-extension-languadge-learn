@@ -25,6 +25,7 @@ import {
 import { VOCAB_SPAN_CLASS, renderVariantHtml } from "@/lib/dom/render-variant";
 import { createShadowPortal, positionBelow, type ShadowPortal } from "@/lib/dom/shadow-portal";
 import { sendMessage } from "@/lib/messaging/send";
+import { loadFonts, unloadFonts } from "@/lib/design/load-fonts";
 import { setExerciseSession } from "@/lib/state/exercise-session";
 import Panel from "./overlay/Panel";
 
@@ -303,6 +304,7 @@ export default defineContentScript({
       if ((e as PageTransitionEvent).persisted) reportTranslationsChanged();
     });
 
+    loadFonts();
     const ui = await createShadowRootUi(ctx, {
       name: "sprachweise-panel",
       position: "inline",
@@ -325,6 +327,7 @@ export default defineContentScript({
       notice?.remove();
       activeTooltip?.remove();
       ui.remove();
+      unloadFonts();
     });
   },
 });

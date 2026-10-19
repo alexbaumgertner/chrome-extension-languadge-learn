@@ -17,6 +17,19 @@ import WordPairingCard from "./WordPairingCard";
 import AudioDictationCard from "./AudioDictationCard";
 import ReportBadTranslation from "./ReportBadTranslation";
 import { PANEL_CSS } from "./styles";
+import { ChevronRightIcon } from "@/lib/design/icons";
+
+/** Card kickers, numbered in panel order (design handoff: "01 · из этой статьи"). */
+const KICKERS: Record<Exercise["kind"], string> = {
+  "fill-blank": "From this page",
+  "multiple-choice": "Choose the word",
+  "word-pairing": "Match the pairs",
+  "audio-dictation": "Audio dictation",
+};
+
+function kicker(index: number, kind: Exercise["kind"]): string {
+  return `${String(index + 1).padStart(2, "0")} · ${KICKERS[kind]}`;
+}
 
 export default function Panel() {
   const [session, setSession] = useState<ExerciseSession | null>(getExerciseSession());
@@ -46,6 +59,11 @@ export default function Panel() {
   const activeSession = session;
   const activeSettings = settings;
   const pendingCount = exercises.filter((ex) => !ex.answered).length;
+  const answeredCount = exercises.length - pendingCount;
+  const tabLabel =
+    exercises.length === 0
+      ? "No exercises"
+      : `${pendingCount} exercise${pendingCount === 1 ? "" : "s"}`;
 
   async function handleAnswer(
     exercise: Exercise,
@@ -85,31 +103,72 @@ export default function Panel() {
     <>
       <style>{PANEL_CSS}</style>
       {collapsed ? (
-        <button className="sw-tab" onClick={() => setCollapsed(false)}>
-          {exercises.length === 0
-            ? "No exercises"
-            : `${pendingCount} exercise${pendingCount === 1 ? "" : "s"}`}
+        <button className="sw-tab" aria-label={tabLabel} onClick={() => setCollapsed(false)}>
+          <span className="sw-tab-word" aria-hidden="true">
+            Sprachweise
+          </span>
+          {pendingCount > 0 && (
+            <span className="sw-tab-badge" aria-hidden="true">
+              {pendingCount}
+            </span>
+          )}
+          <span className="visually-hidden">{tabLabel}</span>
         </button>
       ) : (
         <div className="sw-panel">
           <div className="sw-header">
-            <span>Exercises</span>
-            <button aria-label="Collapse" onClick={() => setCollapsed(true)}>
-              ×
-            </button>
+            <div className="sw-header-row">
+              <span className="brand-mark" aria-hidden="true">
+                S
+              </span>
+              <span className="sw-title">Sprachweise</span>
+              <button
+                className="btn btn-ghost"
+                aria-label="Collapse"
+                onClick={() => setCollapsed(true)}
+              >
+                Collapse <ChevronRightIcon size={14} />
+              </button>
+            </div>
+            <div className="sw-tags">
+              <span className="tag tag-accent">
+                Topic: {activeSettings.currentTopic.replace(/[-_]+/g, " ")}
+              </span>
+              <span className="tag tag-accent-2">Level {activeSettings.level}</span>
+            </div>
+            {exercises.length > 0 && (
+              <div className="sw-progress">
+                <div className="sw-progress-track">
+                  <div
+                    className="sw-progress-fill"
+                    style={{ width: `${(answeredCount / exercises.length) * 100}%` }}
+                  />
+                </div>
+                <span className="sw-progress-label">
+                  {answeredCount} of {exercises.length}
+                </span>
+              </div>
+            )}
           </div>
           <div className="sw-list">
             {exercises.length === 0 && <p className="sw-empty">No exercises for this paragraph.</p>}
-            {exercises.map((exercise) => {
+            {exercises.map((exercise, index) => {
+              const label = kicker(index, exercise.kind);
               switch (exercise.kind) {
                 case "fill-blank":
                   return (
-                    <FillBlankCard key={exercise.id} exercise={exercise} onAnswer={handleAnswer} />
+                    <FillBlankCard
+                      key={exercise.id}
+                      kicker={label}
+                      exercise={exercise}
+                      onAnswer={handleAnswer}
+                    />
                   );
                 case "multiple-choice":
                   return (
                     <MultipleChoiceCard
                       key={exercise.id}
+                      kicker={label}
                       exercise={exercise}
                       onAnswer={handleAnswer}
                     />
@@ -118,6 +177,7 @@ export default function Panel() {
                   return (
                     <WordPairingCard
                       key={exercise.id}
+                      kicker={label}
                       exercise={exercise}
                       onAnswer={handleAnswer}
                     />
@@ -126,6 +186,7 @@ export default function Panel() {
                   return (
                     <AudioDictationCard
                       key={exercise.id}
+                      kicker={label}
                       exercise={exercise}
                       onAnswer={handleAnswer}
                     />
