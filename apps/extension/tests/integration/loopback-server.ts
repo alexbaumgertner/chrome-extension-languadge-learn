@@ -37,9 +37,9 @@ export function createLoopbackServer(handler: Handler) {
         servers.map(
           (server, i) =>
             new Promise<void>((resolve, reject) => {
-              server.once("error", (err: NodeJS.ErrnoException) =>
+              server.once("error", (err) =>
                 // A machine without IPv6 loopback still resolves localhost to 127.0.0.1.
-                i === 1 && err.code === "EADDRNOTAVAIL" ? resolve() : reject(err),
+                i === 1 ? resolve() : reject(err),
               );
               server.listen(port, hosts[i], resolve);
             }),

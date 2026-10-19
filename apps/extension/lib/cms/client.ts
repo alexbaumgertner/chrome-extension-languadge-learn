@@ -50,7 +50,7 @@ export interface TranslateFailure {
  */
 async function backendAnswers(): Promise<boolean> {
   try {
-    await fetch(`${CMS_BASE_URL}/`, {
+    await fetch(`${CMS_BASE_URL}/api/health`, {
       mode: "no-cors",
       cache: "no-store",
       signal: AbortSignal.timeout(3000),
