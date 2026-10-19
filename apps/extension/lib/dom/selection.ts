@@ -1,8 +1,9 @@
 /**
- * Turns the learner's text selection into what gets translated: the exact selected text when it
- * lies inside one block, otherwise every whole block it touches. A "block" is the nearest
- * paragraph-like ancestor (p, li, h1–h6, blockquote, td, div, …) — the unit the substitution
- * engine saves and restores.
+ * Turns the learner's text selection into what gets translated, one part per leaf block it
+ * touches: the whole block when the selection covers all of it, otherwise exactly the selected
+ * text inside it. A leaf block is a paragraph-like element (p, li, h1–h6, blockquote, td, div, …)
+ * with no block-level element inside — the unit the substitution engine saves and restores, so a
+ * container holding other blocks, form fields or unselected paragraphs is never replaced.
  */
 
 const BLOCK_TAGS = new Set([
@@ -36,6 +37,26 @@ const BLOCK_TAGS = new Set([
   "DETAILS",
 ]);
 
+/** Anything of these inside a block makes it a container, not a leaf. */
+const BLOCK_LEVEL_SELECTOR = [
+  ...[...BLOCK_TAGS].map((t) => t.toLowerCase()),
+  "ul",
+  "ol",
+  "dl",
+  "menu",
+  "table",
+  "thead",
+  "tbody",
+  "tfoot",
+  "tr",
+  "pre",
+  "hr",
+  "form",
+  "fieldset",
+  "hgroup",
+  "dialog",
+].join(",");
+
 /** Text under these is never sent: code, scripts, form controls. */
 const SKIPPED_ANCESTOR_SELECTOR =
   "script,style,noscript,template,code,pre,kbd,samp,svg,textarea,select,option";
@@ -54,12 +75,22 @@ const CONTROL_SELECTOR = "textarea,input,select,button";
  * replaced would be deleted with it.
  */
 const HIDDEN_EXCLUDED_SELECTOR = "script,style,noscript,template";
+/** A leaf holding any of these is replaced only around the selected text, never whole. */
+const KEEP_WHOLE_SELECTOR = `${VISIBLE_EXCLUDED_SELECTOR},${HIDDEN_EXCLUDED_SELECTOR},iframe,object,embed,video,audio,canvas`;
 
-export type SelectionTarget =
-  /** Inside one block and not all of it: replace exactly `range`. */
-  | { kind: "range"; block: HTMLElement; range: Range; text: string }
-  /** Whole blocks, in document order, none inside another. */
-  | { kind: "blocks"; blocks: HTMLElement[] };
+/** One leaf block's share of the selection. */
+export interface SelectionPart {
+  block: HTMLElement;
+  /** The exact text to replace inside `block`; null to replace the whole block. */
+  range: Range | null;
+  /** What gets sent: the range's text, or the whole block's. */
+  text: string;
+}
+
+/** The parts in document order, each in a different leaf block. */
+export interface SelectionTarget {
+  parts: SelectionPart[];
+}
 
 export type SelectionProblem =
   /** Nothing readable selected (collapsed or whitespace only). */
@@ -67,7 +98,9 @@ export type SelectionProblem =
   /** The selection is in an editable field — translating it would rewrite the learner's input. */
   | "editable"
   /** The selection includes code or a form field (`VISIBLE_EXCLUDED_SELECTOR` and the like). */
-  | "excluded";
+  | "excluded"
+  /** Selected text sits outside every leaf block (directly in a container or in body). */
+  | "mixed";
 
 interface TextPiece {
   node: Text;
@@ -90,6 +123,12 @@ function nearestBlock(node: Node): HTMLElement | null {
     if (BLOCK_TAGS.has(el.tagName)) return el;
   }
   return null;
+}
+
+/** The leaf block `node`'s text belongs to, or null if it sits in a container or outside blocks. */
+function leafBlock(node: Node): HTMLElement | null {
+  const block = nearestBlock(node);
+  return block && !block.querySelector(BLOCK_LEVEL_SELECTOR) ? block : null;
 }
 
 /** The selected part of each text node, skipping whitespace-only parts and skipped ancestors. */
@@ -158,24 +197,25 @@ function crossesExcluded(range: Range): boolean {
   );
 }
 
-/** Whether replacing `target` would delete excluded content along with the text. */
-function replacesExcluded(target: SelectionTarget): boolean {
-  if (target.kind === "blocks") {
-    const selector = `${VISIBLE_EXCLUDED_SELECTOR},${HIDDEN_EXCLUDED_SELECTOR}`;
-    return target.blocks.some((b) => b.querySelector(selector));
-  }
-  return [...target.block.querySelectorAll(HIDDEN_EXCLUDED_SELECTOR)].some((el) =>
-    target.range.intersectsNode(el),
+/** Whether replacing exactly `range` inside `block` would delete a script or style with it. */
+function rangeHidesExcluded(block: HTMLElement, range: Range): boolean {
+  return [...block.querySelectorAll(HIDDEN_EXCLUDED_SELECTOR)].some((el) =>
+    range.intersectsNode(el),
   );
 }
 
-export function resolveSelection(range: Range): SelectionTarget | { problem: SelectionProblem } {
-  const target = resolveTarget(range);
-  if ("kind" in target && replacesExcluded(target)) return { problem: "excluded" };
-  return target;
+/** `block`'s part: whole if the selection covers all its text and nothing would be lost. */
+function partOf(block: HTMLElement, pieces: TextPiece[]): SelectionPart {
+  const range = trimmedRange(pieces);
+  const text = normalizeWhitespace(range.toString());
+  const coversAll = text === normalizeWhitespace(block.textContent ?? "");
+  if (coversAll && !block.querySelector(KEEP_WHOLE_SELECTOR)) {
+    return { block, range: null, text: blockText(block) };
+  }
+  return { block, range, text };
 }
 
-function resolveTarget(range: Range): SelectionTarget | { problem: SelectionProblem } {
+export function resolveSelection(range: Range): SelectionTarget | { problem: SelectionProblem } {
   if (range.collapsed) return { problem: "empty" };
   const inEditable = [range.startContainer, range.endContainer].every((n) =>
     elementOf(n)?.closest(EDITABLE_SELECTOR),
@@ -183,21 +223,20 @@ function resolveTarget(range: Range): SelectionTarget | { problem: SelectionProb
   if (inEditable) return { problem: "editable" };
   if (crossesExcluded(range)) return { problem: "excluded" };
   const pieces = selectedPieces(range);
+  if (pieces.length === 0) return { problem: "empty" };
 
-  const pieceBlocks = pieces.map((p) => nearestBlock(p.node));
-  const blocks = [...new Set(pieceBlocks.filter((b): b is HTMLElement => b !== null))];
-  // Keep only the outermost: translating a block also replaces every block inside it.
-  const outermost = blocks.filter((b) => !blocks.some((other) => other !== b && other.contains(b)));
-  if (outermost.length === 0) return { problem: "empty" };
-
-  const block = outermost[0]!;
-  const allInOneBlock = outermost.length === 1 && pieceBlocks.every((b) => b === block);
-  if (allInOneBlock) {
-    const selected = trimmedRange(pieces);
-    const text = normalizeWhitespace(selected.toString());
-    if (text !== normalizeWhitespace(block.textContent ?? "")) {
-      return { kind: "range", block, range: selected, text };
-    }
+  // Pieces come in document order and leaves don't nest, so each leaf's pieces are consecutive.
+  const groups: Array<{ block: HTMLElement; pieces: TextPiece[] }> = [];
+  for (const piece of pieces) {
+    const block = leafBlock(piece.node);
+    if (!block) return { problem: "mixed" };
+    const last = groups[groups.length - 1];
+    if (last?.block === block) last.pieces.push(piece);
+    else groups.push({ block, pieces: [piece] });
   }
-  return { kind: "blocks", blocks: outermost };
+  const parts = groups.map((g) => partOf(g.block, g.pieces));
+  if (parts.some((p) => p.range && rangeHidesExcluded(p.block, p.range))) {
+    return { problem: "excluded" };
+  }
+  return { parts };
 }

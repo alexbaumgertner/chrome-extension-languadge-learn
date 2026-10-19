@@ -8,9 +8,10 @@ words and exercises built from that text. Progress is tracked locally.
 ## Features
 
 - **Translate a selection from the right-click menu** — on any page, no
-  per-site setup and no reload. A selection inside one paragraph replaces
-  exactly that text; a selection across paragraphs translates those
-  paragraphs whole. At most 1,500 characters at a time.
+  per-site setup and no reload. Exactly the selected text is replaced, one
+  paragraph at a time; a fully selected paragraph is replaced whole. At most
+  1,500 characters at a time. Selections that include code or form fields,
+  or text outside a paragraph, are refused with a message.
 - **Keyboard shortcut** — `Alt+Shift+G` (changeable at
   `chrome://extensions/shortcuts`) does the same as the menu item, for sites
   that replace the right-click menu.
@@ -74,7 +75,7 @@ production builds use `https://sprachweise.vercel.app` and dev builds
 
 `pnpm --filter @sprachweise/extension test:integration` runs `build:test`
 (fixture page `http://127.0.0.1:58732`, mock API `http://localhost:58733`) and
-then Playwright in headed Chromium. The fixtures start a fixture page server
+then Playwright in headless Chromium. The fixtures start a fixture page server
 and a mock API with real CORS for each test. Playwright can't open Chrome's
 native context menu or press an extension shortcut, so test builds expose the
 same handlers on the service worker (`sprachweiseTest`) and get the fixture

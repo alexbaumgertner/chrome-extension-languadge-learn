@@ -110,17 +110,19 @@ enable per site and no reload.
 needed a host permission per site, a popup step and (before a fix) a reload.
 
 **Independent Test**: On any article, select a sentence → right-click → Translate → only that
-sentence turns German; select across two paragraphs → both turn German whole; Restore → the page
-is byte-identical to before.
+sentence turns German; select from the middle of one paragraph into the middle of the next →
+exactly the selected text in each turns German; Restore → the page is byte-identical to before.
 
 **Acceptance Scenarios**:
 
 1. **Given** a selection inside one paragraph that doesn't cover all of it, **When** the learner
    picks "Translate to German", **Then** exactly the selected text (trimmed of surrounding
    whitespace) is sent and replaced; the rest of the paragraph is untouched.
-2. **Given** a selection that covers a whole paragraph or touches several, **Then** every block
-   it touches is translated whole, one request per block, top to bottom; the panel shows the
-   first block's exercises.
+2. **Given** a selection that touches several paragraphs, **Then** it is split per leaf block (a
+   paragraph-like element with no block inside): a block it covers completely is replaced whole,
+   the selected part of any other block is replaced exactly — one request per block, top to
+   bottom; the panel shows the first block's exercises. A container holding other blocks or form
+   fields is never replaced as a whole.
 3. **Given** a selection over 1,500 characters, **Then** nothing is sent and the learner is told
    to select less (how much they selected and the limit).
 4. **Given** translated text on the page, **When** the learner right-clicks the page (no
@@ -147,7 +149,11 @@ is byte-identical to before.
 - Selection that includes code (`code`, `pre`, `kbd`, `samp`) or a form field (input, textarea,
   select, button, contenteditable), or whose replaced text would contain a script or style →
   the whole selection is refused ("Selection includes code or form fields — select plain text
-  only"), `selection-excluded` is recorded, nothing is sent. Ranges are never split around it. A
+  only"), `selection-excluded` is recorded, nothing is sent.
+- Selection that includes text sitting directly in a container next to other blocks
+  (`<div>Header<p>…</p></div>`) or in `body`, or the own text of a list item that holds a nested
+  list → refused ("Selection includes text outside a paragraph — select text inside paragraphs
+  only"), `selection-mixed` recorded, nothing sent. Ranges are never split around it. A
   script between selected paragraphs is not visible and not replaced, so it doesn't count.
 - Selection already showing German → the original of that block is translated again (served from
   the local cache), never the German.
@@ -217,9 +223,14 @@ is byte-identical to before.
 - **FR-015**: A "Translate to German (Sprachweise)" context-menu item on selections MUST be the
   trigger; choosing it is the consent to send that text (constitution III). Nothing is read or
   sent before.
-- **FR-016**: A selection inside one block that doesn't cover it MUST replace exactly the selected
-  range; otherwise every block it touches MUST be replaced whole. Restoring MUST be byte-identical
-  per block (constitution II).
+- **FR-016**: A selection MUST be resolved to leaf blocks (paragraph-like elements with no
+  block-level element inside). A leaf it covers completely MUST be replaced whole, unless it holds
+  a form field, media or a script (then only the selected text); in any other leaf exactly the
+  selected range MUST be replaced. Selected text outside every leaf (directly in a container
+  holding other blocks) MUST make the whole selection be refused (`selection-mixed`), never
+  expanded. Restoring MUST be byte-identical per block (constitution II).
+  *(Amended 2026-10-19 after review: a partly selected block at either end of a multi-block
+  selection is no longer expanded to the whole block.)*
 - **FR-017**: A selection MUST be at most `TRANSLATE_MAX_CHARS` = 1,500 characters
   (`packages/shared`). The extension checks the whole selection before sending; the backend
   checks each request and answers `413 text-too-long`. Rationale: ~250 characters per average

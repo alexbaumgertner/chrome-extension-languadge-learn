@@ -46,7 +46,7 @@ test("a selection inside one paragraph replaces exactly that text; Restore puts 
   expect(await target.evaluate((el) => el.outerHTML)).toBe(before);
 });
 
-test("a selection across paragraphs translates every whole paragraph it touches", async ({
+test("a selection across paragraphs translates covered paragraphs whole and exactly the selected text of the ends", async ({
   context,
   fixtureServer,
   cmsServer,
@@ -56,7 +56,7 @@ test("a selection across paragraphs translates every whole paragraph it touches"
     page(`
   <p id="one">Der erste Absatz wird ganz übersetzt.</p>
   <h2 id="two">Eine Zwischenüberschrift</h2>
-  <p id="three">Der dritte Absatz wird nur angefangen, aber ganz übersetzt.</p>
+  <p id="three">Der dritte Absatz wird nur angefangen.</p>
   <p id="four">Der vierte Absatz bleibt unberührt.</p>`),
   );
   const tab = await context.newPage();
@@ -77,10 +77,14 @@ test("a selection across paragraphs translates every whole paragraph it touches"
     await expect(tab.locator(`${id} .sw-vocab`).first()).toBeVisible();
   }
   expect(cmsServer.requests.translate.map((r) => (r as { text: string }).text)).toEqual([
-    "Der erste Absatz wird ganz übersetzt.",
+    "erste Absatz wird ganz übersetzt.",
     "Eine Zwischenüberschrift",
-    "Der dritte Absatz wird nur angefangen, aber ganz übersetzt.",
+    "Der dritte",
   ]);
+  // The ends keep their unselected text; the heading, covered whole, is replaced whole.
+  await expect(tab.locator("#one")).toHaveText(/^Der Ich moechte/);
+  await expect(tab.locator("#three")).toHaveText(/ Absatz wird nur angefangen\.$/);
+  await expect(tab.locator("#two .sw-segment")).toHaveCount(0);
   expect(await tab.locator("#four").evaluate((el) => el.outerHTML)).toBe(fourBefore);
   await expect(tab.locator(".sw-panel .sw-card")).toHaveCount(4);
 
@@ -260,4 +264,66 @@ test("a selection that includes code is refused with a clear message; nothing is
   await expect
     .poll(() => cmsServer.requests.events.flatMap((b) => b.events))
     .toContainEqual(expect.objectContaining({ name: "client_error", error: "selection-excluded" }));
+});
+
+test("a container's own text is refused, and a paragraph inside it is translated alone", async ({
+  context,
+  fixtureServer,
+  cmsServer,
+  clickMenu,
+}) => {
+  fixtureServer.setHtml(
+    page(
+      `<div id="box">Header<p id="sel">Selected paragraph text.</p><p id="unsel">Unselected paragraph text.</p><input id="field" value="typed"></div>`,
+    ),
+  );
+  const tab = await context.newPage();
+  await tab.goto(FIXTURE_ORIGIN);
+  const before = await tab.locator("article").evaluate((el) => el.innerHTML);
+  const untouched = () =>
+    tab.evaluate(() =>
+      ["unsel", "field"].map((id) => document.getElementById(id)!.outerHTML).join(""),
+    );
+  const untouchedBefore = await untouched();
+
+  // From inside "Header" into the first paragraph: that text has no paragraph of its own.
+  await tab.evaluate(() => {
+    const box = document.getElementById("box")!;
+    const range = document.createRange();
+    range.setStart(box.firstChild!, 2);
+    range.setEnd(document.getElementById("sel")!.firstChild!, 8);
+    getSelection()!.removeAllRanges();
+    getSelection()!.addRange(range);
+  });
+  await clickMenu(tab, "translate");
+  await expect(
+    tab.getByText(
+      "Selection includes text outside a paragraph — select text inside paragraphs only.",
+    ),
+  ).toBeVisible();
+  expect(cmsServer.callCounts.translate).toBe(0);
+  expect(await tab.locator("article").evaluate((el) => el.innerHTML)).toBe(before);
+  await expect
+    .poll(() => cmsServer.requests.events.flatMap((b) => b.events))
+    .toContainEqual(expect.objectContaining({ name: "client_error", error: "selection-mixed" }));
+
+  // Triple-click style: the whole first paragraph up to the start of the next one.
+  await tab.evaluate(() => {
+    const range = document.createRange();
+    range.setStart(document.getElementById("sel")!.firstChild!, 0);
+    range.setEnd(document.getElementById("unsel")!, 0);
+    getSelection()!.removeAllRanges();
+    getSelection()!.addRange(range);
+  });
+  await clickMenu(tab, "translate");
+  await expect(tab.locator("#sel .sw-vocab").first()).toBeVisible();
+  expect(cmsServer.requests.translate).toEqual([
+    expect.objectContaining({ text: "Selected paragraph text." }),
+  ]);
+  expect(await untouched()).toBe(untouchedBefore);
+  await expect(tab.locator("#box")).toHaveText(/^Header/);
+
+  await clickMenu(tab, "restore");
+  await expect(tab.locator(".sw-vocab")).toHaveCount(0);
+  expect(await tab.locator("article").evaluate((el) => el.innerHTML)).toBe(before);
 });

@@ -55,14 +55,17 @@ offline event queue in `chrome.storage.local`.
   shares a right-click with "Translate" (two items would fold into a submenu), and is shown only
   while the active tab answers `hasTranslations: true` (re-checked on tab switch, window focus,
   tab load, and every `TRANSLATIONS_CHANGED` from a content script).
-- **Selection → targets** (`lib/dom/selection.ts`): nearest block ancestor of each selected text
-  node; one block not fully covered → exact trimmed range; otherwise the outermost touched blocks.
-  Code, form controls and editable fields are excluded.
+- **Selection → targets** (`lib/dom/selection.ts`): each selected text node belongs to its
+  nearest block ancestor, which must be a leaf (no block-level element inside) — otherwise the
+  selection is refused (`selection-mixed`). Per leaf: fully covered and holding no control, media
+  or script → whole block; else the exact trimmed range. A selection that takes in code or a form
+  field, or whose replaced range holds a script/style, is refused (`selection-excluded`); ranges
+  are never split around it.
 - **Partial range** (`lib/dom/substitution.ts` `applyVariantToRange`): the block's `innerHTML` is
   saved before its first change; the range is deleted and a `span.sw-segment` with the variant is
   inserted. Restore is per block from that snapshot, so it is byte-identical even when the range
-  cut through a link (which `deleteContents` splits). Nested translations are restored before an
-  outer block is snapshotted.
+  cut through a link (which `deleteContents` splits). Translated blocks are leaves, so they never
+  nest.
 - **Length cap**: `TRANSLATE_MAX_CHARS` = 1,500 in `packages/shared`, checked on the whole
   selection by the extension (nothing sent, `translate-too-long` recorded) and per request by the
   backend (`413 text-too-long`; was `400` at 5,000). Exercises accept twice that, since a German
@@ -118,7 +121,7 @@ apps/extension/
 ├── entrypoints/content/   # "Плохой перевод" button; selection → translate / restore
 ├── entrypoints/background.ts  # report message; context menu + shortcut handlers
 ├── lib/page-actions.ts    # menu items, on-demand injection, Restore visibility
-└── lib/dom/selection.ts   # selection → exact range or whole blocks
+└── lib/dom/selection.ts   # selection → per leaf block: exact range or whole block
 STORE_LISTING.md
 ```
 

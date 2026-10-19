@@ -28,8 +28,8 @@ const RU = `
 <ul>
 <li><strong>Выделенный вами текст</strong> и выбранный уровень (A1–A2, B1–B2, C1+). Только после
 того, как вы выбрали пункт меню «Перевести на немецкий (Sprachweise)» или нажали сочетание клавиш
-расширения. Если выделение задевает несколько абзацев, отправляются эти абзацы целиком; за один раз —
-не больше 1500 знаков. До вашего выбора расширение не видит страницу и ничего не отправляет. Адрес
+расширения. Отправляется только выделенный текст (если выделен уже переведённый текст — исходный
+текст этого абзаца); за один раз — не больше 1500 знаков. До вашего выбора расширение не видит страницу и ничего не отправляет. Адрес
 страницы и остальной текст страницы не отправляются.</li>
 <li><strong>Метрики использования</strong> со <strong>случайным идентификатором установки</strong>
 (UUID, который расширение создаёт при установке; он не связан с вашим именем, почтой, устройством
@@ -109,8 +109,8 @@ what leaves your device, where it is stored and for how long.</p>
 <ul>
 <li><strong>The text you selected</strong> and your chosen level (A1–A2, B1–B2, C1+), only after you
 choose "Translate to German (Sprachweise)" from the right-click menu or press the extension's
-keyboard shortcut. If the selection spans several paragraphs, those paragraphs are sent whole; at
-most 1,500 characters at a time. Until you make that choice the extension cannot see the page and
+keyboard shortcut. Only the selected text is sent (for text already shown in German, the original
+text of that paragraph); at most 1,500 characters at a time. Until you make that choice the extension cannot see the page and
 sends nothing. The page address and the rest of the page are not sent.</li>
 <li><strong>Usage metrics</strong> with a <strong>random install ID</strong> (a UUID the extension
 creates when installed; it is not derived from your name, email, device or any account). Only these

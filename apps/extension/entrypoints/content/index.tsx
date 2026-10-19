@@ -23,7 +23,6 @@ import {
   isTranslated,
   rangeOverlapsTranslation,
   restoreAll,
-  restoreInside,
   restoreOriginal,
 } from "@/lib/dom/substitution";
 import { VOCAB_SPAN_CLASS, renderVariantHtml } from "@/lib/dom/render-variant";
@@ -57,11 +56,13 @@ const SELECTION_MESSAGES: Record<SelectionProblem, string> = {
   empty: "Select the text you want to translate first.",
   editable: "Sprachweise doesn't translate text you're typing.",
   excluded: "Selection includes code or form fields — select plain text only.",
+  mixed: "Selection includes text outside a paragraph — select text inside paragraphs only.",
 };
 
 /** Refusals worth counting: the learner selected something real that the extension can't take. */
 const SELECTION_ERROR_CODES: Partial<Record<SelectionProblem, ClientErrorCode>> = {
   excluded: "selection-excluded",
+  mixed: "selection-mixed",
 };
 
 const PAGE_CHANGED_MESSAGE = "The page changed while translating. Select the text again.";
@@ -125,17 +126,9 @@ function reportTranslationsChanged(): void {
 function translationItems(range: Range): TranslationItem[] | SelectionProblem {
   const target = resolveSelection(range);
   if ("problem" in target) return target.problem;
-
-  if (target.kind === "range") {
-    restoreInside(target.block);
-    if (!rangeOverlapsTranslation(target.block, target.range)) {
-      return [{ block: target.block, range: target.range, text: target.text }];
-    }
-  }
-  // Whole blocks (or a range over text already shown in German): translate from the original.
-  const blocks = target.kind === "range" ? [target.block] : target.blocks;
-  return blocks.map((block) => {
-    restoreInside(block);
+  return target.parts.map(({ block, range, text }) => {
+    if (range && !rangeOverlapsTranslation(block, range)) return { block, range, text };
+    // The whole block, or a range over text already shown in German: translate from the original.
     if (isTranslated(block)) restoreOriginal(block);
     return { block, range: null, text: blockText(block) };
   });

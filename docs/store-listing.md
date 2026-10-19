@@ -41,7 +41,7 @@ Sprachweise превращает статьи, которые вы и так ч�
 
 Как это работает
 • Выделите фразу или абзац на любой странице, нажмите правую кнопку мыши и выберите «Перевести на немецкий (Sprachweise)». Если сайт подменяет меню правой кнопки, нажмите Alt+Shift+G.
-• Выделенный текст заменится немецкой версией на вашем уровне: A1–A2, B1–B2 или C1+. Если выделение задевает несколько абзацев, переводятся эти абзацы целиком.
+• Выделенный текст заменится немецкой версией на вашем уровне: A1–A2, B1–B2 или C1+. Переводится ровно выделенный текст, даже если он занимает несколько абзацев.
 • Подчёркнутые слова — новая лексика. Кликните слово, чтобы увидеть перевод.
 • Справа появятся упражнения по этому тексту: пропущенное слово, выбор варианта, пары слов и диктант.
 • «Вернуть исходный текст (Sprachweise)» в меню правой кнопки возвращает оригинал. Страница не меняется ни в чём, кроме выделенного текста.
@@ -66,7 +66,7 @@ Sprachweise turns the articles you already read into German practice.
 
 How it works
 • Select a phrase or a paragraph on any page, right-click and choose "Translate to German (Sprachweise)". If a site replaces the right-click menu, press Alt+Shift+G.
-• The selected text is swapped for a German version at your level: A1–A2, B1–B2 or C1+. If the selection spans several paragraphs, those paragraphs are translated whole.
+• The selected text is swapped for a German version at your level: A1–A2, B1–B2 or C1+. Exactly the selected text is translated, even across several paragraphs.
 • Underlined words are new vocabulary. Click one to see its meaning.
 • Exercises built from that text appear on the right: fill in the blank, multiple choice, word pairs and dictation.
 • "Restore original text (Sprachweise)" in the right-click menu brings back the original. Nothing on the page changes except the text you selected.

@@ -117,16 +117,6 @@ export function restoreOriginal(el: Element): boolean {
   return ours;
 }
 
-/**
- * Restores every translated element strictly inside `el`, so that translating `el` next saves a
- * snapshot holding only original text (restoring `el` later can't bring back stale German).
- */
-export function restoreInside(el: Element): void {
-  for (const other of [...translatedElements]) {
-    if (other !== el && el.contains(other)) restoreOriginal(other);
-  }
-}
-
 /** Whether anything on the page still shows a translation Restore would put back. */
 export function hasTranslations(): boolean {
   for (const el of translatedElements) {

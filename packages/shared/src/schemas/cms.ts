@@ -127,7 +127,8 @@ export const ExercisesResponseSchema = z.object({
  * `server-error` a 5xx; `limit` the daily allowance (429); `too-long` the selection exceeds
  * TRANSLATE_MAX_CHARS (not sent at all, or a 413); `failed` anything else (other 4xx, bad schema).
  * Selection codes: the extension refused the selection before sending anything — `excluded` it
- * includes code or a form field.
+ * includes code or a form field; `mixed` it includes text outside every leaf block (directly in a
+ * container that holds other blocks).
  */
 export const ClientErrorCodeSchema = z.enum([
   "translate-failed",
@@ -138,6 +139,7 @@ export const ClientErrorCodeSchema = z.enum([
   "translate-limit",
   "translate-too-long",
   "selection-excluded",
+  "selection-mixed",
   "exercises-failed",
   "report-failed",
 ]);

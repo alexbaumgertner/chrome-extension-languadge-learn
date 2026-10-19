@@ -405,6 +405,7 @@ describe("metric event schemas", () => {
         { name: "client_error", id, occurredAt, error: "translate-limit", httpStatus: 429 },
         { name: "client_error", id, occurredAt, error: "translate-too-long", httpStatus: 413 },
         { name: "client_error", id, occurredAt, error: "selection-excluded", httpStatus: null },
+        { name: "client_error", id, occurredAt, error: "selection-mixed", httpStatus: null },
       ],
     };
     expect(EventsRequestSchema.parse(request)).toEqual(request);

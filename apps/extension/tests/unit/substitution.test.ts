@@ -7,7 +7,6 @@ import {
   isTranslated,
   rangeOverlapsTranslation,
   restoreAll,
-  restoreInside,
   restoreOriginal,
 } from "@/lib/dom/substitution";
 
@@ -105,20 +104,6 @@ describe("restoring everything", () => {
     expect(restoreAll()).toBe(2);
     expect(document.body.innerHTML).toBe(original);
     expect(hasTranslations()).toBe(false);
-  });
-
-  it("restoreInside puts back nested translations so an outer snapshot holds only originals", () => {
-    document.body.innerHTML = `<div id="outer">Lose <p id="inner">Innen.</p></div>`;
-    const outer = document.getElementById("outer")!;
-    const inner = document.getElementById("inner")!;
-    const original = outer.innerHTML;
-    applyVariant(inner, "INSIDE", "h1");
-
-    restoreInside(outer);
-    expect(outer.innerHTML).toBe(original);
-    applyVariant(outer, "OUTER", "h2");
-    restoreOriginal(outer);
-    expect(outer.innerHTML).toBe(original);
   });
 
   it("leaves content the host changed after translation as it is and forgets the snapshot", () => {
