@@ -18,6 +18,7 @@ export const PANEL_CSS = `
 }
 .sw-header button { border: none; background: none; cursor: pointer; font-size: 18px; color: inherit; }
 .sw-list { overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+.sw-empty { margin: 0; color: #52606d; font-size: 13px; }
 .sw-card { border: 1px solid #e4e7eb; border-radius: 8px; padding: 10px; font-size: 14px; }
 .sw-card p { margin: 0 0 8px; line-height: 1.4; }
 .sw-card input {

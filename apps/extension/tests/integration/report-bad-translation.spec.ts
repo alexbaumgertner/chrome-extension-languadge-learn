@@ -60,3 +60,33 @@ test("'Плохой перевод' sends the fragment once on click, thanks the
   // The host paragraph is untouched by reporting.
   expect(await target.evaluate((el) => el.outerHTML)).toBe(translatedHtml);
 });
+
+test("'Плохой перевод' is still offered when the paragraph has no exercises", async ({
+  context,
+  fixtureServer,
+  cmsServer,
+  enableSite,
+}) => {
+  await enableSite("127.0.0.1");
+  fixtureServer.setHtml(
+    `<!doctype html><html><body><article><p id="target">${PARAGRAPH}</p></article></body></html>`,
+  );
+  cmsServer.setMode("exercises-fail");
+  const page = await context.newPage();
+  await page.goto(FIXTURE_ORIGIN);
+  const target = page.locator("#target");
+  await target.evaluate((el) => el.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+  await expect(target.locator(".sw-vocab").first()).toBeVisible();
+
+  // Without exercises the panel stays a collapsed tab rather than opening over the page.
+  await expect(page.locator(".sw-panel")).toHaveCount(0);
+  await page.locator(".sw-tab", { hasText: "No exercises" }).click();
+  const panel = page.locator(".sw-panel");
+  await expect(panel.getByText("No exercises for this paragraph.")).toBeVisible();
+
+  cmsServer.setMode("ok");
+  await panel.getByRole("button", { name: "Плохой перевод" }).click();
+  await expect(panel.getByText("Спасибо! Отправили на проверку.")).toBeVisible();
+  expect(cmsServer.requests.report).toHaveLength(1);
+  expect(cmsServer.requests.report[0]).toMatchObject({ source: PARAGRAPH });
+});
