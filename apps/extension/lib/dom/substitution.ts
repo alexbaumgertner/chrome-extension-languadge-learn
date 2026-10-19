@@ -1,9 +1,14 @@
 export type DisplayState = "original" | "translated";
 
+/** Wraps a translated part of a block (a selection that didn't cover the whole block). */
+export const SEGMENT_CLASS = "sw-segment";
+
 interface ParagraphState {
   originalHtml: string;
   contentHash: string;
   displayState: DisplayState;
+  /** "block": the whole block shows the variant; "segments": only `.sw-segment` parts do. */
+  mode: "block" | "segments";
 }
 
 /**
@@ -14,6 +19,8 @@ interface ParagraphState {
  * research.md §2 "Node identity" and the Host Page Integrity edge case.
  */
 const paragraphStates = new WeakMap<Element, ParagraphState>();
+/** The same elements, enumerable for "Restore original"; detached ones are dropped when read. */
+const translatedElements = new Set<Element>();
 
 export function getParagraphState(el: Element): ParagraphState | undefined {
   return paragraphStates.get(el);
@@ -23,27 +30,91 @@ export function isTranslated(el: Element): boolean {
   return paragraphStates.get(el)?.displayState === "translated";
 }
 
+/** Whether `range` (inside `block`) overlaps text that already shows a translation. */
+export function rangeOverlapsTranslation(block: Element, range: Range): boolean {
+  const state = paragraphStates.get(block);
+  if (!state) return false;
+  if (state.mode === "block") return true;
+  return [...block.querySelectorAll(`.${SEGMENT_CLASS}`)].some((seg) => range.intersectsNode(seg));
+}
+
+function saveOriginal(el: Element, contentHash: string, mode: ParagraphState["mode"]): void {
+  const existing = paragraphStates.get(el);
+  const originalHtml = existing ? existing.originalHtml : el.innerHTML;
+  paragraphStates.set(el, { originalHtml, contentHash, displayState: "translated", mode });
+  translatedElements.add(el);
+}
+
 /**
  * Replaces `el`'s content with `variantHtml`, saving the pre-existing
  * `innerHTML` exactly once (on first translation) so `restoreOriginal`
  * can later reproduce it byte-identically.
  */
 export function applyVariant(el: Element, variantHtml: string, contentHash: string): void {
-  const existing = paragraphStates.get(el);
-  const originalHtml = existing ? existing.originalHtml : el.innerHTML;
-
-  paragraphStates.set(el, {
-    originalHtml,
-    contentHash,
-    displayState: "translated",
-  });
+  saveOriginal(el, contentHash, "block");
   el.innerHTML = variantHtml;
+}
+
+/**
+ * Replaces only `range`, which lies inside `block`, with `variantHtml` wrapped in a
+ * `<span class="sw-segment">`. The block's whole `innerHTML` from before its first translation is
+ * what gets saved, so `restoreOriginal(block)` is byte-identical however many segments were added
+ * — even when the range cut through an inline element (a link, `<b>`), which deleting the range
+ * splits. Returns the segment.
+ */
+export function applyVariantToRange(
+  block: Element,
+  range: Range,
+  variantHtml: string,
+  contentHash: string,
+): HTMLElement {
+  const wholeBlock = paragraphStates.get(block)?.mode === "block";
+  saveOriginal(block, contentHash, wholeBlock ? "block" : "segments");
+  const segment = block.ownerDocument.createElement("span");
+  segment.className = SEGMENT_CLASS;
+  range.deleteContents();
+  range.insertNode(segment);
+  segment.innerHTML = variantHtml;
+  return segment;
 }
 
 /** Restores `el` to its pre-translation `innerHTML`, verbatim. */
 export function restoreOriginal(el: Element): void {
   const state = paragraphStates.get(el);
+  translatedElements.delete(el);
   if (!state) return;
   el.innerHTML = state.originalHtml;
   paragraphStates.delete(el);
+}
+
+/**
+ * Restores every translated element strictly inside `el`, so that translating `el` next saves a
+ * snapshot holding only original text (restoring `el` later can't bring back stale German).
+ */
+export function restoreInside(el: Element): void {
+  for (const other of [...translatedElements]) {
+    if (other !== el && el.contains(other)) restoreOriginal(other);
+  }
+}
+
+/** Whether anything still on the page shows a translation. */
+export function hasTranslations(): boolean {
+  for (const el of translatedElements) {
+    if (!el.isConnected) translatedElements.delete(el);
+  }
+  return translatedElements.size > 0;
+}
+
+/** Restores every translated element still on the page; returns how many. */
+export function restoreAll(): number {
+  let restored = 0;
+  for (const el of [...translatedElements]) {
+    if (el.isConnected) {
+      restoreOriginal(el);
+      restored++;
+    } else {
+      translatedElements.delete(el);
+    }
+  }
+  return restored;
 }
