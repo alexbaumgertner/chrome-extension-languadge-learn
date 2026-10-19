@@ -10,7 +10,10 @@ export const TranslateRequestSchema = z.object({
 const CmsMarkedVocabSpanSchema = z.object({
   start: z.number().int().nonnegative(),
   end: z.number().int().nonnegative(),
+  /** The span's text, exactly as in the German text. */
   german: z.string().min(1),
+  /** Dictionary form for the glossary ("das Riesenrad", "anrufen"); absent in older cache rows. */
+  lemma: z.string().min(1).optional(),
   russian: z.string().min(1),
 });
 

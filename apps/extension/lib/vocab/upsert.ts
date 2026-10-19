@@ -13,14 +13,16 @@ export function vocabIdFor(german: string): string {
  * session-tracking state.
  */
 export async function recordVocabEncounters(
-  spans: Array<{ german: string; russian: string }>,
+  spans: Array<{ german: string; lemma?: string; russian: string }>,
   now: number,
 ): Promise<Record<string, string>> {
   const existing = await getAllVocabulary();
   const germanToId: Record<string, string> = {};
 
   for (const span of spans) {
-    const id = vocabIdFor(span.german);
+    // The vocabulary stores the dictionary form, so "Termin" and "Termine" are one item.
+    const headword = span.lemma ?? span.german;
+    const id = vocabIdFor(headword);
     germanToId[span.german] = id;
     const prior = existing[id];
     const item: VocabularyItem = prior
@@ -31,7 +33,7 @@ export async function recordVocabEncounters(
         }
       : {
           id,
-          german: span.german,
+          german: headword,
           russian: span.russian,
           encounterCount: 1,
           status: "active",

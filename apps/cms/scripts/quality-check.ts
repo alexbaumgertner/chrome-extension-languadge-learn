@@ -40,7 +40,7 @@ interface Row {
   source: string;
   ms: number;
   result?: TranslationResult;
-  marked?: Array<{ german: string; russian: string }>;
+  marked?: Array<{ german: string; lemma?: string; russian: string }>;
   problems: string[];
 }
 
@@ -110,7 +110,13 @@ for (const r of rows) {
   if (r.problems.length) lines.push(...r.problems.map((p) => `> ⚠️ ${p}`), "");
   const german = r.result?.text ?? "—";
   const glosses = r.marked?.length
-    ? r.marked.map((v) => `**${v.german}** — ${v.russian}`).join("\n")
+    ? r.marked
+        .map((v) =>
+          v.lemma && v.lemma !== v.german
+            ? `**${v.lemma}** — ${v.russian} _(in text: ${v.german})_`
+            : `**${v.german}** — ${v.russian}`,
+        )
+        .join("\n")
     : "—";
   lines.push(
     "| Source (RU) | German | Glosses |",

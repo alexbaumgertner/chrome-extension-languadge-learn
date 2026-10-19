@@ -36,4 +36,17 @@ describe("markVocab", () => {
       { start: 27, end: 33, german: "strong", russian: "сильный" },
     ]);
   });
+
+  it("keeps the dictionary form next to the in-text form", () => {
+    const text = "Ich rufe morgen meine Mutter an.";
+    expect(
+      markVocab(text, [
+        { german: "rufe", lemma: "anrufen", russian: "звонить" },
+        { german: "Mutter", lemma: "die Mutter", russian: "мать" },
+      ]),
+    ).toEqual([
+      { start: 4, end: 8, german: "rufe", lemma: "anrufen", russian: "звонить" },
+      { start: 22, end: 28, german: "Mutter", lemma: "die Mutter", russian: "мать" },
+    ]);
+  });
 });

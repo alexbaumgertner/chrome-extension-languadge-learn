@@ -2,6 +2,7 @@ import type { CmsExercise } from "@sprachweise/shared";
 
 export interface VocabTerm {
   german: string;
+  lemma?: string;
   russian: string;
 }
 
@@ -70,7 +71,10 @@ export function generateExercises(variantText: string, markedVocab: VocabTerm[])
   if (terms.length >= 2) {
     exercises.push({
       kind: "word-pairing",
-      pairs: terms.slice(0, MAX_PAIRS).map(({ german, russian }) => ({ german, russian })),
+      // Pairing teaches the dictionary form; blanks below use the in-text form.
+      pairs: terms
+        .slice(0, MAX_PAIRS)
+        .map(({ german, lemma, russian }) => ({ german: lemma ?? german, russian })),
     });
   }
 

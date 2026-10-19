@@ -20,7 +20,10 @@ export type GeminiConfig = Pick<
 >;
 
 export interface VocabGloss {
+  /** Exactly as it appears in the German text — used to highlight it and build blanks. */
   german: string;
+  /** Dictionary form for the glossary: noun with article, separable verb with its prefix. */
+  lemma?: string;
   russian: string;
 }
 
@@ -50,7 +53,7 @@ const LEVEL_GUIDANCE: Record<string, string> = {
 };
 
 /** Bump whenever the prompt changes meaningfully, so cached output from the old prompt isn't served. */
-export const PROMPT_VERSION = "1";
+export const PROMPT_VERSION = "2";
 
 /**
  * The prompt's trailing `Level:` / `Source paragraph:` lines are a stable format —
@@ -64,9 +67,16 @@ export function buildPrompt(sourceText: string, level: string): string {
     "Output plain text. You may use bare <strong> or <em> only where the source emphasizes " +
     "something; no other HTML, no attributes.\n" +
     "Then pick 3 to 8 vocabulary items from YOUR German text that are most worth learning at this " +
-    'level. Each "german" must be copied exactly as it appears in the text (same inflection, same ' +
-    'capitalization, one to three words). Each "russian" is a short Russian gloss of that meaning ' +
-    "in this context. Skip names, numbers and words that are the same in both languages.\n\n" +
+    "level. Skip names, numbers and words that are the same in both languages. For each item:\n" +
+    '- "german": copied exactly as it appears in the text, one contiguous piece of one to three ' +
+    "words (same inflection, same capitalization). For a separable verb, copy only the conjugated " +
+    'part that is in the text (e.g. "rufe" from "rufe ... an").\n' +
+    '- "lemma": the dictionary form. Nouns with their definite article in the nominative singular ' +
+    '("das Riesenrad", "die Wohnung"; plural-only nouns as "die Leute"). Verbs in the infinitive, ' +
+    'separable verbs with the prefix attached ("anrufen", "einkaufen"; reflexive as "sich ' +
+    'beschweren"). Adjectives and adverbs in the base form.\n' +
+    '- "russian": a short Russian gloss of the lemma in its dictionary form (nominative, ' +
+    "infinitive), with the meaning it has in this text.\n\n" +
     `Level: ${level}\n` +
     `Source paragraph:\n${sourceText}`
   );
@@ -87,8 +97,12 @@ async function doTranslate(
           type: "ARRAY",
           items: {
             type: "OBJECT",
-            properties: { german: { type: "STRING" }, russian: { type: "STRING" } },
-            required: ["german", "russian"],
+            properties: {
+              german: { type: "STRING" },
+              lemma: { type: "STRING" },
+              russian: { type: "STRING" },
+            },
+            required: ["german", "lemma", "russian"],
           },
         },
       },

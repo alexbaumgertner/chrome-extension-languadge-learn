@@ -60,4 +60,19 @@ describe("generateExercises", () => {
   it("no vocabulary and no usable sentence yields an empty list", () => {
     expect(generateExercises("Hallo!", [])).toEqual([]);
   });
+
+  it("word pairing shows the dictionary form while blanks keep the in-text form", () => {
+    const exercises = generateExercises("Ich rufe heute meine Mutter an.", [
+      { german: "rufe", lemma: "anrufen", russian: "звонить" },
+      { german: "Mutter", lemma: "die Mutter", russian: "мать" },
+    ]);
+    expect(exercises.find((e) => e.kind === "word-pairing")).toEqual({
+      kind: "word-pairing",
+      pairs: [
+        { german: "anrufen", russian: "звонить" },
+        { german: "die Mutter", russian: "мать" },
+      ],
+    });
+    expect(exercises.find((e) => e.kind === "fill-blank")).toMatchObject({ answer: "rufe" });
+  });
 });

@@ -9,6 +9,7 @@
  * Caveat: the judge is also a Gemini model, so same-family style bias is possible; spot-check.
  */
 import { readFileSync, writeFileSync } from "node:fs";
+import { basename } from "node:path";
 import { createHash } from "node:crypto";
 
 interface RunRow {
@@ -17,11 +18,13 @@ interface RunRow {
   level: string;
   source: string;
   german: string | null;
-  glosses: Array<{ german: string; russian: string }>;
+  glosses: Array<{ german: string; lemma?: string; russian: string }>;
   problems: string[];
 }
 
 interface Run {
+  /** File name without extension — distinguishes two runs of the same model. */
+  label: string;
   model: string;
   costPerParagraph: number | null;
   avgLatencyMs: number;
@@ -47,7 +50,10 @@ const apiKey = process.env.GEMINI_API_KEY;
 if (!apiKey) throw new Error("GEMINI_API_KEY is required");
 if (files.length < 2) throw new Error("pass at least two quality-check .json files");
 
-const runs: Run[] = files.map((f) => JSON.parse(readFileSync(f, "utf8")) as Run);
+const runs: Run[] = files.map((f) => ({
+  ...(JSON.parse(readFileSync(f, "utf8")) as Omit<Run, "label">),
+  label: basename(f, ".json"),
+}));
 const paragraphCount = runs[0]!.rows.length;
 const LETTERS = "ABCDEFGH";
 
@@ -66,7 +72,14 @@ function judgePrompt(row: RunRow, order: number[]): string {
   const candidates = order
     .map((runIdx, pos) => {
       const r = runs[runIdx]!.rows[row.index - 1]!;
-      const glosses = r.glosses.map((g) => `${g.german} — ${g.russian}`).join("; ") || "(none)";
+      const glosses =
+        r.glosses
+          .map((g) =>
+            g.lemma && g.lemma !== g.german
+              ? `${g.lemma} — ${g.russian} (in text: ${g.german})`
+              : `${g.german} — ${g.russian}`,
+          )
+          .join("; ") || "(none)";
       return `### Candidate ${LETTERS[pos]}\nGerman: ${r.german ?? "(FAILED — no output)"}\nGlosses: ${glosses}`;
     })
     .join("\n\n");
@@ -151,7 +164,7 @@ for (let p = 0; p < paragraphCount; p++) {
     const e = evaluations.find((x) => x.label.replace(/candidate\s*/i, "").trim() === LETTERS[pos]);
     const r = runs[runIdx]!.rows[p]!;
     details.push(
-      `**${runs[runIdx]!.model}** (shown as ${LETTERS[pos]})`,
+      `**${runs[runIdx]!.label}** (shown as ${LETTERS[pos]})`,
       "",
       `${r.german ?? "—"}`,
       "",
@@ -195,7 +208,7 @@ const lines = [
   "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
   ...summary.map(
     ({ run, m, overall }) =>
-      `| \`${run.model}\` | ${overall.toFixed(2)} | ${avg(m.meaning, m.n)} | ${avg(m.grammar, m.n)} | ${avg(m.levelFit, m.n)} | ${avg(m.glosses, m.n)} | ${run.costPerParagraph?.toFixed(5) ?? "?"} | ${run.avgLatencyMs} ms | ${m.n}/${paragraphCount} |`,
+      `| \`${run.label}\` | ${overall.toFixed(2)} | ${avg(m.meaning, m.n)} | ${avg(m.grammar, m.n)} | ${avg(m.levelFit, m.n)} | ${avg(m.glosses, m.n)} | ${run.costPerParagraph?.toFixed(5) ?? "?"} | ${run.avgLatencyMs} ms | ${m.n}/${paragraphCount} |`,
   ),
   "",
   ...details,

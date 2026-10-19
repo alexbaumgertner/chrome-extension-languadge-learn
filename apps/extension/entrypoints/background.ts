@@ -108,14 +108,15 @@ type CmsMarkedVocab = CmsExercisesRequest["markedVocab"];
 async function cmsVocabFromVariant(variant: GermanVariant): Promise<CmsMarkedVocab> {
   const vocab = await getAllVocabulary();
   return variant.markedVocab.flatMap((span) => {
-    const russian = vocab[span.vocabId]?.russian;
-    if (!russian) return [];
+    const item = vocab[span.vocabId];
+    if (!item?.russian) return [];
     return [
       {
         start: span.start,
         end: span.end,
         german: variant.text.slice(span.start, span.end),
-        russian,
+        lemma: item.german,
+        russian: item.russian,
       },
     ];
   });

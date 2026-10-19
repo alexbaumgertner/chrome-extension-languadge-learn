@@ -4,6 +4,7 @@ export interface MarkedVocabSpan {
   start: number;
   end: number;
   german: string;
+  lemma?: string;
   russian: string;
 }
 
@@ -25,9 +26,10 @@ export function markVocab(text: string, vocab: VocabGloss[]): MarkedVocabSpan[] 
   const spans: MarkedVocabSpan[] = [];
   const seen = new Set<string>();
 
-  for (const { german: rawGerman, russian: rawRussian } of vocab) {
+  for (const { german: rawGerman, lemma: rawLemma, russian: rawRussian } of vocab) {
     const german = rawGerman.trim();
     const russian = rawRussian.trim();
+    const lemma = rawLemma?.trim();
     if (!german || !russian || /[<>]/.test(german) || seen.has(german)) continue;
 
     const pattern = new RegExp(
@@ -39,7 +41,7 @@ export function markVocab(text: string, vocab: VocabGloss[]): MarkedVocabSpan[] 
       const end = start + german.length;
       if (insideTag(text, start)) continue;
       if (spans.some((s) => start < s.end && s.start < end)) continue;
-      spans.push({ start, end, german, russian });
+      spans.push({ start, end, german, ...(lemma ? { lemma } : {}), russian });
       seen.add(german);
       break;
     }
