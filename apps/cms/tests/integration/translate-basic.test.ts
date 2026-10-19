@@ -7,9 +7,9 @@ describe("POST /api/translate — User Story 1 (leveled, glossed translation)", 
 
   beforeEach(() => {
     providers = createMockProviders({
-      adapted: (raw, level, topic) => ({
-        text: `[${level}/${topic}] ${raw}`,
-        vocabTerms: raw.includes("Kaffee") ? ["Kaffee"] : [],
+      translate: (source, level) => ({
+        text: `[${level}] ${source}`,
+        vocab: source.includes("Kaffee") ? [{ german: "Kaffee", russian: "кофе" }] : [],
       }),
     });
     providers.install();
@@ -32,10 +32,7 @@ describe("POST /api/translate — User Story 1 (leveled, glossed translation)", 
     expect(typeof body.text).toBe("string");
     expect(body.text.length).toBeGreaterThan(0);
     expect(Array.isArray(body.markedVocab)).toBe(true);
-    for (const span of body.markedVocab as Array<{ russian: string }>) {
-      expect(typeof span.russian).toBe("string");
-      expect(span.russian.length).toBeGreaterThan(0);
-    }
+    expect(body.markedVocab).toEqual([{ start: 30, end: 36, german: "Kaffee", russian: "кофе" }]);
   });
 
   it("Scenario 2: rejects a request with missing/empty text, level, or topic without calling any provider", async () => {
@@ -55,7 +52,6 @@ describe("POST /api/translate — User Story 1 (leveled, glossed translation)", 
       expect(response.json()).toMatchObject({ error: "invalid-request" });
     }
 
-    expect(providers.callCounts.translateRaw).toBe(0);
     expect(providers.callCounts.gemini).toBe(0);
   });
 
@@ -91,5 +87,18 @@ describe("POST /api/translate — User Story 1 (leveled, glossed translation)", 
     const body = response.json() as { text: string; markedVocab: unknown[] };
     expect(body.text.length).toBeGreaterThan(0);
     expect(body.markedVocab).toEqual([]);
+  });
+
+  it("sends the API key in a header, never in the URL, to the configured model", async () => {
+    const app = buildTestApp();
+    await app.inject({
+      method: "POST",
+      url: "/api/translate",
+      payload: { text: "Привет", level: "A1-A2", topic: "general" },
+    });
+
+    expect(providers.apiKeys).toEqual(["test-gemini-key"]);
+    expect(providers.urls[0]).toContain("/models/gemini-3.5-flash-lite:generateContent");
+    expect(providers.urls[0]).not.toContain("key=");
   });
 });

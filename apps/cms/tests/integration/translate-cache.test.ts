@@ -25,7 +25,6 @@ describe("POST /api/translate — User Story 2 (cache reuse)", () => {
     expect(second.statusCode).toBe(200);
     expect(second.json()).toEqual(first.json());
     expect(providers.callCounts.gemini).toBe(1);
-    expect(providers.callCounts.translateRaw).toBe(1);
   });
 
   it("Scenario 2: a second simulated learner's matching request also hits the cache", async () => {
@@ -41,7 +40,7 @@ describe("POST /api/translate — User Story 2 (cache reuse)", () => {
     expect(providers.callCounts.gemini).toBe(1);
   });
 
-  it("Scenario 3: a different level or topic is translated as a separate entry", async () => {
+  it("Scenario 3: a different level is a separate entry; topic no longer splits the cache", async () => {
     const app = buildTestApp();
     const text = "Ich lerne Deutsch.";
 
@@ -61,7 +60,7 @@ describe("POST /api/translate — User Story 2 (cache reuse)", () => {
       payload: { text, level: "A1-A2", topic: "grammar" },
     });
 
-    expect(providers.callCounts.gemini).toBe(3);
+    expect(providers.callCounts.gemini).toBe(2);
   });
 
   it("Scenario 4: two concurrent never-before-seen identical requests result in at most one provider call", async () => {
@@ -77,6 +76,5 @@ describe("POST /api/translate — User Story 2 (cache reuse)", () => {
     expect(b.statusCode).toBe(200);
     expect(a.json()).toEqual(b.json());
     expect(providers.callCounts.gemini).toBe(1);
-    expect(providers.callCounts.translateRaw).toBe(1);
   });
 });

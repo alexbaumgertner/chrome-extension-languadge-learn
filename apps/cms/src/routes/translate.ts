@@ -7,9 +7,8 @@ import { cacheKey } from "../cache/key";
 import { getCacheEntry, putCacheEntry, type CachedTranslation } from "../cache/store";
 import { createCoalescingMap } from "../cache/coalesce";
 import { reserveUsage } from "../usage/ledger";
-import { translateRaw, UpstreamFailureError } from "../pipeline/translate-raw";
-import { adaptLevel } from "../pipeline/adapt-level";
-import { glossVocab } from "../pipeline/gloss-vocab";
+import { translateParagraph, UpstreamFailureError } from "../pipeline/translate";
+import { markVocab } from "../pipeline/mark-vocab";
 
 class AllowanceExhaustedError extends Error {}
 
@@ -21,7 +20,8 @@ export function registerTranslateRoute(app: FastifyInstance, cfg: Config, db: Db
     if (!parsed.success) {
       return reply.status(400).send({ error: "invalid-request", detail: parsed.error.message });
     }
-    const { text, level, topic } = parsed.data;
+    // `topic` is still accepted for wire compatibility but no longer shapes the output.
+    const { text, level } = parsed.data;
 
     if (text.length > cfg.TRANSLATE_MAX_CHARS) {
       return reply.status(400).send({
@@ -31,7 +31,7 @@ export function registerTranslateRoute(app: FastifyInstance, cfg: Config, db: Db
     }
 
     try {
-      const key = cacheKey(text, level, topic);
+      const key = cacheKey(text, level, cfg.GEMINI_MODEL);
       const cached = await getCacheEntry(db, key);
       if (cached) {
         return reply.status(200).send(cached);
@@ -40,27 +40,16 @@ export function registerTranslateRoute(app: FastifyInstance, cfg: Config, db: Db
       const result = await coalescing.run(key, async () => {
         // Reserved once per actual pipeline run (inside the coalescing callback), not once per
         // incoming HTTP request, so concurrent coalesced callers never double-reserve (FR-008/FR-010).
-        const reserved = await reserveUsage(
-          db,
-          { translateChars: text.length, geminiRequests: 1 },
-          cfg,
-        );
-        if (!reserved) {
+        if (!(await reserveUsage(db, cfg))) {
           throw new AllowanceExhaustedError();
         }
 
-        const rawGerman = await translateRaw(text, cfg);
-        const { text: adaptedText, vocabTerms } = await adaptLevel(rawGerman, level, topic, cfg);
-        const glosses = await glossVocab(vocabTerms, cfg);
-
-        const markedVocab = vocabTerms.map((term, i) => {
-          const start = adaptedText.indexOf(term);
-          return { start, end: start + term.length, german: term, russian: glosses[i] ?? "" };
-        });
+        const translated = await translateParagraph(text, level, cfg);
+        const markedVocab = markVocab(translated.text, translated.vocab);
 
         // FR-012: any validation failure (span bounds/content mismatch, unsafe HTML) discards the
         // whole response — nothing below this line runs, so nothing is cached, on a thrown ZodError.
-        const validated = TranslateResponseSchema.parse({ text: adaptedText, markedVocab });
+        const validated = TranslateResponseSchema.parse({ text: translated.text, markedVocab });
         await putCacheEntry(db, key, validated);
         return validated;
       });

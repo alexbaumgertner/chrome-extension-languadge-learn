@@ -64,11 +64,29 @@ describe("POST /api/translate — User Story 4 (resilience)", () => {
     expect(response.statusCode).toBe(502);
     expect(response.json()).toEqual({ error: "upstream-failure" });
 
+    // The malformed attempt and its one retry.
+    expect(providers.callCounts.gemini).toBe(2);
+
     providers.setMode("ok");
     const retried = await app.inject({ method: "POST", url: "/api/translate", payload });
     expect(retried.statusCode).toBe(200);
-    // Nothing was cached from the malformed attempt (it failed at the raw-translation step,
-    // before ever reaching Gemini) — this fresh success is the only Gemini call made.
-    expect(providers.callCounts.gemini).toBe(1);
+    // Nothing was cached from the malformed attempt, so this needed a fresh Gemini call.
+    expect(providers.callCounts.gemini).toBe(3);
+  });
+
+  it("a provider response with unsafe HTML is discarded with 502", async () => {
+    providers.restore();
+    providers = createMockProviders({
+      translate: () => ({ text: '<a href="x">Hallo</a>', vocab: [] }),
+    });
+    providers.install();
+    const app = buildTestApp();
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/translate",
+      payload: { text: "Ссылка", level: "A1-A2", topic: "general" },
+    });
+    expect(response.statusCode).toBe(502);
   });
 });

@@ -1,12 +1,6 @@
 import type { Db } from "../db";
 
-export interface ReserveRequest {
-  translateChars: number;
-  geminiRequests: number;
-}
-
 export interface UsageLedgerConfig {
-  TRANSLATE_MONTHLY_CHAR_ALLOWANCE: number;
   GEMINI_DAILY_REQUEST_ALLOWANCE: number;
 }
 
@@ -72,26 +66,19 @@ export async function reserveCounters(
 }
 
 /**
- * Both providers' current-period usage is checked and incremented before either external call is
- * made (FR-010, research.md §8). Returns true if both providers had headroom, false if refused.
+ * The global budget kill switch: one Gemini request is reserved before the provider is called
+ * (FR-010). Returns false once today's allowance is used up.
  */
 export function reserveUsage(
   db: Db,
-  req: ReserveRequest,
   cfg: UsageLedgerConfig,
   now: Date = new Date(),
 ): Promise<boolean> {
   return reserveCounters(db, [
     {
-      counter: "google-translate",
-      periodKey: monthlyPeriodKey(now),
-      amount: req.translateChars,
-      allowance: cfg.TRANSLATE_MONTHLY_CHAR_ALLOWANCE,
-    },
-    {
       counter: "gemini",
       periodKey: dailyPeriodKey(now),
-      amount: req.geminiRequests,
+      amount: 1,
       allowance: cfg.GEMINI_DAILY_REQUEST_ALLOWANCE,
     },
   ]);

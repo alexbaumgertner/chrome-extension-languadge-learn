@@ -11,7 +11,6 @@ export default defineConfig({
     environment: "node",
     include: ["tests/**/*.test.ts"],
     env: {
-      GOOGLE_TRANSLATE_API_KEY: "test-google-key",
       GEMINI_API_KEY: "test-gemini-key",
       DATABASE_URL: "postgres://unused-in-tests",
     },
