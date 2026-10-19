@@ -1,2 +1,6 @@
 server.mjs
 server.mjs.map
+# Default outputs of scripts/quality-check.ts and scripts/judge.ts; keep curated copies in docs/quality/
+quality-report.md
+quality-report.json
+judge-report.md
