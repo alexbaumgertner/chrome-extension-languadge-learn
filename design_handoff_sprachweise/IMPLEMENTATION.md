@@ -111,3 +111,25 @@ Message strings, roles (`alert` / `status`), error codes and timing are unchange
 6. **Popup frame.** The handoff's rounded/shadowed popup can't be drawn: Chrome owns the popup
    window.
 7. **Icons.** No assets in the bundle; the store icons already match the brand mark.
+
+## Decisions taken while implementing
+
+Recorded for review (also listed in the PR under "Decisions to confirm"):
+
+1. **Collapsed tab is compact, not full-height.** "Full-height-centered" could mean a 46px strip
+   down the whole right edge; that would cover host-page content, so the tab is a vertically
+   centred 46px tab with rounded left corners.
+2. **Header tags:** topic (`.tag-accent`) and, in the vocabulary-set slot (`.tag-accent-2`), the
+   learner's level — both already loaded by the panel. No streak tag (see section 1).
+3. **Visible copy adapted from the handoff, in the UI's current language (English):**
+   "Collapse ›", "Listen" / "slow", card kickers ("01 · From this page", "02 · Choose the
+   word", "03 · Match the pairs", "04 · Audio dictation"), "N of M", "Listen and type the whole
+   sentence.", "Choose a German word on the left first." (was "Choose a German word first."),
+   popup "Exercises solved today" (was "N exercises solved today"), progress kickers "Streak" /
+   "Vocabulary" / "Today", review-queue headers. Accessible names, placeholders, notice and
+   error messages are unchanged. `_locales` is untouched.
+4. **Page titles:** "Progress" stays as a visually hidden `h1` (the handoff's progress view has
+   no title); "Settings" is a visible heading at h3 size.
+5. **Text glyphs → Lucide:** ▶, ›, × and 🔥 are Lucide play, chevron-right, x and flame.
+6. **Content-script size:** the two fonts are bundled into `content.js` (~41 KB of woff2,
+   base64), which grows from 290 KB to 359 KB.
