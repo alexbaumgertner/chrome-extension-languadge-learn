@@ -87,3 +87,20 @@ user against ~$3.30 net of a $4 price.
 ## Progress log
 
 - 2026-10-19 — Phase 0 audit approved; decisions above recorded. Phase 1 started.
+- 2026-10-19 — Phase 1 done (PR from `ship/first-dollar`).
+  - Infra: Vercel project `sprachweise` (team `alexbaumgertner`, functions `fra1`, root
+    `apps/cms`, deployed from the repo root with `vercel deploy --prod`; not Git-connected).
+    Neon `sprachweise-postgresql` (`holy-wave-92980856`, aws-eu-central-1) provisioned through the
+    Vercel Marketplace — Neon refuses direct creation in the Vercel-managed org. DB name is the
+    marketplace default `neondb`.
+  - Prod API: `https://sprachweise.vercel.app` (`/api/translate`, `/api/exercises`, `/api/health`).
+    Env on Vercel: `GEMINI_API_KEY`, `DATABASE_URL` (marketplace), `CORS_ALLOWED_ORIGINS`
+    (currently only the unpacked dev ID `ciljphedapbigafgeeihmkibcgfkppjo` — add the store ID
+    in Phase 3).
+  - Vercel's Fastify builder type-checks TS entries without strict mode, so the build bundles
+    `src/main.ts` → `server.mjs` with esbuild and Vercel deploys that.
+  - Quality check (gemini-3.5-flash-lite, 20 paragraphs): 20/20 OK, avg 1.3 s, $0.00064 per
+    paragraph. Spotted errors: wrong article ("Der Ticket"), wrong verb ("mit Stress umkehre"),
+    lost meaning at A1-A2 ("колесо обозрения" → "Rad fahren"), a bad gloss span ("Lebensmittel
+    ein"). Re-run with another `GEMINI_MODEL` to compare.
+  - Integration suite: one flaky run seen in four (element-not-found in unrelated specs).
