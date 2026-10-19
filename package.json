@@ -13,7 +13,7 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "test:unit": "pnpm -r test:unit",
-    "test:integration": "pnpm --filter apps/extension test:integration"
+    "test:integration": "pnpm -r test:integration"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
@@ -29,7 +29,6 @@
       "@vitejs/plugin-react": "^4.7.0"
     },
     "onlyBuiltDependencies": [
-      "better-sqlite3",
       "esbuild"
     ]
   }

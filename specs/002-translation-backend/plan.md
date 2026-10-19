@@ -1,5 +1,12 @@
 # Implementation Plan: Translation Backend
 
+> **Partially superseded (2026-10-19)** by "ship to first dollar" Phase 1 — see
+> [docs/ship-first-dollar.md](../../docs/ship-first-dollar.md) and constitution 2.0.0.
+> What changed: Gemini-only pipeline (no Google Translate), no `/api/tts` (browser
+> `speechSynthesis`), Neon Postgres instead of SQLite, topic no longer shapes output, and
+> requests may carry an install ID for usage metrics. The rest of this document is kept as the
+> historical record and is not rewritten.
+
 **Branch**: `002-translation-backend` | **Date**: 2026-08-15 | **Spec**: [spec.md](./spec.md)
 
 **Input**: Feature specification from `/specs/002-translation-backend/spec.md`

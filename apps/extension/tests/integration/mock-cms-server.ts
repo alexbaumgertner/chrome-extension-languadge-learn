@@ -1,6 +1,7 @@
 import http from "node:http";
 
-export type MockCmsMode = "ok" | "fail";
+/** "exercises-fail": /api/translate works, /api/exercises returns 500. */
+export type MockCmsMode = "ok" | "fail" | "exercises-fail";
 
 /** A request paragraph text containing this marker gets a short, low-vocabulary German variant back. */
 export const SHORT_PARAGRAPH_MARKER = "SHORT_PARA_MARKER";
@@ -64,9 +65,10 @@ function buildExercisesResponse(variantText: string) {
   };
 }
 
-/** Implements the three contracts/cms-api-contract.md endpoints with deterministic canned fixtures. */
+/** Implements the CMS endpoints the extension calls (/api/translate, /api/exercises) with deterministic canned fixtures. */
 export function createMockCmsServer() {
   let mode: MockCmsMode = "ok";
+  const callCounts = { translate: 0, exercises: 0 };
 
   const server = http.createServer((req, res) => {
     let body = "";
@@ -79,6 +81,7 @@ export function createMockCmsServer() {
       }
 
       if (req.url === "/api/translate" && req.method === "POST") {
+        callCounts.translate++;
         const parsed = JSON.parse(body || "{}") as { text?: string };
         const requestText = parsed.text ?? "";
         const text =
@@ -90,15 +93,15 @@ export function createMockCmsServer() {
       }
 
       if (req.url === "/api/exercises" && req.method === "POST") {
+        callCounts.exercises++;
+        if (mode === "exercises-fail") {
+          res.statusCode = 500;
+          res.end("mock CMS forced exercises failure");
+          return;
+        }
         const parsed = JSON.parse(body || "{}") as { variantText?: string };
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify(buildExercisesResponse(parsed.variantText ?? "")));
-        return;
-      }
-
-      if (req.url === "/api/tts" && req.method === "POST") {
-        res.setHeader("Content-Type", "audio/mpeg");
-        res.end(Buffer.from([0, 1, 2, 3]));
         return;
       }
 
@@ -108,6 +111,7 @@ export function createMockCmsServer() {
   });
 
   return {
+    callCounts,
     setMode(next: MockCmsMode): void {
       mode = next;
     },

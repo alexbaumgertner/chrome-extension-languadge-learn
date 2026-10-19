@@ -8,3 +8,6 @@ playwright-report/
 apps/cms/data/
 
 .DS_Store
+.vercel
+dist/
+!.env.example

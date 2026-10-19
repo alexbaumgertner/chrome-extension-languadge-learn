@@ -30,4 +30,10 @@ describe("cache-key normalization", () => {
     const b = cacheKey("a", "B1-B2", "bcd");
     expect(a).not.toBe(b);
   });
+
+  it("a different thinking level or prompt version is a different key", () => {
+    const base = cacheKey("Text.", "B1-B2", "gemini-3.8-flash", "low", "1");
+    expect(cacheKey("Text.", "B1-B2", "gemini-3.8-flash", "minimal", "1")).not.toBe(base);
+    expect(cacheKey("Text.", "B1-B2", "gemini-3.8-flash", "low", "2")).not.toBe(base);
+  });
 });

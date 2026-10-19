@@ -1,29 +1,70 @@
-import Database from "better-sqlite3";
-import { mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { neon } from "@neondatabase/serverless";
 import type { Config } from "./config";
 
-export function openDb(cfg: Pick<Config, "CMS_DB_PATH">): Database.Database {
-  const dir = dirname(cfg.CMS_DB_PATH);
-  if (dir && dir !== ".") mkdirSync(dir, { recursive: true });
+/**
+ * The one storage seam: a parameterized query returning rows. Production uses Neon's HTTP driver
+ * (one round-trip per statement, no connection to keep alive across serverless invocations);
+ * tests inject an in-memory PGlite instance behind the same interface.
+ */
+export interface Db {
+  query<T = Record<string, unknown>>(text: string, params?: unknown[]): Promise<T[]>;
+}
 
-  const db = new Database(cfg.CMS_DB_PATH);
-  db.pragma("journal_mode = WAL");
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS cache_entries (
-      cache_key TEXT PRIMARY KEY,
-      result_text TEXT NOT NULL,
-      marked_vocab_json TEXT NOT NULL,
-      created_at TEXT NOT NULL
-    );
+export function createNeonDb(cfg: Pick<Config, "DATABASE_URL">): Db {
+  const sql = neon(cfg.DATABASE_URL);
+  return {
+    query: async <T>(text: string, params: unknown[] = []) =>
+      (await sql.query(text, params)) as T[],
+  };
+}
 
-    CREATE TABLE IF NOT EXISTS usage_counters (
-      provider TEXT NOT NULL,
-      period_key TEXT NOT NULL,
-      usage INTEGER NOT NULL,
-      allowance INTEGER NOT NULL,
-      PRIMARY KEY (provider, period_key)
-    );
-  `);
-  return db;
+const SCHEMA_STATEMENTS = [
+  `CREATE TABLE IF NOT EXISTS cache_entries (
+     cache_key TEXT PRIMARY KEY,
+     result_text TEXT NOT NULL,
+     marked_vocab JSONB NOT NULL,
+     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+   )`,
+  // One row per paid Gemini call (cache hits make none). No install ID, no text (constitution III).
+  `CREATE TABLE IF NOT EXISTS provider_calls (
+     id BIGSERIAL PRIMARY KEY,
+     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+     model TEXT NOT NULL,
+     thinking_level TEXT NOT NULL,
+     status TEXT NOT NULL,
+     prompt_tokens INTEGER,
+     output_tokens INTEGER,
+     thoughts_tokens INTEGER,
+     cost_usd NUMERIC(12, 8),
+     latency_ms INTEGER NOT NULL
+   )`,
+  `CREATE TABLE IF NOT EXISTS usage_counters (
+     counter TEXT NOT NULL,
+     period_key TEXT NOT NULL,
+     usage INTEGER NOT NULL,
+     PRIMARY KEY (counter, period_key)
+   )`,
+];
+
+/** Idempotent; run once per process before the first query (see `withSchema`). */
+export async function ensureSchema(db: Db): Promise<void> {
+  for (const statement of SCHEMA_STATEMENTS) await db.query(statement);
+}
+
+/**
+ * Wraps a Db so the schema is created lazily on first use and only once per process. A failed
+ * attempt is not memoized, so a transient database outage at cold start doesn't wedge the instance.
+ */
+export function withSchema(db: Db): Db {
+  let ready: Promise<void> | undefined;
+  return {
+    async query<T>(text: string, params?: unknown[]) {
+      ready ??= ensureSchema(db).catch((err: unknown) => {
+        ready = undefined;
+        throw err;
+      });
+      await ready;
+      return db.query<T>(text, params);
+    },
+  };
 }

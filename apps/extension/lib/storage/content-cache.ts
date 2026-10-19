@@ -19,10 +19,6 @@ interface ContentCacheSchema extends DBSchema {
     key: string;
     value: Exercise[];
   };
-  ttsAudio: {
-    key: string;
-    value: { blob: Blob; mimeType: string };
-  };
 }
 
 let dbPromise: Promise<IDBPDatabase<ContentCacheSchema>> | undefined;
@@ -32,7 +28,6 @@ function getDb(): Promise<IDBPDatabase<ContentCacheSchema>> {
     upgrade(db) {
       if (!db.objectStoreNames.contains("variants")) db.createObjectStore("variants");
       if (!db.objectStoreNames.contains("exercises")) db.createObjectStore("exercises");
-      if (!db.objectStoreNames.contains("ttsAudio")) db.createObjectStore("ttsAudio");
     },
   });
   return dbPromise;
@@ -40,15 +35,6 @@ function getDb(): Promise<IDBPDatabase<ContentCacheSchema>> {
 
 export function contentCacheKey(contentHash: string, level: Level, topic: string): string {
   return `${contentHash}:${level}:${topic}`;
-}
-
-export function ttsCacheKey(
-  contentHash: string,
-  level: Level,
-  topic: string,
-  rate: "normal" | "slow",
-): string {
-  return `${contentCacheKey(contentHash, level, topic)}:${rate}`;
 }
 
 export async function getCachedVariant(key: string): Promise<GermanVariant | undefined> {
@@ -107,17 +93,4 @@ export async function markExerciseAnswered(
     ex.id === exerciseId ? { ...ex, answered: true, lastAttempt } : ex,
   );
   await db.put("exercises", ExerciseSetSchema.parse(next), cacheKey);
-}
-
-export async function getCachedTtsAudio(
-  key: string,
-): Promise<{ blob: Blob; mimeType: string } | undefined> {
-  const db = await getDb();
-  return db.get("ttsAudio", key);
-}
-
-/** Populated lazily, only when a dictation exercise is actually played — never prefetched. */
-export async function putCachedTtsAudio(key: string, blob: Blob, mimeType: string): Promise<void> {
-  const db = await getDb();
-  await db.put("ttsAudio", { blob, mimeType }, key);
 }
