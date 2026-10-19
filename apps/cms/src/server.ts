@@ -1,6 +1,7 @@
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 import { config, type Config } from "./config";
 import { createNeonDb, withSchema, type Db } from "./db";
+import { registerExercisesRoute } from "./routes/exercises";
 import { registerTranslateRoute } from "./routes/translate";
 
 /**
@@ -24,6 +25,7 @@ export function buildApp(cfg: Config = config, db: Db = createNeonDb(cfg)): Fast
   });
 
   registerTranslateRoute(app, cfg, withSchema(db));
+  registerExercisesRoute(app, cfg);
 
   return app;
 }
