@@ -56,3 +56,23 @@ export function syncContentScriptRegistration(): Promise<void> {
     .catch((err: unknown) => console.error("Sprachweise: content script sync failed", err));
   return queue;
 }
+
+/**
+ * Runs the content script in tabs already open on a site the user just enabled: registration only
+ * covers later page loads, so without this the page the user enabled from stays inert until a
+ * reload. The script's own guard makes a second run in the same page a no-op.
+ */
+export async function injectIntoOpenTabs(origin: string): Promise<void> {
+  // Matching tabs by URL needs only the host permission just granted, not "tabs".
+  const tabs = await chrome.tabs.query({ url: origin });
+  await Promise.all(
+    tabs.map(async (tab) => {
+      if (tab.id === undefined) return;
+      await chrome.scripting
+        .executeScript({ target: { tabId: tab.id }, files: [CONTENT_SCRIPT_FILE] })
+        .catch((err: unknown) =>
+          console.error("Sprachweise: injecting into an open tab failed", err),
+        );
+    }),
+  );
+}

@@ -44,7 +44,11 @@ import { mapCmsExercisesToEntities } from "@/lib/exercises/generate";
 import { checkExerciseAnswer } from "@/lib/exercises/match";
 import { recordVocabEncounters, vocabIdFor } from "@/lib/vocab/upsert";
 import { flushEvents, recordEvent, recordInstallIfNew } from "@/lib/metrics/events";
-import { originPatternFor, syncContentScriptRegistration } from "@/lib/content-script-registration";
+import {
+  injectIntoOpenTabs,
+  originPatternFor,
+  syncContentScriptRegistration,
+} from "@/lib/content-script-registration";
 
 async function handleTranslateParagraph(
   message: Extract<RequestMessage, { type: "TRANSLATE_PARAGRAPH" }>,
@@ -246,6 +250,11 @@ async function handleSetSiteStatus(
       status: "enabled",
       grantedPermissionOrigin: origin,
     });
+    // Register for later loads first, then start it in the tabs already open on this site.
+    await syncContentScriptRegistration();
+    await injectIntoOpenTabs(origin).catch((err: unknown) =>
+      console.error("Sprachweise: injecting into open tabs failed", err),
+    );
     return { ok: true };
   }
 

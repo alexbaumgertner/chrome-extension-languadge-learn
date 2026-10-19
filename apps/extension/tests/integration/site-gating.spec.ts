@@ -36,7 +36,7 @@ test("a never-enabled site stays fully inert; enabling and disabling via the pop
   expect(afterClick).toBe(before);
   await expect(page.locator(".sw-panel")).toHaveCount(0);
 
-  // Enable via the actual popup UI (a real user gesture path), then reload the article page.
+  // Enable via the actual popup UI (a real user gesture path).
   // The popup reads the *active* tab's hostname via chrome.tabs.query({active: true}); a real
   // toolbar popup never itself becomes "the active tab", but opening popup.html as a plain
   // page via Playwright does — so re-focus the fixture page, then reload the popup so its
@@ -51,14 +51,12 @@ test("a never-enabled site stays fully inert; enabling and disabling via the pop
   await expect(popup.getByRole("button", { name: /disable on this site/i })).toBeVisible();
   await popup.close();
 
-  // Enabling registers the content script for this origin (runtime registration, no manifest
-  // content script); wait for it before reloading so the reload is guaranteed to inject it.
+  // Enabling registers the content script for later loads of this origin (runtime registration,
+  // no manifest content script) and injects it into this already-open page: no reload needed.
   await expect.poll(() => registeredMatches(serviceWorker)).toEqual(["*://127.0.0.1/*"]);
-  await page.reload();
   const targetAfterEnable = page.locator("#target");
   const beforeSecondClick = await targetAfterEnable.evaluate((el) => el.outerHTML);
-  await dispatchClick(targetAfterEnable);
-  await expect(targetAfterEnable.locator(".sw-vocab").first()).toBeVisible();
+  await clickUntilTranslated(targetAfterEnable);
   const translatedHtml = await targetAfterEnable.evaluate((el) => el.outerHTML);
   expect(translatedHtml).not.toBe(beforeSecondClick);
 
@@ -76,7 +74,31 @@ test("a never-enabled site stays fully inert; enabling and disabling via the pop
 
   // Disabling the only enabled site unregisters the content script entirely.
   await expect.poll(() => registeredMatches(serviceWorker)).toEqual([]);
+
+  // Re-enabling on the same live page works again without a reload, and the second injection
+  // does not start a second instance (one panel host, one click handler per paragraph).
+  const popup3 = await context.newPage();
+  await popup3.goto(`chrome-extension://${extensionId}/popup.html`);
+  await page.bringToFront();
+  await popup3.reload();
+  await popup3.getByRole("button", { name: /enable on this site/i }).click();
+  await expect(popup3.getByRole("button", { name: /disable on this site/i })).toBeVisible();
+  await popup3.close();
+
+  await clickUntilTranslated(targetAfterEnable);
+  await expect(page.locator("sprachweise-panel")).toHaveCount(1);
 });
+
+/**
+ * The injected script attaches its click listeners a moment after the popup reports "enabled"
+ * (it first asks the background for the site status), so click until the paragraph translates.
+ */
+async function clickUntilTranslated(target: import("@playwright/test").Locator): Promise<void> {
+  await expect(async () => {
+    if ((await target.locator(".sw-vocab").count()) === 0) await dispatchClick(target);
+    await expect(target.locator(".sw-vocab").first()).toBeVisible({ timeout: 1000 });
+  }).toPass({ timeout: 10_000 });
+}
 
 async function registeredMatches(
   serviceWorker: import("@playwright/test").Worker,

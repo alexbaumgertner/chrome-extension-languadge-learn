@@ -102,7 +102,7 @@ exercise generator, so they never call production.
 | --- | --- |
 | `storage` | Keeps the learner's settings, enabled sites, vocabulary, exercise progress, saved translations, the random install ID and unsent usage events in the browser, so learning works offline. |
 | `activeTab` | When the user opens the toolbar menu, reads the current tab's hostname so the menu can show and toggle "Enable on this site" for that site. |
-| `scripting` | Registers the paragraph-click script only for the sites the user enabled (chrome.scripting.registerContentScripts), instead of declaring a content script for all websites. |
+| `scripting` | Registers the paragraph-click script only for the sites the user enabled (chrome.scripting.registerContentScripts), instead of declaring a content script for all websites, and starts it in that site's already-open tabs right after the user enables it (chrome.scripting.executeScript), so no reload is needed. |
 | Optional host permissions `*://*/*` | Requested for one site at a time (`*://<hostname>/*`) when the user clicks "Enable on this site", so the extension can read the paragraph the user clicks and replace it with German. Nothing is requested at install, and disabling a site releases its permission. |
 
 **Remote code:** No. All JavaScript is in the package; the server returns JSON only.
