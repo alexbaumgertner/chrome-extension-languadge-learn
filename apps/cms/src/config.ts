@@ -11,6 +11,19 @@ const ConfigSchema = z.object({
   TRANSLATE_MAX_CHARS: z.coerce.number().int().positive().default(5000),
   /** Global budget kill switch across all users (cache hits don't count). */
   GEMINI_DAILY_REQUEST_ALLOWANCE: z.coerce.number().int().positive().default(1500),
+  /**
+   * Comma-separated exact origins allowed to call the API, e.g.
+   * `chrome-extension://<store id>,chrome-extension://<unpacked dev id>`. Empty = no CORS grants.
+   */
+  CORS_ALLOWED_ORIGINS: z
+    .string()
+    .default("")
+    .transform((v) =>
+      v
+        .split(",")
+        .map((o) => o.trim())
+        .filter(Boolean),
+    ),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;

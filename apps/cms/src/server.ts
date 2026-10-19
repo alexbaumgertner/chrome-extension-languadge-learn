@@ -1,4 +1,5 @@
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
+import cors from "@fastify/cors";
 import { config, type Config } from "./config";
 import { createNeonDb, withSchema, type Db } from "./db";
 import { registerExercisesRoute } from "./routes/exercises";
@@ -22,6 +23,15 @@ export function buildApp(cfg: Config = config, db: Db = createNeonDb(cfg)): Fast
               req: (request: FastifyRequest) => ({ method: request.method, url: request.url }),
             },
           },
+  });
+
+  // The extension's background worker calls cross-origin without a host permission for the API,
+  // so only the configured extension origins get CORS grants. This keeps other web pages from
+  // spending the quota from a visitor's browser; it is not authentication.
+  void app.register(cors, {
+    origin: (origin, cb) =>
+      cb(null, origin !== undefined && cfg.CORS_ALLOWED_ORIGINS.includes(origin)),
+    methods: ["POST"],
   });
 
   registerTranslateRoute(app, cfg, withSchema(db));
