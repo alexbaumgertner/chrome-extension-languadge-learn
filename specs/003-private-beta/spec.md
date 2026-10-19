@@ -171,6 +171,21 @@ exactly the selected text in each turns German; Restore → the page is byte-ide
 - The extension is updated while a page shows translations → the old script restores the page
   when the new one starts.
 
+### Known limitations
+
+- **Restore menu and iframes** ([#6](https://github.com/alexbaumgertner/chrome-extension-languadge-learn/issues/6)):
+  the Restore item's visibility checks only the top frame, so it stays hidden while the only
+  translations are inside an iframe. Needs per-tab/per-frame state in the background.
+- **Translation density is vestigial** ([#7](https://github.com/alexbaumgertner/chrome-extension-languadge-learn/issues/7)):
+  it has no UI or effect since the menu trigger but is still stored and sent with reports
+  (default "medium"). Deprecation: backend makes it optional → client stops storing/sending it →
+  column cleanup.
+- Text placed directly in a container next to other blocks (some SPA and web-component layouts),
+  and a list item's own text when it holds a nested list, can't be translated: the selection is
+  refused rather than the container replaced.
+- The keyboard shortcut acts on the top frame only; cross-origin iframes, `chrome://` pages and
+  the Web Store can't be scripted at all.
+
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
