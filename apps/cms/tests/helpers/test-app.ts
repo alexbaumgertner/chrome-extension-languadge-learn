@@ -2,7 +2,7 @@ import { PGlite } from "@electric-sql/pglite";
 import type { FastifyInstance } from "fastify";
 import { config, type Config } from "../../src/config";
 import type { Db } from "../../src/db";
-import { buildApp } from "../../src/server";
+import { buildApp } from "../../src/build-app";
 
 /** An in-memory Postgres (PGlite) behind the production `Db` interface — fresh per call. */
 export function createTestDb(): Db {
