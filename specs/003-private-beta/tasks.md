@@ -24,8 +24,17 @@
 - [x] T6 Extension: "Плохой перевод" button (exercise panel footer) with thank-you / retry
 - [ ] T7 Backend: `/admin/metrics` behind `ADMIN_PASSWORD` (daily totals, per-install, reports)
 - [x] T8 Backend: 90-day retention cleanup (on the first write of each day, events in T4, reports in T5; no cron needed)
-- [x] T9 Extension: per-origin content script registration; verify no install-time warning
+- [x] T9 Extension: per-origin content script registration; verify no install-time warning — *superseded by T12*
 - [x] T10 Privacy policy at `/privacy` (RU + EN, server route) — store listing moved to T11 (`docs/store-listing.md`)
+- [x] T12 Context-menu trigger (branch `context-menu-trigger`, before the first store submission)
+  - [x] Shared `TRANSLATE_MAX_CHARS` = 1,500; backend `413 text-too-long`; new client_error codes; metrics error rate excludes too-long
+  - [x] Selection → exact range or whole blocks; partial-range substitution with byte-identical restore (+ unit tests)
+  - [x] `contextMenus` + `commands`; activeTab + on-demand `executeScript`; "Restore original text" item; removed optional host permissions, site rules, registration, popup toggle, Site Rules tab, density control
+  - [x] Error messages split (offline / unavailable / limit / too long / failed) with matching event codes
+  - [x] Playwright suite on the new flow (menu/shortcut via test-build hooks; CORS on a real `localhost` origin); `getPermissionWarningsByManifest` on the production manifest → no install/update warnings
+  - [x] Store listing, privacy policy, README, screenshots
+  - [ ] Backend deploy (length cap, 413, new error codes) **before** the new extension build reaches testers
+  - [ ] Manual check in a clean profile: install the production zip, translate from the real context menu (Playwright can't open Chrome's native menu, so the activeTab grant from a real click is untested)
 - [ ] T11 Release
   - [x] Production zip: `pnpm store:zip` (builds, checks manifest/permissions/API URL/description length)
   - [x] `docs/store-listing.md` (RU/EN copy, category, Unlisted, permission justifications, data-usage answers); icons + 1280×800 screenshots + promo tile via `store:assets`

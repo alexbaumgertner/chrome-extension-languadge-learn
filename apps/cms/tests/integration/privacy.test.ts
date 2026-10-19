@@ -18,8 +18,14 @@ describe("GET /privacy", () => {
       "IP address",
       "Limited Use",
       "mailto:alex.baumgertner+sprachweise@gmail.com",
+      // Text leaves the device only after the menu choice, capped per selection.
+      'only after you\nchoose "Translate to German (Sprachweise)"',
+      "1,500 characters",
+      "Перевести на немецкий (Sprachweise)",
     ]) {
       expect(html).toContain(phrase);
     }
+    // The per-site model is gone.
+    expect(html).not.toContain("Enable on this site");
   });
 });

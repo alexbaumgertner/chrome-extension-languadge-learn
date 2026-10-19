@@ -8,6 +8,10 @@ Add a random install ID to translation requests, count per-install daily usage s
 it on a password-protected `/admin/metrics` page with recent "Плохой перевод" reports, and ship an
 unlisted Chrome Web Store build with a privacy policy and no install-time host access.
 
+*(2026-10-19, branch `context-menu-trigger`)*: translation is now started from a context-menu item
+on the selection (plus a keyboard shortcut), with activeTab and on-demand injection instead of
+per-site permissions.
+
 ## Technical Context
 
 **Language/Version**: TypeScript 5 strict, Node 24
@@ -38,8 +42,35 @@ offline event queue in `chrome.storage.local`.
 - `/admin/metrics`: server-rendered HTML behind HTTP Basic auth (`ADMIN_PASSWORD` env), reads the
   two tables plus the existing `usage_counters` global row.
 - Retention: a daily Vercel Cron calls a secret-protected cleanup endpoint (90 days).
-- Store: replace the static all-sites content script with per-origin
-  `chrome.scripting.registerContentScripts` (adds `scripting`), privacy policy as a static page.
+- ~~Store: replace the static all-sites content script with per-origin
+  `chrome.scripting.registerContentScripts` (adds `scripting`).~~ Superseded 2026-10-19 by the
+  context-menu trigger below.
+- **Context-menu trigger** (`apps/extension/lib/page-actions.ts`). Manifest permissions:
+  `storage`, `activeTab`, `scripting`, `contextMenus`; `commands.translate-selection` (suggested
+  Alt+Shift+G). No host or optional host permissions, no manifest content scripts. A menu click
+  or the shortcut grants activeTab; the background pings the frame (`PAGE_ACTION status`), injects
+  `content-scripts/content.js` with `chrome.scripting.executeScript` only if no copy is running
+  (a second copy would replace the first and lose its restore state), then sends
+  `PAGE_ACTION translate-selection`. "Restore original text" uses the `page` context so it never
+  shares a right-click with "Translate" (two items would fold into a submenu), and is shown only
+  while the active tab answers `hasTranslations: true` (re-checked on tab switch, window focus,
+  tab load, and every `TRANSLATIONS_CHANGED` from a content script).
+- **Selection → targets** (`lib/dom/selection.ts`): nearest block ancestor of each selected text
+  node; one block not fully covered → exact trimmed range; otherwise the outermost touched blocks.
+  Code, form controls and editable fields are excluded.
+- **Partial range** (`lib/dom/substitution.ts` `applyVariantToRange`): the block's `innerHTML` is
+  saved before its first change; the range is deleted and a `span.sw-segment` with the variant is
+  inserted. Restore is per block from that snapshot, so it is byte-identical even when the range
+  cut through a link (which `deleteContents` splits). Nested translations are restored before an
+  outer block is snapshotted.
+- **Length cap**: `TRANSLATE_MAX_CHARS` = 1,500 in `packages/shared`, checked on the whole
+  selection by the extension (nothing sent, `translate-too-long` recorded) and per request by the
+  backend (`413 text-too-long`; was `400` at 5,000). Exercises accept twice that, since a German
+  rewrite can run longer than its source.
+- **Error split** (`lib/cms/client.ts` `classifyTranslateFailure`): `CmsFetchError` 413/429/5xx/
+  other; a rejected fetch is `offline` if `navigator.onLine` is false, otherwise a `no-cors` probe
+  of the API origin tells `cors` (server answered) from `unreachable`. Tests run the mock backend
+  on `localhost` (no host permission) so CORS is real.
 
 ## Constraints (recorded 2026-10-19)
 
@@ -64,9 +95,9 @@ offline event queue in `chrome.storage.local`.
 
 | Principle | Status |
 | --- | --- |
-| I. Least Privilege | **Conflict found (pre-existing)**: the manifest declares a static content script on `*://*/*`; Chrome counts content-script matches as host access, so installs show an all-sites warning even though `host_permissions` is empty. Fix (FR-010) by registering scripts per granted origin; adds `scripting`, justified in the listing. To verify in a clean profile. |
-| II. Host Page Integrity | OK — report button renders in Shadow DOM next to the paragraph, like the existing inline error. |
-| III. Privacy (2.0.0) | OK in app code: install ID only on translate, never in cache keys, logs, or reports; report only on click. **Flag**: Vercel's platform request logs record client IPs outside app control — disclose in the privacy policy. |
+| I. Least Privilege | **Conflict found (pre-existing)**: the manifest declares a static content script on `*://*/*`; Chrome counts content-script matches as host access, so installs show an all-sites warning even though `host_permissions` is empty. Fix (FR-010) by registering scripts per granted origin; adds `scripting`, justified in the listing. To verify in a clean profile. **Update 2026-10-19 (context-menu trigger)**: stricter than the principle's own floor — `optional_host_permissions` removed; page access comes only from `activeTab` on a menu click or shortcut. Added `contextMenus` (justified: it is the trigger; no warning) and `commands` (no permission). `getPermissionWarningsByManifest` on the production manifest (Chrome 151): install `[]`; update from the draft adds only `contextMenus` → `[]`. |
+| II. Host Page Integrity | OK — report button renders in Shadow DOM next to the paragraph, like the existing inline error. Partial-range replacement only touches the selected block and restores it byte-identically. |
+| III. Privacy (2.0.0) | OK in app code: install ID only on translate, never in cache keys, logs, or reports; report only on click. **Flag**: Vercel's platform request logs record client IPs outside app control — disclose in the privacy policy. **Update 2026-10-19**: the consent gesture is now choosing "Translate to German (Sprachweise)" for a selection (the principle's text still says "clicking a paragraph"; same meaning, wording to be amended); the extension cannot read the page before that choice, and a selection is capped at 1,500 characters. New client_error codes are fixed strings, no text. |
 | IV. Offline-First | OK — metrics never block translation; a metrics write failure must not fail the request. |
 | V. Typed Contracts | New zod schemas for `installId`, the report request, and the report message. |
 | VI. Test What Breaks | Tests: usage counting (hit/miss/failure), install-ID validation, report endpoint, admin auth. |
@@ -84,8 +115,10 @@ apps/cms/src/
 apps/cms/public/privacy.html   # served at /privacy
 apps/extension/
 ├── lib/install-id.ts
-├── entrypoints/content/   # "Плохой перевод" button
-└── entrypoints/background.ts  # report message; scripting registration
+├── entrypoints/content/   # "Плохой перевод" button; selection → translate / restore
+├── entrypoints/background.ts  # report message; context menu + shortcut handlers
+├── lib/page-actions.ts    # menu items, on-demand injection, Restore visibility
+└── lib/dom/selection.ts   # selection → exact range or whole blocks
 STORE_LISTING.md
 ```
 

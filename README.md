@@ -1,104 +1,82 @@
 # Sprachweise
 
-A Chrome extension for learning German by reading real web content. Click any
-paragraph on an enabled site to have it translated to German at your chosen
-level, then practice with exercises generated from that paragraph while the
-extension tracks your progress over time.
+A Chrome extension for learning German by reading real web content. Select text
+on any page, right-click and choose **Translate to German (Sprachweise)**: the
+selection is replaced by a German version at your level, with glosses for new
+words and exercises built from that text. Progress is tracked locally.
 
 ## Features
 
-- **In-page reading practice** — click a paragraph on any enabled site to see
-  it rendered in German.
-- **Level control** — set your CEFR level (e.g. A1-A2 through B1-B2) and how
-  much of the text gets translated ("translation density") from the Settings
-  page.
-- **Exercises generated from what you read**, including:
-  - Match German words to their Russian meanings
-  - Fill in the missing word
-  - Dictation ("type what you heard"), with audio playback at normal or slow
-    speed
-  - Reveal meaning for a quick vocabulary check
-- **Per-site control** — enable or disable Sprachweise for the current site
-  from the toolbar popup, or manage rules for multiple sites from
-  Settings → Site Rules.
-- **Progress tracking** — Settings → Progress shows your day streak,
-  exercises solved today, active vocabulary size, review queue, per-topic
-  accuracy, and current grammar topic.
+- **Translate a selection from the right-click menu** — on any page, no
+  per-site setup and no reload. A selection inside one paragraph replaces
+  exactly that text; a selection across paragraphs translates those
+  paragraphs whole. At most 1,500 characters at a time.
+- **Keyboard shortcut** — `Alt+Shift+G` (changeable at
+  `chrome://extensions/shortcuts`) does the same as the menu item, for sites
+  that replace the right-click menu.
+- **Restore original text (Sprachweise)** — right-click the page to put every
+  translated passage back exactly as it was.
+- **Level control** — A1–A2, B1–B2 or C1+, in Settings.
+- **Exercises generated from what you read**: match German words to their
+  Russian meanings, fill in the missing word, multiple choice and dictation
+  (normal or slow speed). Click an underlined word to see its meaning.
+- **"Плохой перевод"** — report a bad translation for review in one click.
+- **Progress tracking** — Settings → Progress shows your day streak, exercises
+  solved today, active vocabulary, review queue and per-topic accuracy.
 
-## Installation
+The extension asks for no website access at install. It uses `activeTab`:
+Chrome lets it read a page only when you pick its menu item or press its
+shortcut, and only that tab. Permissions: `storage`, `activeTab`, `scripting`,
+`contextMenus`; no host permissions.
 
-This repo doesn't currently include a packaged `.crx`/Chrome Web Store
-listing, so install it as an unpacked extension:
+## Installation (unpacked)
 
-1. Open `chrome://extensions` in Chrome.
-2. Enable **Developer mode** (toggle in the top-right corner).
-3. Click **Load unpacked**.
-4. Select `apps/extension/.output/chrome-mv3` from this repo.
-5. Sprachweise should now appear in your extensions list and toolbar.
+1. `pnpm install && pnpm build` (builds `apps/extension/.output/chrome-mv3`
+   against the production API, `https://sprachweise.vercel.app`).
+2. Open `chrome://extensions`, enable **Developer mode**, click **Load
+   unpacked** and select `apps/extension/.output/chrome-mv3`.
 
-If you edit and rebuild the extension, click the refresh icon on its card in
-`chrome://extensions` to pick up the new build.
+After rebuilding, click the refresh icon on the extension's card. Pages that
+were open keep working: the next menu click injects the new script.
 
 ## Usage
 
-1. Click the Sprachweise icon in the toolbar and choose **Enable on this
-   site** for any site you want to practice on.
-2. Browse the site normally; click a paragraph to have it translated to
-   German.
-3. Use the exercises that appear (match, fill-in-the-blank, dictation,
-   reveal) to practice the words and grammar from that paragraph.
-4. Open **Settings** (right-click the toolbar icon → Options, or via the
-   popup) to:
-   - Change your level and translation density
-   - Enable/disable additional sites under Site Rules
-   - Review your stats and vocabulary under Progress
+1. Select a sentence or paragraphs on any page.
+2. Right-click → **Translate to German (Sprachweise)** (or press
+   `Alt+Shift+G`).
+3. Use the exercise panel on the right; click underlined words for their
+   meaning.
+4. Right-click the page → **Restore original text (Sprachweise)** to undo.
+5. Open **Settings** (right-click the toolbar icon → Options) to change your
+   level and see your progress.
 
-## Running from source
+## Development
 
-The `main` branch's working tree only contains the built extension and
-installed dependencies — the application source lives on the
-`spike/dom-swap` branch (commit `c39cf25`) and hasn't been merged yet. To
-build or develop it:
+pnpm workspace: `apps/extension` (WXT + React), `apps/cms` (Fastify API on
+Vercel, Neon Postgres, Gemini), `packages/shared` (zod schemas for every
+message and API contract).
 
-```sh
-git checkout spike/dom-swap
-pnpm install
-```
+| Command                                             | What it does                                                  |
+| --------------------------------------------------- | ------------------------------------------------------------- |
+| `pnpm --filter @sprachweise/extension dev`          | WXT dev server with hot reload.                               |
+| `pnpm --filter @sprachweise/cms dev`                | Local API on `http://localhost:8787` (needs `apps/cms/.env`). |
+| `pnpm build`                                        | Builds every package.                                         |
+| `pnpm test:unit`                                    | Vitest unit tests.                                            |
+| `pnpm test:integration`                             | API tests (PGlite) and the extension's Playwright suite.      |
+| `pnpm store:zip`                                    | Production Chrome Web Store package, with manifest checks.    |
+| `pnpm --filter @sprachweise/extension store:assets` | Re-renders icons and store screenshots.                       |
 
-This is a pnpm workspace (`apps/extension` + `packages/shared`). Useful
-scripts from the root `package.json`:
+The extension's API base URL is `WXT_CMS_BASE_URL` at build time; otherwise
+production builds use `https://sprachweise.vercel.app` and dev builds
+`http://localhost:8787` (`apps/extension/lib/config.ts`).
 
-| Command                            | What it does                                                    |
-| ---------------------------------- | --------------------------------------------------------------- |
-| `pnpm --filter apps/extension dev` | Starts the WXT dev server with hot-reload (`wxt`).              |
-| `pnpm build`                       | Builds the extension into `apps/extension/.output/chrome-mv3`.  |
-| `pnpm test:unit`                   | Runs the Vitest unit tests.                                     |
-| `pnpm test:integration`            | Builds a test bundle and runs the Playwright integration suite. |
+### Integration tests
 
-### Translation backend
-
-The background worker talks to a "Payload CMS" backend
-(`apps/extension/lib/cms/client.ts`) through three endpoints:
-`/api/translate`, `/api/exercises`, `/api/tts`. Its base URL is:
-
-- `WXT_CMS_BASE_URL` env var at build time, if set, otherwise
-- `http://localhost:8787` by default.
-
-That real backend isn't part of this repo, so `dev`/`build` builds won't be
-able to translate anything unless you point `WXT_CMS_BASE_URL` at a CMS
-instance that implements those endpoints yourself.
-
-For local testing without a real backend, `pnpm test:integration` runs
-`build:test`, which bakes in `WXT_CMS_BASE_URL=http://127.0.0.1:58733` and
-`WXT_TEST_ORIGIN=http://127.0.0.1:58732`, then starts Playwright. Playwright's
-fixtures (`apps/extension/tests/integration/fixtures.ts`) automatically spin
-up a mock CMS server (`mock-cms-server.ts`) and a fixture content server
-(`fixture-server.ts`) on those exact ports for the duration of the test run,
-then tear them down — they aren't standalone servers you start and leave
-running.
-
-This also explains the `.output/chrome-mv3` build already present in this
-repo: it was produced by `build:test`, so its background script has
-`http://127.0.0.1:58733` hardcoded in and will only translate successfully
-while a Playwright integration run (or a manually-started
-`createMockCmsServer()` from `mock-cms-server.ts`) is listening on that port.
+`pnpm --filter @sprachweise/extension test:integration` runs `build:test`
+(fixture page `http://127.0.0.1:58732`, mock API `http://localhost:58733`) and
+then Playwright in headed Chromium. The fixtures start a fixture page server
+and a mock API with real CORS for each test. Playwright can't open Chrome's
+native context menu or press an extension shortcut, so test builds expose the
+same handlers on the service worker (`sprachweiseTest`) and get the fixture
+host as a host permission in place of the activeTab grant. Neither exists in
+production builds (`pnpm store:zip` checks).

@@ -11,6 +11,11 @@ server-side usage metrics + `/admin/metrics` page, 'Плохой перевод'
 Web Store release, privacy policy. No payments, paywall, license keys or Pro tier — deferred until
 the beta review on 16 Nov."
 
+**Amended 2026-10-19 (branch `context-menu-trigger`, before the first store submission)**: the
+trigger changed from "enable a site, then click a paragraph" to "select text, right-click,
+Translate to German (Sprachweise)". Per-site enabling, site rules and optional host permissions are
+gone. See User Story 4, FR-010 and FR-015–FR-021.
+
 Context: Phase 1 (backend deployed, Gemini-only, Postgres) is done — see
 [docs/ship-first-dollar.md](../../docs/ship-first-dollar.md). Governed by constitution 2.0.0
 (Principle III permits a random install ID for usage metrics and an explicit bad-translation
@@ -71,24 +76,61 @@ report (source fragment, German output, level, model) is visible to the owner.
 
 ### User Story 3 - Friends install from the Chrome Web Store via a private link (Priority: P2)
 
-The owner sends friends an unlisted Chrome Web Store link. They install without an alarming
-"read and change all your data on all websites" warning, enable a site, and use the product. A
-privacy policy explains what is sent and stored.
+The owner sends friends an unlisted Chrome Web Store link. They install without any permission
+warning, select text on any page and use the product from the right-click menu. A privacy policy
+explains what is sent and stored.
 
 **Why this priority**: Friends shouldn't need developer mode; an unlisted listing also rehearses
 the public release.
 
-**Independent Test**: Install the production package in a clean Chrome profile → no broad
-host-access warning; privacy policy reachable over HTTPS; the unlisted listing is not searchable.
+**Independent Test**: Install the production package in a clean Chrome profile → no permission
+warning at all; privacy policy reachable over HTTPS; the unlisted listing is not searchable.
 
 **Acceptance Scenarios**:
 
-1. **Given** the production package, **When** it is installed, **Then** the browser asks for no
-   website access until the user enables a specific site from the toolbar popup.
-2. **Given** the privacy policy page, **Then** it states what is sent (selected paragraph, random
-   install ID, reports on click), what is stored and for how long, and what is never collected.
+1. **Given** the production package, **When** it is installed or updated, **Then** Chrome shows no
+   permission warning, and the extension can read a page only in the tab where the user picked
+   its menu item or pressed its shortcut, at that moment (activeTab).
+2. **Given** the privacy policy page, **Then** it states what is sent (selected text, only after the
+   menu choice; random
+   install ID; reports on click), what is stored and for how long, and what is never collected.
 3. **Given** the listing, **Then** its visibility is unlisted and every permission has a one-line
    justification.
+
+---
+
+### User Story 4 - Translate a selection from the right-click menu (Priority: P1)
+
+The learner selects text on any page, right-clicks and chooses "Translate to German
+(Sprachweise)". The selection is replaced by the German version with glosses, and the exercise
+panel opens. "Restore original text (Sprachweise)" brings the original back. There is nothing to
+enable per site and no reload.
+
+**Why this priority**: It is how every translation starts. It replaces per-site enabling, which
+needed a host permission per site, a popup step and (before a fix) a reload.
+
+**Independent Test**: On any article, select a sentence → right-click → Translate → only that
+sentence turns German; select across two paragraphs → both turn German whole; Restore → the page
+is byte-identical to before.
+
+**Acceptance Scenarios**:
+
+1. **Given** a selection inside one paragraph that doesn't cover all of it, **When** the learner
+   picks "Translate to German", **Then** exactly the selected text (trimmed of surrounding
+   whitespace) is sent and replaced; the rest of the paragraph is untouched.
+2. **Given** a selection that covers a whole paragraph or touches several, **Then** every block
+   it touches is translated whole, one request per block, top to bottom; the panel shows the
+   first block's exercises.
+3. **Given** a selection over 1,500 characters, **Then** nothing is sent and the learner is told
+   to select less (how much they selected and the limit).
+4. **Given** translated text on the page, **When** the learner right-clicks the page (no
+   selection), **Then** "Restore original text (Sprachweise)" is offered and restores every
+   translation on the page byte-identically.
+5. **Given** a site that replaces the right-click menu, **When** the learner selects text and
+   presses the shortcut (suggested Alt+Shift+G), **Then** the same happens as with the menu.
+6. **Given** a failure, **Then** the message says which: offline, service unavailable
+   (unreachable, CORS-blocked or server error), daily limit, too long, or other — never
+   "offline" for a server problem.
 
 ### Edge Cases
 
@@ -100,6 +142,17 @@ host-access warning; privacy policy reachable over HTTPS; the unlisted listing i
 - The same paragraph reported twice by the same tester → two reports (no dedupe needed at this
   scale).
 - Metrics page during an empty day → shows zeros, not an error.
+- Selection in an editable field (input, textarea, contenteditable) → refused with a message;
+  the learner's own text is never rewritten.
+- Selection already showing German → the original of that block is translated again (served from
+  the local cache), never the German.
+- The page changes the selected text while the translation is in flight → the German is not
+  inserted; the learner is asked to select again.
+- Pages Chrome doesn't let extensions script (chrome://, the Web Store, the PDF viewer) and
+  selections inside a cross-origin iframe → the menu item does nothing there (activeTab covers
+  only the tab's own origin). The shortcut works on the top frame only.
+- The extension is updated while a page shows translations → the old script restores the page
+  when the new one starts.
 
 ## Requirements *(mandatory)*
 
@@ -141,9 +194,11 @@ host-access warning; privacy policy reachable over HTTPS; the unlisted listing i
 
 **Release and privacy**
 
-- **FR-010**: The production package MUST request no website access at install time; the page
-  script MUST run only on sites the user enabled via the popup (constitution I). Any permission
-  added for this MUST be justified.
+- **FR-010**: The production package MUST request no website access at install or update: no host
+  permissions, no optional host permissions, no manifest content scripts. The page script MUST run
+  only in a tab where the user picked the extension's menu item or pressed its shortcut, injected
+  under the activeTab grant (constitution I). *(Amended 2026-10-19: was "only on sites the user
+  enabled via the popup".)*
 - **FR-011**: The Chrome Web Store listing MUST be unlisted, with RU and EN short descriptions and
   a justification for each permission.
 - **FR-012**: A privacy policy page MUST be served over HTTPS from the same deployment as the API.
@@ -152,11 +207,33 @@ host-access warning; privacy policy reachable over HTTPS; the unlisted listing i
 - **FR-014**: The existing global daily budget cap MUST stay in place; no per-install limits in
   this feature.
 
+**Context-menu trigger** *(added 2026-10-19)*
+
+- **FR-015**: A "Translate to German (Sprachweise)" context-menu item on selections MUST be the
+  trigger; choosing it is the consent to send that text (constitution III). Nothing is read or
+  sent before.
+- **FR-016**: A selection inside one block that doesn't cover it MUST replace exactly the selected
+  range; otherwise every block it touches MUST be replaced whole. Restoring MUST be byte-identical
+  per block (constitution II).
+- **FR-017**: A selection MUST be at most `TRANSLATE_MAX_CHARS` = 1,500 characters
+  (`packages/shared`). The extension checks the whole selection before sending; the backend
+  checks each request and answers `413 text-too-long`. Rationale: ~250 characters per average
+  paragraph at ~$0.0016 → about six paragraphs, about one cent per selection at most; the backend
+  previously accepted 5,000.
+- **FR-018**: A "Restore original text (Sprachweise)" item MUST appear on a plain right-click while
+  the active tab shows a translation, and restore every translation on the page.
+- **FR-019**: A keyboard command MUST do the same as the translate item (fallback for sites that
+  replace the context menu).
+- **FR-020**: Failure messages MUST distinguish offline, service unavailable, daily limit, too
+  long and other; the client_error event MUST carry the matching code (`translate-offline`,
+  `-unreachable`, `-cors`, `-server-error`, `-limit`, `-too-long`, `-failed`).
+- **FR-021**: No page reload MUST be needed before the first translation on any page.
+
 ### Key Entities
 
 - **Install**: a random ID created by the extension. No personal attributes.
 - **Event**: (install, UTC day, kind) + cache/latency for translations, code/status for errors.
-- **Bad-translation report**: source fragment, German output, level, density, model, prompt
+- **Bad-translation report**: source fragment (the selected text that was sent), German output, level, density, model, prompt
   version, created time. Not linked to an install.
 
 ## Success Criteria *(mandatory)*
@@ -167,8 +244,8 @@ host-access warning; privacy policy reachable over HTTPS; the unlisted listing i
   testers used it, on how many days, and how many paragraphs each translated.
 - **SC-002**: A tester can report a bad translation in one click and under 3 seconds.
 - **SC-003**: At least 3 of the invited friends install from the unlisted link without help.
-- **SC-004**: The installed package triggers no "read and change all your data on all websites"
-  warning.
+- **SC-004**: The installed package triggers no permission warning at install or update (checked
+  with Chrome's `getPermissionWarningsByManifest` on the production manifest).
 - **SC-005**: 0 host pages show an error caused by the extension during the beta.
 
 ## Assumptions
