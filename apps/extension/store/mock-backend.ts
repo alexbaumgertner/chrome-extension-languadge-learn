@@ -12,12 +12,12 @@ export const ARTICLE = {
   ],
 };
 
-const GERMAN =
+export const GERMAN =
   "Am Wochenende sind wir nach Berlin gefahren. Am Morgen sind wir durch den Tiergarten " +
   "spaziert. Danach haben wir in einem kleinen Café am Bahnhof Kaffee getrunken. Am Abend sind " +
   "wir auf den Fernsehturm gefahren. Von dort sieht man die ganze Stadt.";
 
-const GLOSSES = [
+export const GLOSSES = [
   { german: "Wochenende", lemma: "das Wochenende", russian: "выходные" },
   { german: "spaziert", lemma: "spazieren", russian: "гулять" },
   { german: "Bahnhof", lemma: "der Bahnhof", russian: "вокзал" },
@@ -26,14 +26,22 @@ const GLOSSES = [
   { german: "Stadt", lemma: "die Stadt", russian: "город" },
 ];
 
+/** Which endpoint answers 503, so the design review can show the extension's error states. */
+export type StoreMockFailure = "translate" | "exercises" | null;
+
 /** The extension's backend for screenshots: real exercise generator, canned translation. */
-export function createStoreMockBackend() {
+export function createStoreMockBackend(failing: () => StoreMockFailure = () => null) {
   return createLoopbackServer(
     withCors((req, res) => {
       let body = "";
       req.on("data", (chunk: Buffer) => (body += chunk.toString()));
       req.on("end", () => {
         res.setHeader("Content-Type", "application/json");
+        if (`/api/${failing()}` === req.url) {
+          res.statusCode = 503;
+          res.end("{}");
+          return;
+        }
         if (req.url === "/api/translate") {
           res.end(
             JSON.stringify({

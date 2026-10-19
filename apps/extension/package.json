@@ -15,7 +15,8 @@
     "test:integration": "pnpm run build:test && playwright test",
     "typecheck": "tsc --noEmit",
     "store:assets": "pnpm run build:test && playwright test -c store/playwright.config.ts",
-    "store:zip": "node scripts/build-store-zip.mjs"
+    "store:zip": "node scripts/build-store-zip.mjs",
+    "design:capture": "pnpm run build:test && playwright test -c design-review/playwright.config.ts"
   },
   "dependencies": {
     "@sprachweise/shared": "workspace:*",
