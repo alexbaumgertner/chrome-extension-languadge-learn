@@ -7,6 +7,7 @@
  *   GEMINI_MODEL=gemini-3.6-flash pnpm --filter @sprachweise/cms quality-check --out q-3.6.md
  *
  * Needs only GEMINI_API_KEY. Makes one paid Gemini call per paragraph (20 calls, ~2 cents).
+ * Also writes `<out>.json` for scripts/judge.ts.
  */
 import { writeFileSync } from "node:fs";
 import { TranslateResponseSchema } from "@sprachweise/shared";
@@ -121,4 +122,28 @@ for (const r of rows) {
 }
 
 writeFileSync(outPath, lines.join("\n"));
-console.log(`\nWrote ${outPath}`);
+// Machine-readable twin for scripts/judge.ts.
+const jsonPath = outPath.replace(/\.md$/, "") + ".json";
+writeFileSync(
+  jsonPath,
+  JSON.stringify(
+    {
+      model: cfg.GEMINI_MODEL,
+      thinkingLevel: cfg.GEMINI_THINKING_LEVEL,
+      costPerParagraph: cost !== undefined ? cost / Math.max(ok.length, 1) : null,
+      avgLatencyMs: Math.round(sum((r) => r.ms) / Math.max(ok.length, 1)),
+      rows: rows.map((r) => ({
+        index: r.index,
+        genre: r.genre,
+        level: r.level,
+        source: r.source,
+        german: r.result?.text ?? null,
+        glosses: r.marked ?? [],
+        problems: r.problems,
+      })),
+    },
+    null,
+    2,
+  ),
+);
+console.log(`\nWrote ${outPath} and ${jsonPath}`);

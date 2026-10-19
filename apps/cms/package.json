@@ -10,7 +10,8 @@
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
     "typecheck": "tsc --noEmit",
-    "quality-check": "tsx --env-file-if-exists=.env scripts/quality-check.ts"
+    "quality-check": "tsx --env-file-if-exists=.env scripts/quality-check.ts",
+    "judge": "tsx --env-file-if-exists=.env scripts/judge.ts"
   },
   "dependencies": {
     "@fastify/cors": "^11.3.1",
