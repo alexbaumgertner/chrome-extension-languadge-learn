@@ -14,6 +14,7 @@ import {
   UpstreamFailureError,
 } from "../pipeline/translate";
 import { markVocab } from "../pipeline/mark-vocab";
+import { recordProviderCall } from "../usage/provider-calls";
 
 class AllowanceExhaustedError extends Error {}
 
@@ -55,7 +56,31 @@ export function registerTranslateRoute(app: FastifyInstance, cfg: Config, db: Db
           throw new AllowanceExhaustedError();
         }
 
-        const translated = await translateParagraph(text, level, cfg);
+        const started = performance.now();
+        const call = { model: cfg.GEMINI_MODEL, thinkingLevel: cfg.GEMINI_THINKING_LEVEL };
+        const logRecordError = (e: unknown) =>
+          request.log.error({ err: e }, "failed to record provider call");
+        let translated;
+        try {
+          translated = await translateParagraph(text, level, cfg);
+        } catch (err) {
+          await recordProviderCall(
+            db,
+            { ...call, status: "error", latencyMs: performance.now() - started },
+            logRecordError,
+          );
+          throw err;
+        }
+        await recordProviderCall(
+          db,
+          {
+            ...call,
+            status: "ok",
+            usage: translated.usage,
+            latencyMs: performance.now() - started,
+          },
+          logRecordError,
+        );
         const markedVocab = markVocab(translated.text, translated.vocab);
 
         // FR-012: any validation failure (span bounds/content mismatch, unsafe HTML) discards the

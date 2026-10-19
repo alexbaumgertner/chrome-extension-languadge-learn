@@ -12,6 +12,7 @@
 import { writeFileSync } from "node:fs";
 import { TranslateResponseSchema } from "@sprachweise/shared";
 import { markVocab } from "../src/pipeline/mark-vocab";
+import { costUsd } from "../src/pipeline/pricing";
 import {
   ProviderConfigError,
   translateParagraph,
@@ -23,16 +24,6 @@ import { QUALITY_PARAGRAPHS } from "./quality-paragraphs";
 process.env.DATABASE_URL ??= "postgres://unused-by-quality-check";
 const { loadConfig } = await import("../src/config");
 const cfg = loadConfig();
-
-/** USD per 1M tokens (input, output incl. thinking), standard paid tier, as of 2026-10. */
-const PRICES: Record<string, [number, number]> = {
-  "gemini-3.5-flash-lite": [0.3, 2.5],
-  "gemini-3.1-flash-lite": [0.25, 1.5],
-  "gemini-2.5-flash-lite": [0.1, 0.4],
-  "gemini-2.5-flash": [0.3, 2.5],
-  "gemini-3.6-flash": [0.75, 3.75],
-  "gemini-3.8-flash": [0.75, 3.75],
-};
 
 const outIndex = process.argv.indexOf("--out");
 const outPath = outIndex !== -1 ? process.argv[outIndex + 1] : "quality-report.md";
@@ -97,8 +88,8 @@ const outputTokens = sum((r) => r.result!.usage.outputTokens + r.result!.usage.t
 const thoughtsTokens = sum((r) => r.result!.usage.thoughtsTokens);
 const latencies = ok.map((r) => r.ms).sort((a, b) => a - b);
 const p95 = latencies[Math.min(latencies.length - 1, Math.floor(latencies.length * 0.95))] ?? 0;
-const price = PRICES[cfg.GEMINI_MODEL];
-const cost = price ? (promptTokens * price[0] + outputTokens * price[1]) / 1e6 : undefined;
+const cost =
+  costUsd(cfg.GEMINI_MODEL, { promptTokens, outputTokens, thoughtsTokens: 0 }) ?? undefined;
 
 const lines: string[] = [
   `# Translation quality report — ${cfg.GEMINI_MODEL}`,
@@ -110,7 +101,7 @@ const lines: string[] = [
   `- Tokens: ${promptTokens} in, ${outputTokens} out (of which ${thoughtsTokens} thinking)`,
   cost !== undefined
     ? `- Cost: $${cost.toFixed(4)} total, $${(cost / Math.max(ok.length, 1)).toFixed(5)} per paragraph`
-    : `- Cost: no price on file for this model (add it to PRICES)`,
+    : `- Cost: no price on file for this model (add it to src/pipeline/pricing.ts)`,
   "",
 ];
 

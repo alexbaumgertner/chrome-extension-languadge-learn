@@ -25,6 +25,19 @@ const SCHEMA_STATEMENTS = [
      marked_vocab JSONB NOT NULL,
      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
    )`,
+  // One row per paid Gemini call (cache hits make none). No install ID, no text (constitution III).
+  `CREATE TABLE IF NOT EXISTS provider_calls (
+     id BIGSERIAL PRIMARY KEY,
+     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+     model TEXT NOT NULL,
+     thinking_level TEXT NOT NULL,
+     status TEXT NOT NULL,
+     prompt_tokens INTEGER,
+     output_tokens INTEGER,
+     thoughts_tokens INTEGER,
+     cost_usd NUMERIC(12, 8),
+     latency_ms INTEGER NOT NULL
+   )`,
   `CREATE TABLE IF NOT EXISTS usage_counters (
      counter TEXT NOT NULL,
      period_key TEXT NOT NULL,
