@@ -78,7 +78,9 @@ test("a never-enabled site stays fully inert; enabling and disabling via the pop
   await expect.poll(() => registeredMatches(serviceWorker)).toEqual([]);
 });
 
-async function registeredMatches(serviceWorker: import("@playwright/test").Worker): Promise<string[]> {
+async function registeredMatches(
+  serviceWorker: import("@playwright/test").Worker,
+): Promise<string[]> {
   return serviceWorker.evaluate(async () =>
     (await chrome.scripting.getRegisteredContentScripts()).flatMap((s) => s.matches ?? []),
   );

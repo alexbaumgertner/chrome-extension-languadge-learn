@@ -65,10 +65,14 @@ function buildExercisesResponse(variantText: string) {
   };
 }
 
-/** Implements the CMS endpoints the extension calls (/api/translate, /api/exercises) with deterministic canned fixtures. */
+/** Implements the CMS endpoints the extension calls with deterministic canned fixtures, and records request bodies. */
 export function createMockCmsServer() {
   let mode: MockCmsMode = "ok";
   const callCounts = { translate: 0, exercises: 0 };
+  const requests = {
+    translate: [] as unknown[],
+    events: [] as Array<{ installId: string; events: Array<Record<string, unknown>> }>,
+  };
 
   const server = http.createServer((req, res) => {
     let body = "";
@@ -80,15 +84,23 @@ export function createMockCmsServer() {
         return;
       }
 
+      if (req.url === "/api/events" && req.method === "POST") {
+        requests.events.push(JSON.parse(body));
+        res.statusCode = 204;
+        res.end();
+        return;
+      }
+
       if (req.url === "/api/translate" && req.method === "POST") {
         callCounts.translate++;
+        requests.translate.push(JSON.parse(body || "{}"));
         const parsed = JSON.parse(body || "{}") as { text?: string };
         const requestText = parsed.text ?? "";
         const text =
           "Ich moechte einen Kaffee bestellen und dann in Ruhe die Zeitung lesen. " +
           `(${requestText.slice(0, 12)})`;
         res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify(buildTranslateResponse(requestText, text)));
+        res.end(JSON.stringify({ ...buildTranslateResponse(requestText, text), cache: "miss" }));
         return;
       }
 
@@ -112,6 +124,7 @@ export function createMockCmsServer() {
 
   return {
     callCounts,
+    requests,
     setMode(next: MockCmsMode): void {
       mode = next;
     },
@@ -120,7 +133,11 @@ export function createMockCmsServer() {
     },
     close(): Promise<void> {
       if (!server.listening) return Promise.resolve();
-      return new Promise((resolve) => server.close(() => resolve()));
+      // Drop keep-alive connections (e.g. from the extension's event POSTs) like a real outage
+      // would; otherwise close() waits for them to time out.
+      const closed = new Promise<void>((resolve) => server.close(() => resolve()));
+      server.closeAllConnections();
+      return closed;
     },
   };
 }

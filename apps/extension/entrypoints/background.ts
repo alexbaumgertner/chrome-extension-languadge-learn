@@ -32,15 +32,17 @@ import {
   putCachedExercises,
   putCachedVariant,
 } from "@/lib/storage/content-cache";
-import { generateExercises, isNetworkError, translateParagraph } from "@/lib/cms/client";
+import {
+  CmsFetchError,
+  generateExercises,
+  isNetworkError,
+  translateParagraph,
+} from "@/lib/cms/client";
 import { mapCmsExercisesToEntities } from "@/lib/exercises/generate";
 import { checkExerciseAnswer } from "@/lib/exercises/match";
 import { recordVocabEncounters, vocabIdFor } from "@/lib/vocab/upsert";
-import { getOrCreateInstallId } from "@/lib/metrics/install-id";
-import {
-  originPatternFor,
-  syncContentScriptRegistration,
-} from "@/lib/content-script-registration";
+import { flushEvents, recordEvent, recordInstallIfNew } from "@/lib/metrics/events";
+import { originPatternFor, syncContentScriptRegistration } from "@/lib/content-script-registration";
 
 async function handleTranslateParagraph(
   message: Extract<RequestMessage, { type: "TRANSLATE_PARAGRAPH" }>,
@@ -61,11 +63,17 @@ async function handleTranslateParagraph(
     cmsVocab = await cmsVocabFromVariant(variant);
   } else {
     try {
+      const started = performance.now();
       const translated = await translateParagraph(
         message.paragraphText,
         message.level,
         message.topic,
       );
+      void recordEvent({
+        name: "paragraph_translated",
+        cache: translated.cache ?? "miss",
+        latencyMs: Math.round(performance.now() - started),
+      });
       const vocabIdByGerman = await recordVocabEncounters(translated.markedVocab, Date.now());
 
       variant = {
@@ -84,7 +92,13 @@ async function handleTranslateParagraph(
       await putCachedVariant(cacheKey, variant);
       cmsVocab = translated.markedVocab;
     } catch (error) {
-      return { ok: false, reason: isNetworkError(error) ? "offline-no-cache" : "fetch-failed" };
+      const offline = isNetworkError(error);
+      void recordEvent({
+        name: "client_error",
+        error: offline ? "translate-offline" : "translate-failed",
+        httpStatus: httpStatusOf(error),
+      });
+      return { ok: false, reason: offline ? "offline-no-cache" : "fetch-failed" };
     }
   }
 
@@ -100,14 +114,23 @@ async function handleTranslateParagraph(
     );
     exercises = mapCmsExercisesToEntities(cmsExercises, message.contentHash);
     await putCachedExercises(cacheKey, exercises);
-  } catch {
+  } catch (error) {
     // Left uncached on purpose so it's retried.
+    void recordEvent({
+      name: "client_error",
+      error: "exercises-failed",
+      httpStatus: httpStatusOf(error),
+    });
   }
 
   return { ok: true, variant, exercises };
 }
 
 type CmsMarkedVocab = CmsExercisesRequest["markedVocab"];
+
+function httpStatusOf(error: unknown): number | null {
+  return error instanceof CmsFetchError ? (error.status ?? null) : null;
+}
 
 /** Rebuilds the CMS-shaped glossed spans for a cached variant from the local vocabulary store. */
 async function cmsVocabFromVariant(variant: GermanVariant): Promise<CmsMarkedVocab> {
@@ -146,6 +169,7 @@ async function handleSubmitExerciseAttempt(
     await markExerciseAnswered(found.cacheKey, message.exerciseId, lastAttempt);
   }
 
+  void recordEvent({ name: "exercise_completed" });
   const updatedProgress = await recordAttempt({
     correct,
     affectedVocabIds: message.affectedVocabIds,
@@ -298,9 +322,12 @@ export default defineBackground(() => {
   // permission change keeps them equal to the granted enabled origins regardless.
   chrome.runtime.onInstalled.addListener(() => {
     void syncContentScriptRegistration();
-    void getOrCreateInstallId();
+    void recordInstallIfNew();
   });
-  chrome.runtime.onStartup.addListener(() => void syncContentScriptRegistration());
+  chrome.runtime.onStartup.addListener(() => {
+    void syncContentScriptRegistration();
+    void flushEvents();
+  });
   chrome.permissions.onAdded.addListener(() => void syncContentScriptRegistration());
   chrome.permissions.onRemoved.addListener(() => void syncContentScriptRegistration());
 

@@ -38,6 +38,18 @@ const SCHEMA_STATEMENTS = [
      cost_usd NUMERIC(12, 8),
      latency_ms INTEGER NOT NULL
    )`,
+  // Usage-metric events keyed by the extension's random install ID (constitution III). Day
+  // granularity only, no IP, no text, no URL: nothing here can be joined to page content.
+  `CREATE TABLE IF NOT EXISTS events (
+     id BIGSERIAL PRIMARY KEY,
+     install_id UUID NOT NULL,
+     name TEXT NOT NULL,
+     occurred_on DATE NOT NULL,
+     cache TEXT,
+     latency_ms INTEGER,
+     error_code TEXT,
+     http_status SMALLINT
+   )`,
   `CREATE TABLE IF NOT EXISTS usage_counters (
      counter TEXT NOT NULL,
      period_key TEXT NOT NULL,

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LevelSchema } from "./storage";
+import { InstallIdSchema, LevelSchema } from "./storage";
 
 export const TranslateRequestSchema = z.object({
   text: z.string().min(1),
@@ -45,6 +45,8 @@ export const TranslateResponseSchema = z
   .object({
     text: z.string().min(1),
     markedVocab: z.array(CmsMarkedVocabSpanSchema),
+    /** Whether the server answered from its shared cache; feeds the paragraph_translated event. */
+    cache: z.enum(["hit", "miss"]).optional(),
   })
   .refine(
     (res) => res.markedVocab.every((span) => span.start < span.end && span.end <= res.text.length),
@@ -105,4 +107,42 @@ export const CmsExerciseSchema = z.discriminatedUnion("kind", [
 
 export const ExercisesResponseSchema = z.object({
   exercises: z.array(CmsExerciseSchema).min(0).max(4),
+});
+
+/** Fixed codes only — an error event never carries a message, URL or page text. */
+export const ClientErrorCodeSchema = z.enum([
+  "translate-failed",
+  "translate-offline",
+  "exercises-failed",
+  "report-failed",
+]);
+
+const EventTimeSchema = z.string().datetime();
+
+/**
+ * Usage-metric events (constitution III): only what DAU, D1/D3/D7 retention, paragraphs per
+ * install, errors and latency need. No text, no URL, no hostname.
+ */
+export const MetricEventSchema = z.discriminatedUnion("name", [
+  z.object({ name: z.literal("install"), occurredAt: EventTimeSchema }),
+  z.object({
+    name: z.literal("paragraph_translated"),
+    occurredAt: EventTimeSchema,
+    cache: z.enum(["hit", "miss"]),
+    /** End-to-end /api/translate round trip measured by the extension. */
+    latencyMs: z.number().int().nonnegative().max(600_000),
+  }),
+  z.object({ name: z.literal("exercise_completed"), occurredAt: EventTimeSchema }),
+  z.object({
+    name: z.literal("client_error"),
+    occurredAt: EventTimeSchema,
+    error: ClientErrorCodeSchema,
+    /** The backend's HTTP status; null when no response arrived (offline, DNS, CORS). */
+    httpStatus: z.number().int().min(100).max(599).nullable(),
+  }),
+]);
+
+export const EventsRequestSchema = z.object({
+  installId: InstallIdSchema,
+  events: z.array(MetricEventSchema).min(1).max(50),
 });

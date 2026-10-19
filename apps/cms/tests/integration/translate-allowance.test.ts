@@ -68,6 +68,6 @@ describe("POST /api/translate — User Story 3 (allowance enforcement)", () => {
       payload: cachedPayload,
     });
     expect(cachedAgain.statusCode).toBe(200);
-    expect(cachedAgain.json()).toEqual(primed.json());
+    expect(cachedAgain.json()).toEqual({ ...primed.json(), cache: "hit" });
   });
 });

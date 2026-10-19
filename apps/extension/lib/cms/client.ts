@@ -11,7 +11,15 @@ import {
 } from "@sprachweise/shared";
 import { CMS_BASE_URL } from "@/lib/config";
 
-export class CmsFetchError extends Error {}
+export class CmsFetchError extends Error {
+  /** The HTTP status when a response arrived but was unusable; undefined for a schema failure. */
+  constructor(
+    message: string,
+    readonly status?: number,
+  ) {
+    super(message);
+  }
+}
 
 /**
  * `fetch()` rejects with a `TypeError` for network-level failures (offline,
@@ -37,7 +45,7 @@ async function postJson<TReq, TRes>(
     body: JSON.stringify(validatedBody),
   });
   if (!res.ok) {
-    throw new CmsFetchError(`${path} responded ${res.status}`);
+    throw new CmsFetchError(`${path} responded ${res.status}`, res.status);
   }
   const json = await res.json();
   const parsed = responseSchema.safeParse(json);

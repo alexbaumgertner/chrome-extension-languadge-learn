@@ -46,7 +46,7 @@ export function registerTranslateRoute(app: FastifyInstance, cfg: Config, db: Db
       );
       const cached = await getCacheEntry(db, key);
       if (cached) {
-        return reply.status(200).send(cached);
+        return reply.status(200).send({ ...cached, cache: "hit" });
       }
 
       const result = await coalescing.run(key, async () => {
@@ -90,7 +90,7 @@ export function registerTranslateRoute(app: FastifyInstance, cfg: Config, db: Db
         return validated;
       });
 
-      return reply.status(200).send(result);
+      return reply.status(200).send({ ...result, cache: "miss" });
     } catch (err) {
       if (err instanceof ProviderConfigError) {
         // A deployment mistake, not a provider outage: loud in the logs, distinct for the client.

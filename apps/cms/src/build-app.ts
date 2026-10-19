@@ -2,6 +2,7 @@ import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 import cors from "@fastify/cors";
 import { config, type Config } from "./config";
 import { createNeonDb, withSchema, type Db } from "./db";
+import { registerEventsRoute } from "./routes/events";
 import { registerExercisesRoute } from "./routes/exercises";
 import { registerTranslateRoute } from "./routes/translate";
 
@@ -34,8 +35,10 @@ export function buildApp(cfg: Config = config, db: Db = createNeonDb(cfg)): Fast
     methods: ["POST"],
   });
 
-  registerTranslateRoute(app, cfg, withSchema(db));
+  const schemaDb = withSchema(db);
+  registerTranslateRoute(app, cfg, schemaDb);
   registerExercisesRoute(app, cfg);
+  registerEventsRoute(app, schemaDb);
   app.get("/api/health", async () => ({ ok: true }));
 
   return app;

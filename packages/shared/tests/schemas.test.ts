@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  EventsRequestSchema,
   ExercisesRequestSchema,
   ExercisesResponseSchema,
   ExerciseSchema,
@@ -396,5 +397,52 @@ describe("cms schemas", () => {
       markedVocab: [{ start: 4, end: 11, german: "wollte", russian: "хотел бы" }],
     });
     expect(result.success).toBe(false);
+  });
+});
+
+describe("metric event schemas", () => {
+  const installId = "0b6c3a62-5d2e-4f0a-9c1b-2e8f7d6a5b4c";
+  const occurredAt = "2026-10-19T12:00:00.000Z";
+
+  it("accepts one of each event kind", () => {
+    const request = {
+      installId,
+      events: [
+        { name: "install", occurredAt },
+        { name: "paragraph_translated", occurredAt, cache: "miss", latencyMs: 1830 },
+        { name: "exercise_completed", occurredAt },
+        { name: "client_error", occurredAt, error: "translate-failed", httpStatus: 502 },
+        { name: "client_error", occurredAt, error: "translate-offline", httpStatus: null },
+      ],
+    };
+    expect(EventsRequestSchema.parse(request)).toEqual(request);
+  });
+
+  it("strips anything beyond the allowed fields, so page text or URLs never reach the server", () => {
+    const parsed = EventsRequestSchema.parse({
+      installId,
+      url: "https://example.com/private",
+      events: [{ name: "exercise_completed", occurredAt, text: "Привет", hostname: "example.com" }],
+    });
+    expect(parsed).toEqual({ installId, events: [{ name: "exercise_completed", occurredAt }] });
+  });
+
+  it("rejects a missing or non-UUID install ID, unknown events and free-form errors", () => {
+    const event = { name: "exercise_completed", occurredAt };
+    expect(EventsRequestSchema.safeParse({ events: [event] }).success).toBe(false);
+    expect(EventsRequestSchema.safeParse({ installId: "anon", events: [event] }).success).toBe(
+      false,
+    );
+    expect(
+      EventsRequestSchema.safeParse({ installId, events: [{ name: "page_view", occurredAt }] })
+        .success,
+    ).toBe(false);
+    expect(
+      EventsRequestSchema.safeParse({
+        installId,
+        events: [{ name: "client_error", occurredAt, error: "TypeError: x", httpStatus: null }],
+      }).success,
+    ).toBe(false);
+    expect(EventsRequestSchema.safeParse({ installId, events: [] }).success).toBe(false);
   });
 });

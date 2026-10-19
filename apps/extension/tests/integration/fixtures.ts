@@ -1,4 +1,10 @@
-import { expect as baseExpect, test as base, chromium, type BrowserContext, type Worker } from "@playwright/test";
+import {
+  expect as baseExpect,
+  test as base,
+  chromium,
+  type BrowserContext,
+  type Worker,
+} from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";

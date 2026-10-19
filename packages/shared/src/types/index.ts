@@ -22,9 +22,12 @@ import type {
   TranslateParagraphResponseSchema,
 } from "../schemas/messages";
 import type {
+  ClientErrorCodeSchema,
   CmsExerciseSchema,
+  EventsRequestSchema,
   ExercisesRequestSchema,
   ExercisesResponseSchema,
+  MetricEventSchema,
   TranslateRequestSchema,
   TranslateResponseSchema,
 } from "../schemas/cms";
@@ -99,3 +102,6 @@ export type CmsTranslateResponse = z.infer<typeof TranslateResponseSchema>;
 export type CmsExercisesRequest = z.infer<typeof ExercisesRequestSchema>;
 export type CmsExercise = z.infer<typeof CmsExerciseSchema>;
 export type CmsExercisesResponse = z.infer<typeof ExercisesResponseSchema>;
+export type ClientErrorCode = z.infer<typeof ClientErrorCodeSchema>;
+export type MetricEvent = z.infer<typeof MetricEventSchema>;
+export type EventsRequest = z.infer<typeof EventsRequestSchema>;
