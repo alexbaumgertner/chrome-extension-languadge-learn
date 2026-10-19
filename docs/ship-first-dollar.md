@@ -1,7 +1,13 @@
 # Ship to first dollar — audit, decisions, plan
 
 Goal: one stranger pays $4/month. Ship the smallest public version that can take money.
-Branch: `ship/first-dollar`, one PR per phase. No spec-kit ceremony.
+Branch: `ship/first-dollar`, one PR per phase. Spec-kit governs from Phase 2 on (constitution
+2.0.0, `specs/003-private-beta`).
+
+> **2026-10-19 — change of plan:** Phase 2 is now a **private beta** (owner + 3–5 friends): install
+> ID, usage metrics + `/admin/metrics`, "Плохой перевод" reports, unlisted store release, privacy
+> policy. **Payments, paywall, license keys and the Pro tier are deferred until the beta review on
+> 16 Nov 2026.** Decision 4 and the original Phase 2 below are on hold, not cancelled.
 
 **The one scenario:** install from Chrome Web Store → set level → click a paragraph on any site →
 see it in German → do 3 exercises → hit the free daily limit → pay → enter license key → unlimited.
@@ -59,7 +65,7 @@ user against ~$3.30 net of a $4 price.
    comparison by switching the env var.
 3. **No server TTS for launch.** `/api/tts` call removed; browser `speechSynthesis` is the main
    path, preferring a `de-DE` Google voice. No TTS caps.
-4. **Limits:** Free 5 paragraphs/day per install + a second free cap per hashed IP (daily salt, raw
+4. **(On hold until 16 Nov review.) Limits:** Free 5 paragraphs/day per install + a second free cap per hashed IP (daily salt, raw
    IPs never stored). Pro 1,000/month + 100/day. Price $4/month. The existing global provider
    ledger stays as a budget kill switch.
 5. **Domain `sprachweise.com`** (being bought). Use the `*.vercel.app` URL until DNS is confirmed;
@@ -75,7 +81,10 @@ user against ~$3.30 net of a $4 price.
   deterministic `/api/exercises`; drop `/api/tts` client call, `speechSynthesis` main path; CORS;
   hide topic (fixed `general`); fix root integration script; quality-check script; deploy; prod
   `WXT_CMS_BASE_URL`.
-- **Phase 2 — free tier, license, paywall:** install ID, per-install + hashed-IP ledger, distinct
+- **Phase 2 — private beta (current):** see `specs/003-private-beta` — model judge pass, install
+  ID, usage metrics + `/admin/metrics`, "Плохой перевод" reports, per-origin content scripts,
+  privacy policy, unlisted store release.
+- **Deferred to after the 16 Nov review — free tier, license, paywall:** install ID, per-install + hashed-IP ledger, distinct
   `limit-reached` reason, Russian paywall card ("Get Pro" checkout link from config, "Enter key"),
   key field in Settings, `LicenseProvider` interface with a stub + test key. **Stop and ask which
   merchant of record before the real provider** (seller: Georgian sole proprietorship).
@@ -104,3 +113,6 @@ user against ~$3.30 net of a $4 price.
     lost meaning at A1-A2 ("колесо обозрения" → "Rad fahren"), a bad gloss span ("Lebensmittel
     ein"). Re-run with another `GEMINI_MODEL` to compare.
   - Integration suite: one flaky run seen in four (element-not-found in unrelated specs).
+- 2026-10-19 — Constitution amended to 2.0.0 (Principle III: random install ID for usage metrics;
+  bad-translation report only on click). Plan changed to a private beta; payments deferred until the
+  16 Nov 2026 beta review. Spec: `specs/003-private-beta`.
