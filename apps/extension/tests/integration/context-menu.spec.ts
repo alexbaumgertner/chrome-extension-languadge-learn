@@ -194,23 +194,81 @@ test("selecting already-translated text again re-translates the original, not th
   selectText,
   clickMenu,
 }) => {
-  fixtureServer.setHtml(page(`<p id="target">Ein Absatz, der zweimal ausgewählt wird.</p>`));
+  const original = "Erster Satz bleibt. Zweiter Satz wird übersetzt.";
+  fixtureServer.setHtml(page(`<p id="target">${original}</p>`));
   const tab = await context.newPage();
   await tab.goto(FIXTURE_ORIGIN);
   const before = await tab.locator("#target").evaluate((el) => el.outerHTML);
 
-  await selectText(tab, "#target");
+  await selectText(tab, "#target", { part: "Zweiter Satz" });
   await clickMenu(tab, "translate");
-  await expect(tab.locator("#target .sw-vocab").first()).toBeVisible();
+  await expect(tab.locator("#target .sw-segment .sw-vocab").first()).toBeVisible();
+  // A word of the German segment: the paragraph's original is what gets translated now.
   await selectText(tab, "#target", { part: "Kaffee" });
   await clickMenu(tab, "translate");
+  await expect(tab.locator("#target .sw-segment")).toHaveCount(0);
   await expect(tab.locator("#target .sw-vocab").first()).toBeVisible();
+  expect(cmsServer.requests.translate.map((r) => (r as { text: string }).text)).toEqual([
+    "Zweiter Satz",
+    original,
+  ]);
 
-  // The second request carried the original paragraph (answered from the local cache: no call).
-  expect(cmsServer.callCounts.translate).toBe(1);
   await clickMenu(tab, "restore");
   await expect(tab.locator("#target .sw-vocab")).toHaveCount(0);
   expect(await tab.locator("#target").evaluate((el) => el.outerHTML)).toBe(before);
+});
+
+test("a selection refused for length leaves the translations already on the page as they are", async ({
+  context,
+  fixtureServer,
+  cmsServer,
+  selectText,
+  clickMenu,
+}) => {
+  const sentence = "Dieser Satz wiederholt sich, bis die Auswahl zu lang wird. ";
+  fixtureServer.setHtml(
+    page(`<p id="a">${sentence.repeat(14)}</p><p id="b">${sentence.repeat(14)}</p>`),
+  );
+  const tab = await context.newPage();
+  await tab.goto(FIXTURE_ORIGIN);
+  await selectText(tab, "#a");
+  await clickMenu(tab, "translate");
+  await expect(tab.locator("#a .sw-vocab").first()).toBeVisible();
+  const translated = await tab.locator("article").evaluate((el) => el.innerHTML);
+
+  // #a shows short German now, but its original counts: together they're over the cap.
+  await selectText(tab, "#a", { to: "#b" });
+  await clickMenu(tab, "translate");
+  await expect(tab.getByText(/The selection is too long \(1,6\d\d characters\)/)).toBeVisible();
+  expect(cmsServer.callCounts.translate).toBe(1);
+  expect(await tab.locator("article").evaluate((el) => el.innerHTML)).toBe(translated);
+});
+
+test("a failed re-translation keeps the German that was there", async ({
+  context,
+  fixtureServer,
+  cmsServer,
+  selectText,
+  clickMenu,
+}) => {
+  fixtureServer.setHtml(
+    page(`<p id="target">Erster Satz bleibt. Zweiter Satz wird übersetzt.</p>`),
+  );
+  const tab = await context.newPage();
+  await tab.goto(FIXTURE_ORIGIN);
+  await selectText(tab, "#target", { part: "Zweiter Satz" });
+  await clickMenu(tab, "translate");
+  await expect(tab.locator("#target .sw-segment .sw-vocab").first()).toBeVisible();
+  const translated = await tab.locator("#target").evaluate((el) => el.innerHTML);
+
+  cmsServer.setMode("fail");
+  await selectText(tab, "#target", { part: "Kaffee" });
+  await clickMenu(tab, "translate");
+  await expect(
+    tab.getByText("The translation service is unavailable right now.", { exact: false }),
+  ).toBeVisible();
+  expect(cmsServer.callCounts.translate).toBe(1); // the 500 isn't counted as a translate call
+  expect(await tab.locator("#target").evaluate((el) => el.innerHTML)).toBe(translated);
 });
 
 test("Restore while a translation is in flight wins: the late answer changes nothing", async ({

@@ -1,3 +1,5 @@
+import { blockText } from "./selection";
+
 export type DisplayState = "original" | "translated";
 
 /** Wraps a translated part of a block (a selection that didn't cover the whole block). */
@@ -5,6 +7,8 @@ export const SEGMENT_CLASS = "sw-segment";
 
 interface ParagraphState {
   originalHtml: string;
+  /** The block's text before its first change, as `blockText` read it: what re-translating sends. */
+  originalText: string;
   contentHash: string;
   displayState: DisplayState;
   /** "block": the whole block shows the variant; "segments": only `.sw-segment` parts do. */
@@ -46,9 +50,9 @@ export function rangeOverlapsTranslation(block: Element, range: Range): boolean 
 
 function saveOriginal(el: Element, contentHash: string, mode: ParagraphState["mode"]): void {
   const existing = paragraphStates.get(el);
-  const originalHtml = existing ? existing.originalHtml : el.innerHTML;
   paragraphStates.set(el, {
-    originalHtml,
+    originalHtml: existing ? existing.originalHtml : el.innerHTML,
+    originalText: existing ? existing.originalText : blockText(el as HTMLElement),
     contentHash,
     displayState: "translated",
     mode,
@@ -61,6 +65,11 @@ function rememberWritten(el: Element): void {
   paragraphStates.get(el)!.writtenHtml = el.innerHTML;
 }
 
+/** The text `el` had before it was first translated; undefined if it isn't translated. */
+export function originalText(el: Element): string | undefined {
+  return paragraphStates.get(el)?.originalText;
+}
+
 /** Whether `el` still shows exactly what we last wrote into it, on the page. */
 export function showsOurWrite(el: Element): boolean {
   const state = paragraphStates.get(el);
@@ -70,7 +79,8 @@ export function showsOurWrite(el: Element): boolean {
 /**
  * Replaces `el`'s content with `variantHtml`, saving the pre-existing
  * `innerHTML` exactly once (on first translation) so `restoreOriginal`
- * can later reproduce it byte-identically.
+ * can later reproduce it byte-identically. On a block already showing a
+ * translation it simply replaces that, keeping the first snapshot.
  */
 export function applyVariant(el: Element, variantHtml: string, contentHash: string): void {
   saveOriginal(el, contentHash, "block");

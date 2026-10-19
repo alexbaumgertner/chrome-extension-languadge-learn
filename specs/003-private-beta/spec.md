@@ -159,6 +159,12 @@ exactly the selected text in each turns German; Restore → the page is byte-ide
   the local cache), never the German.
 - The page changes the selected text while the translation is in flight → the German is not
   inserted; the learner is asked to select again.
+- Any refusal (too long, code, outside a paragraph) or failed request → the page stays exactly as
+  it was, German already shown included. Order: validate → request → commit; nothing on the page
+  changes before a translation arrives.
+- Restore while a translation is in flight → Restore wins; the late answer changes nothing.
+- The host changed a translated block after we wrote it (SPA update) → Restore leaves the host's
+  content and drops the snapshot.
 - Pages Chrome doesn't let extensions script (chrome://, the Web Store, the PDF viewer) and
   selections inside a cross-origin iframe → the menu item does nothing there (activeTab covers
   only the tab's own origin). The shortcut works on the top frame only.

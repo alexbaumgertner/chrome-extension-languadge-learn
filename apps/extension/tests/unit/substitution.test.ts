@@ -5,6 +5,7 @@ import {
   applyVariantToRange,
   hasTranslations,
   isTranslated,
+  originalText,
   rangeOverlapsTranslation,
   restoreAll,
   restoreOriginal,
@@ -83,6 +84,23 @@ describe("partial-range substitution", () => {
     const q = document.getElementById("q")!;
     applyVariant(q, "Other.", "h2");
     expect(rangeOverlapsTranslation(q, rangeIn(q.firstChild!, 0, 2))).toBe(true);
+  });
+});
+
+describe("re-translating a block", () => {
+  it("keeps the first snapshot and original text when a translated block is translated again", () => {
+    document.body.innerHTML = `<p id="p">Erster Satz. Zweiter Satz.</p>`;
+    const p = document.getElementById("p")!;
+    const before = p.innerHTML;
+    applyVariantToRange(p, rangeIn(p.firstChild!, 0, 12), "First.", "h1");
+    expect(originalText(p)).toBe("Erster Satz. Zweiter Satz.");
+
+    applyVariant(p, "Whole.", "h2");
+    expect(p.innerHTML).toBe("Whole.");
+    expect(originalText(p)).toBe("Erster Satz. Zweiter Satz.");
+    restoreOriginal(p);
+    expect(p.innerHTML).toBe(before);
+    expect(originalText(p)).toBeUndefined();
   });
 });
 

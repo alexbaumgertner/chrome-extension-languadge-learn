@@ -10,20 +10,17 @@ import {
   type VocabularyItem,
 } from "@sprachweise/shared";
 import { hashParagraphText } from "@/lib/dom/content-hash";
-import {
-  blockText,
-  normalizeWhitespace,
-  resolveSelection,
-  type SelectionProblem,
-} from "@/lib/dom/selection";
+import { normalizeWhitespace, resolveSelection, type SelectionProblem } from "@/lib/dom/selection";
 import {
   applyVariant,
   applyVariantToRange,
   hasTranslations,
   isTranslated,
+  originalText,
   rangeOverlapsTranslation,
   restoreAll,
   restoreOriginal,
+  showsOurWrite,
 } from "@/lib/dom/substitution";
 import { VOCAB_SPAN_CLASS, renderVariantHtml } from "@/lib/dom/render-variant";
 import { createShadowPortal, positionBelow, type ShadowPortal } from "@/lib/dom/shadow-portal";
@@ -38,6 +35,8 @@ interface TranslationItem {
   block: HTMLElement;
   range: Range | null;
   text: string;
+  /** The block's `innerHTML` when the selection was read; committing needs it unchanged. */
+  html: string;
 }
 
 const NUMBER = new Intl.NumberFormat("en");
@@ -122,23 +121,30 @@ function reportTranslationsChanged(): void {
   });
 }
 
-/** What the selection turns into, with already-translated blocks put back to their original. */
+/**
+ * What the selection turns into. Reads only: text already shown in German is translated from the
+ * block's saved original, so nothing on the page changes until a translation is committed.
+ */
 function translationItems(range: Range): TranslationItem[] | SelectionProblem {
   const target = resolveSelection(range);
   if ("problem" in target) return target.problem;
   return target.parts.map(({ block, range, text }) => {
-    if (range && !rangeOverlapsTranslation(block, range)) return { block, range, text };
-    // The whole block, or a range over text already shown in German: translate from the original.
-    if (isTranslated(block)) restoreOriginal(block);
-    return { block, range: null, text: blockText(block) };
+    const html = block.innerHTML;
+    // The host changed the block since we wrote it: forget the stale snapshot (this writes
+    // nothing) and take the block as it is now.
+    if (isTranslated(block) && !showsOurWrite(block)) restoreOriginal(block);
+    if (!isTranslated(block) || (range && !rangeOverlapsTranslation(block, range))) {
+      return { block, range, text, html };
+    }
+    // The whole block, or a range over text already shown in German: translate the original.
+    return { block, range: null, text: originalText(block)!, html };
   });
 }
 
-/** Whether the page still shows what was sent, so the German replaces the right text. */
+/** Whether the page still shows what was read, so the German replaces the right text. */
 function stillShows(item: TranslationItem): boolean {
-  if (!item.block.isConnected) return false;
-  if (item.range) return normalizeWhitespace(item.range.toString()) === item.text;
-  return blockText(item.block) === item.text;
+  if (!item.block.isConnected || item.block.innerHTML !== item.html) return false;
+  return !item.range || normalizeWhitespace(item.range.toString()) === item.text;
 }
 
 async function translateSelection(): Promise<void> {
