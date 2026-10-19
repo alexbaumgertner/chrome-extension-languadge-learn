@@ -45,15 +45,6 @@ export default function SettingsView() {
       </label>
 
       <label>
-        Current grammar topic
-        <input
-          type="text"
-          value={settings.currentTopic}
-          onChange={(e) => void save({ ...settings, currentTopic: e.target.value })}
-        />
-      </label>
-
-      <label>
         Translation density
         <select
           value={settings.translationDensity}
