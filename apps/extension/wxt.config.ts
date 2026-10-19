@@ -16,10 +16,13 @@ const testOrigin =
 export default defineConfig({
   modules: ["@wxt-dev/module-react"],
   srcDir: ".",
+  zip: { artifactTemplate: "sprachweise-{{version}}-{{browser}}.zip" },
   manifest: {
-    name: "Sprachweise",
-    description:
-      "Click any paragraph on an enabled site to read it in German at your level, practice with exercises built from it, and track your progress.",
+    // public/_locales/{en,ru}: the store shows the summary in the viewer's language. It must stay
+    // within 132 characters (store limit; checked by scripts/build-store-zip.mjs).
+    name: "__MSG_extName__",
+    description: "__MSG_extDescription__",
+    default_locale: "en",
     // "storage" is a zero-host-access permission (chrome.storage.local /
     // IndexedDB only, no site data) required by Constitution IV's
     // offline-first design — it carries none of the trust cost the

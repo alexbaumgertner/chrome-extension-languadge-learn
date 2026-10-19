@@ -1,6 +1,6 @@
 {
   "name": "@sprachweise/extension",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,7 +12,9 @@
     "test:unit": "vitest run",
     "build:test": "WXT_TEST_MODE=true WXT_TEST_ORIGIN=http://127.0.0.1:58732 WXT_CMS_BASE_URL=http://127.0.0.1:58733 wxt build",
     "test:integration": "pnpm run build:test && playwright test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "store:assets": "pnpm run build:test && playwright test -c store/playwright.config.ts",
+    "store:zip": "node scripts/build-store-zip.mjs"
   },
   "dependencies": {
     "@sprachweise/shared": "workspace:*",

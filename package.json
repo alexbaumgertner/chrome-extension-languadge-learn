@@ -13,7 +13,8 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "test:unit": "pnpm -r test:unit",
-    "test:integration": "pnpm -r test:integration"
+    "test:integration": "pnpm -r test:integration",
+    "store:zip": "pnpm --filter @sprachweise/extension store:zip"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
