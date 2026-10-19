@@ -36,6 +36,10 @@ import { generateExercises, isNetworkError, translateParagraph } from "@/lib/cms
 import { mapCmsExercisesToEntities } from "@/lib/exercises/generate";
 import { checkExerciseAnswer } from "@/lib/exercises/match";
 import { recordVocabEncounters, vocabIdFor } from "@/lib/vocab/upsert";
+import {
+  originPatternFor,
+  syncContentScriptRegistration,
+} from "@/lib/content-script-registration";
 
 async function handleTranslateParagraph(
   message: Extract<RequestMessage, { type: "TRANSLATE_PARAGRAPH" }>,
@@ -148,10 +152,6 @@ async function handleSubmitExerciseAttempt(
     timestamp,
   });
   return { ok: true, correct, updatedProgress };
-}
-
-function originPatternFor(hostname: string): string {
-  return `*://${hostname}/*`;
 }
 
 async function handleGetSiteStatus(
@@ -290,7 +290,15 @@ export default defineBackground(() => {
       if (slice) slices.add(slice);
     }
     for (const slice of slices) broadcastStorageChanged(slice);
+    if (changes.siteRules) void syncContentScriptRegistration();
   });
+
+  // Registered scripts persist across sessions; re-syncing on install/update/startup and on any
+  // permission change keeps them equal to the granted enabled origins regardless.
+  chrome.runtime.onInstalled.addListener(() => void syncContentScriptRegistration());
+  chrome.runtime.onStartup.addListener(() => void syncContentScriptRegistration());
+  chrome.permissions.onAdded.addListener(() => void syncContentScriptRegistration());
+  chrome.permissions.onRemoved.addListener(() => void syncContentScriptRegistration());
 
   console.log("Sprachweise background worker started", { id: browser.runtime.id });
 });

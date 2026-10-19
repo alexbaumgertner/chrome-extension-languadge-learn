@@ -27,7 +27,10 @@ export default defineConfig({
     // "activeTab" is the exact permission Constitution I's own gate names
     // ("activeTab + optional_host_permissions") — temporary, user-gesture-only
     // access to the current tab, needed for the popup to read its hostname.
-    permissions: ["storage", "activeTab"],
+    // "scripting" registers the content script at runtime for exactly the origins the user granted
+    // via the popup (chrome.scripting.registerContentScripts), instead of a manifest content script
+    // on *://*/*, which Chrome reports at install as access to all websites. No install warning.
+    permissions: ["storage", "activeTab", "scripting"],
     optional_host_permissions: ["*://*/*"],
     ...(testOrigin ? { host_permissions: [testOrigin] } : {}),
   },

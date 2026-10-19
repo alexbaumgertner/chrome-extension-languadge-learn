@@ -160,8 +160,11 @@ function deactivate(): void {
   attachedListeners.clear();
 }
 
+// Not declared in the manifest: Chrome counts manifest content-script matches as install-time host
+// access. The background registers this script at runtime for each enabled site's granted origin
+// (lib/content-script-registration.ts), so installing asks for no website access (Constitution I).
 export default defineContentScript({
-  matches: ["*://*/*"],
+  registration: "runtime",
   async main(ctx) {
     const status = await sendMessage<GetSiteStatusResponse>({
       type: "GET_SITE_STATUS",

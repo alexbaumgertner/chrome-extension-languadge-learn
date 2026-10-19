@@ -21,6 +21,7 @@ test("a never-enabled site stays fully inert; enabling and disabling via the pop
   context,
   fixtureServer,
   extensionId,
+  serviceWorker,
 }) => {
   fixtureServer.setHtml(articlePage());
   const page = await context.newPage();
@@ -50,6 +51,9 @@ test("a never-enabled site stays fully inert; enabling and disabling via the pop
   await expect(popup.getByRole("button", { name: /disable on this site/i })).toBeVisible();
   await popup.close();
 
+  // Enabling registers the content script for this origin (runtime registration, no manifest
+  // content script); wait for it before reloading so the reload is guaranteed to inject it.
+  await expect.poll(() => registeredMatches(serviceWorker)).toEqual(["*://127.0.0.1/*"]);
   await page.reload();
   const targetAfterEnable = page.locator("#target");
   const beforeSecondClick = await targetAfterEnable.evaluate((el) => el.outerHTML);
@@ -69,4 +73,13 @@ test("a never-enabled site stays fully inert; enabling and disabling via the pop
   await expect(targetAfterEnable.locator(".sw-vocab")).toHaveCount(0, { timeout: 5000 });
   const revertedHtml = await targetAfterEnable.evaluate((el) => el.outerHTML);
   expect(revertedHtml).toBe(beforeSecondClick);
+
+  // Disabling the only enabled site unregisters the content script entirely.
+  await expect.poll(() => registeredMatches(serviceWorker)).toEqual([]);
 });
+
+async function registeredMatches(serviceWorker: import("@playwright/test").Worker): Promise<string[]> {
+  return serviceWorker.evaluate(async () =>
+    (await chrome.scripting.getRegisteredContentScripts()).flatMap((s) => s.matches ?? []),
+  );
+}
