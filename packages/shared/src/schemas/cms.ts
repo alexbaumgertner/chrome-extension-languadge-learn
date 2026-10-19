@@ -1,6 +1,14 @@
 import { z } from "zod";
 import { InstallIdSchema, LevelSchema, TranslationDensitySchema } from "./storage";
 
+/**
+ * Longest text one translation may send, in `string.length` units. The extension checks a whole
+ * selection against it before sending anything; the backend checks each request (default of its
+ * `TRANSLATE_MAX_CHARS`). 1,500 is about six average news paragraphs (~250 characters each, about
+ * $0.0016 apiece on gemini-3.8-flash), so one selection costs at most about a cent.
+ */
+export const TRANSLATE_MAX_CHARS = 1500;
+
 export const TranslateRequestSchema = z.object({
   text: z.string().min(1),
   level: LevelSchema,
@@ -112,10 +120,21 @@ export const ExercisesResponseSchema = z.object({
   exercises: z.array(CmsExerciseSchema).min(0).max(4),
 });
 
-/** Fixed codes only — an error event never carries a message, URL or page text. */
+/**
+ * Fixed codes only — an error event never carries a message, URL or page text. Translate codes:
+ * `offline` the device has no network; `unreachable` it has one but the backend didn't answer;
+ * `cors` the backend answered but the browser refused the response (missing CORS grant);
+ * `server-error` a 5xx; `limit` the daily allowance (429); `too-long` the selection exceeds
+ * TRANSLATE_MAX_CHARS (not sent at all, or a 413); `failed` anything else (other 4xx, bad schema).
+ */
 export const ClientErrorCodeSchema = z.enum([
   "translate-failed",
   "translate-offline",
+  "translate-unreachable",
+  "translate-cors",
+  "translate-server-error",
+  "translate-limit",
+  "translate-too-long",
   "exercises-failed",
   "report-failed",
 ]);

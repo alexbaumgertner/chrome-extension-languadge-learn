@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { TRANSLATE_MAX_CHARS } from "@sprachweise/shared";
 import { buildTestApp } from "../helpers/test-app";
 import { createMockProviders, type MockProvidersController } from "./mock-providers";
 
@@ -87,6 +88,26 @@ describe("POST /api/translate — User Story 1 (leveled, glossed translation)", 
     const body = response.json() as { text: string; markedVocab: unknown[] };
     expect(body.text.length).toBeGreaterThan(0);
     expect(body.markedVocab).toEqual([]);
+  });
+
+  it("answers text over the length cap with 413 text-too-long, without calling the provider", async () => {
+    const app = buildTestApp();
+    const atCap = await app.inject({
+      method: "POST",
+      url: "/api/translate",
+      payload: { text: "a".repeat(TRANSLATE_MAX_CHARS), level: "A1-A2", topic: "general" },
+    });
+    expect(atCap.statusCode).toBe(200);
+    expect(providers.callCounts.gemini).toBe(1);
+
+    const overCap = await app.inject({
+      method: "POST",
+      url: "/api/translate",
+      payload: { text: "a".repeat(TRANSLATE_MAX_CHARS + 1), level: "A1-A2", topic: "general" },
+    });
+    expect(overCap.statusCode).toBe(413);
+    expect(overCap.json()).toEqual({ error: "text-too-long", maxChars: TRANSLATE_MAX_CHARS });
+    expect(providers.callCounts.gemini).toBe(1);
   });
 
   it("sends the API key in a header, never in the URL, to the configured model", async () => {

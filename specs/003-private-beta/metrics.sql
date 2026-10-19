@@ -12,7 +12,8 @@
 -- them all against seeded data.
 
 -- name: dau
--- Daily active installs, new installs, activity and translate error rate, last 30 days.
+-- Daily active installs, new installs, activity and translate error rate, last 30 days. The rate
+-- counts every translate-* failure except translate-too-long (an over-long selection, not a fault).
 WITH days AS (
   SELECT generate_series(current_date - 29, current_date, interval '1 day')::date AS day
 ),
@@ -28,11 +29,11 @@ SELECT
   COUNT(*) FILTER (WHERE e.name = 'exercise_completed') AS exercises,
   COUNT(*) FILTER (WHERE e.name = 'client_error') AS errors,
   ROUND(
-    100.0 * COUNT(*) FILTER (WHERE e.error_code IN ('translate-failed', 'translate-offline'))
+    100.0 * COUNT(*) FILTER (WHERE e.error_code LIKE 'translate-%' AND e.error_code <> 'translate-too-long')
       / NULLIF(
         COUNT(*) FILTER (
           WHERE e.name = 'paragraph_translated'
-             OR e.error_code IN ('translate-failed', 'translate-offline')
+             OR (e.error_code LIKE 'translate-%' AND e.error_code <> 'translate-too-long')
         ),
         0
       ),

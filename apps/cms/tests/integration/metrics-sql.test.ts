@@ -34,6 +34,8 @@ async function seed(db: Db): Promise<void> {
     [A, "paragraph_translated", 6, "hit", 100, null, null],
     [A, "exercise_completed", 6, null, null, null, null],
     [A, "client_error", 0, null, null, "translate-failed", 502],
+    // An over-long selection is reported but is not a translate failure.
+    [A, "client_error", 0, null, null, "translate-too-long", null],
     [A, "paragraph_translated", 0, "miss", 2200, null, null],
     [B, "install", 1, null, null, null, null],
     [B, "paragraph_translated", 1, "hit", 90, null, null],
@@ -62,7 +64,7 @@ describe("specs/003-private-beta/metrics.sql", () => {
     const rows = await db.query<Record<string, unknown>>(queries.dau!);
     expect(rows).toHaveLength(30);
     const [today, yesterday] = rows;
-    expect(today).toMatchObject({ active_installs: 1, new_installs: 0, paragraphs: 1, errors: 1 });
+    expect(today).toMatchObject({ active_installs: 1, new_installs: 0, paragraphs: 1, errors: 2 });
     expect(Number(today!.translate_error_pct)).toBe(50);
     expect(yesterday).toMatchObject({ active_installs: 1, new_installs: 1, paragraphs: 1 });
   });
@@ -86,9 +88,13 @@ describe("specs/003-private-beta/metrics.sql", () => {
 
   it("errors and latency run and aggregate", async () => {
     const errors = await db.query<Record<string, unknown>>(queries.errors!);
-    expect(errors).toEqual([
-      expect.objectContaining({ error_code: "translate-failed", http_status: 502, errors: 1 }),
-    ]);
+    expect(errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ error_code: "translate-failed", http_status: 502, errors: 1 }),
+        expect.objectContaining({ error_code: "translate-too-long", http_status: null, errors: 1 }),
+      ]),
+    );
+    expect(errors).toHaveLength(2);
     const latency = await db.query<Record<string, unknown>>(queries.latency!);
     const totals = latency.filter((r) => r.day === null);
     expect(totals.map((r) => [r.cache, Number(r.requests)])).toEqual([
