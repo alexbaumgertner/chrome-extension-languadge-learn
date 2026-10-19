@@ -9,6 +9,12 @@ interface ParagraphState {
   displayState: DisplayState;
   /** "block": the whole block shows the variant; "segments": only `.sw-segment` parts do. */
   mode: "block" | "segments";
+  /**
+   * The block's `innerHTML` right after our last write. Anything else at restore time means the
+   * host page changed the block since (an SPA re-render, a live update): its content is newer than
+   * the snapshot, so Restore leaves it alone.
+   */
+  writtenHtml: string;
 }
 
 /**
@@ -41,8 +47,24 @@ export function rangeOverlapsTranslation(block: Element, range: Range): boolean 
 function saveOriginal(el: Element, contentHash: string, mode: ParagraphState["mode"]): void {
   const existing = paragraphStates.get(el);
   const originalHtml = existing ? existing.originalHtml : el.innerHTML;
-  paragraphStates.set(el, { originalHtml, contentHash, displayState: "translated", mode });
+  paragraphStates.set(el, {
+    originalHtml,
+    contentHash,
+    displayState: "translated",
+    mode,
+    writtenHtml: "",
+  });
   translatedElements.add(el);
+}
+
+function rememberWritten(el: Element): void {
+  paragraphStates.get(el)!.writtenHtml = el.innerHTML;
+}
+
+/** Whether `el` still shows exactly what we last wrote into it, on the page. */
+export function showsOurWrite(el: Element): boolean {
+  const state = paragraphStates.get(el);
+  return !!state && el.isConnected && el.innerHTML === state.writtenHtml;
 }
 
 /**
@@ -53,6 +75,7 @@ function saveOriginal(el: Element, contentHash: string, mode: ParagraphState["mo
 export function applyVariant(el: Element, variantHtml: string, contentHash: string): void {
   saveOriginal(el, contentHash, "block");
   el.innerHTML = variantHtml;
+  rememberWritten(el);
 }
 
 /**
@@ -75,16 +98,23 @@ export function applyVariantToRange(
   range.deleteContents();
   range.insertNode(segment);
   segment.innerHTML = variantHtml;
+  rememberWritten(block);
   return segment;
 }
 
-/** Restores `el` to its pre-translation `innerHTML`, verbatim. */
-export function restoreOriginal(el: Element): void {
+/**
+ * Restores `el` to its pre-translation `innerHTML`, verbatim — unless the host changed `el` since
+ * our last write or removed it from the page: then the snapshot is dropped, nothing is written and
+ * the host's content stays. Returns whether it wrote the original back.
+ */
+export function restoreOriginal(el: Element): boolean {
   const state = paragraphStates.get(el);
   translatedElements.delete(el);
-  if (!state) return;
-  el.innerHTML = state.originalHtml;
+  if (!state) return false;
+  const ours = showsOurWrite(el);
   paragraphStates.delete(el);
+  if (ours) el.innerHTML = state.originalHtml;
+  return ours;
 }
 
 /**
@@ -97,24 +127,19 @@ export function restoreInside(el: Element): void {
   }
 }
 
-/** Whether anything still on the page shows a translation. */
+/** Whether anything on the page still shows a translation Restore would put back. */
 export function hasTranslations(): boolean {
   for (const el of translatedElements) {
     if (!el.isConnected) translatedElements.delete(el);
   }
-  return translatedElements.size > 0;
+  return [...translatedElements].some(showsOurWrite);
 }
 
-/** Restores every translated element still on the page; returns how many. */
+/** Restores every translated element the host hasn't changed or removed; returns how many. */
 export function restoreAll(): number {
   let restored = 0;
   for (const el of [...translatedElements]) {
-    if (el.isConnected) {
-      restoreOriginal(el);
-      restored++;
-    } else {
-      translatedElements.delete(el);
-    }
+    if (restoreOriginal(el)) restored++;
   }
   return restored;
 }

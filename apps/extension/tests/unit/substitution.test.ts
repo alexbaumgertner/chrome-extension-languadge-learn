@@ -120,4 +120,35 @@ describe("restoring everything", () => {
     restoreOriginal(outer);
     expect(outer.innerHTML).toBe(original);
   });
+
+  it("leaves content the host changed after translation as it is and forgets the snapshot", () => {
+    document.body.innerHTML = `<p id="a">Alt.</p><p id="b">Auch alt.</p>`;
+    const a = document.getElementById("a")!;
+    const b = document.getElementById("b")!;
+    applyVariant(a, "OLD", "h1");
+    applyVariantToRange(b, rangeIn(b.firstChild!, 0, 4), "ALSO", "h2");
+
+    // An SPA re-renders both paragraphs in place with newer content.
+    a.innerHTML = "Neuer Inhalt vom Server.";
+    b.querySelector(`.${SEGMENT_CLASS}`)!.textContent = "geändert";
+    expect(hasTranslations()).toBe(false); // nothing left that Restore would put back
+
+    expect(restoreAll()).toBe(0);
+    expect(a.innerHTML).toBe("Neuer Inhalt vom Server.");
+    expect(b.innerHTML).toBe(`<span class="${SEGMENT_CLASS}">geändert</span> alt.`);
+    expect(isTranslated(a)).toBe(false);
+    expect(isTranslated(b)).toBe(false);
+    expect(hasTranslations()).toBe(false);
+  });
+
+  it("doesn't write a snapshot back into a detached node", () => {
+    document.body.innerHTML = `<div id="host"><p id="p">Original.</p></div>`;
+    const p = document.getElementById("p")!;
+    applyVariant(p, "GERMAN", "h1");
+    p.remove();
+
+    restoreOriginal(p);
+    expect(p.innerHTML).toBe("GERMAN");
+    expect(isTranslated(p)).toBe(false);
+  });
 });
