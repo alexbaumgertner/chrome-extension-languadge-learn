@@ -12,7 +12,11 @@
 import { writeFileSync } from "node:fs";
 import { TranslateResponseSchema } from "@sprachweise/shared";
 import { markVocab } from "../src/pipeline/mark-vocab";
-import { translateParagraph, type TranslationResult } from "../src/pipeline/translate";
+import {
+  ProviderConfigError,
+  translateParagraph,
+  type TranslationResult,
+} from "../src/pipeline/translate";
 import { QUALITY_PARAGRAPHS } from "./quality-paragraphs";
 
 // config.ts validates every server variable at import; this script needs none but Gemini's.
@@ -73,6 +77,10 @@ for (const [i, p] of QUALITY_PARAGRAPHS.entries()) {
     if (!check.success)
       row.problems.push(`fails response validation: ${check.error.issues[0]?.message}`);
   } catch (err) {
+    if (err instanceof ProviderConfigError) {
+      console.error(err.message);
+      process.exit(1);
+    }
     row.ms = performance.now() - started;
     row.problems.push(`error: ${(err as Error).message}`);
   }

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { buildTestApp } from "../helpers/test-app";
 import { createMockProviders, type MockProvidersController } from "./mock-providers";
+import { resetProviderConfigFailures } from "../../src/pipeline/translate";
 
 describe("POST /api/translate — User Story 4 (resilience)", () => {
   let providers: MockProvidersController;
@@ -12,6 +13,29 @@ describe("POST /api/translate — User Story 4 (resilience)", () => {
 
   afterEach(() => {
     providers.restore();
+    resetProviderConfigFailures();
+  });
+
+  it("a rejected configuration fails fast with 503 misconfigured, without retries or repeat calls", async () => {
+    providers.setMode("config-error");
+    const app = buildTestApp();
+
+    const first = await app.inject({
+      method: "POST",
+      url: "/api/translate",
+      payload: { text: "Первый абзац.", level: "A1-A2", topic: "general" },
+    });
+    expect(first.statusCode).toBe(503);
+    expect(first.json()).toEqual({ error: "misconfigured" });
+    expect(providers.callCounts.gemini).toBe(1);
+
+    const second = await app.inject({
+      method: "POST",
+      url: "/api/translate",
+      payload: { text: "Второй абзац.", level: "A1-A2", topic: "general" },
+    });
+    expect(second.statusCode).toBe(503);
+    expect(providers.callCounts.gemini).toBe(1);
   });
 
   it("Scenario 1: an already-cached combination still succeeds once providers become unreachable", async () => {

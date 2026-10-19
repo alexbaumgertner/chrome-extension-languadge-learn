@@ -7,7 +7,12 @@ import { cacheKey } from "../cache/key";
 import { getCacheEntry, putCacheEntry, type CachedTranslation } from "../cache/store";
 import { createCoalescingMap } from "../cache/coalesce";
 import { reserveUsage } from "../usage/ledger";
-import { translateParagraph, UpstreamFailureError } from "../pipeline/translate";
+import {
+  PROMPT_VERSION,
+  ProviderConfigError,
+  translateParagraph,
+  UpstreamFailureError,
+} from "../pipeline/translate";
 import { markVocab } from "../pipeline/mark-vocab";
 
 class AllowanceExhaustedError extends Error {}
@@ -31,7 +36,13 @@ export function registerTranslateRoute(app: FastifyInstance, cfg: Config, db: Db
     }
 
     try {
-      const key = cacheKey(text, level, cfg.GEMINI_MODEL);
+      const key = cacheKey(
+        text,
+        level,
+        cfg.GEMINI_MODEL,
+        cfg.GEMINI_THINKING_LEVEL,
+        PROMPT_VERSION,
+      );
       const cached = await getCacheEntry(db, key);
       if (cached) {
         return reply.status(200).send(cached);
@@ -56,6 +67,11 @@ export function registerTranslateRoute(app: FastifyInstance, cfg: Config, db: Db
 
       return reply.status(200).send(result);
     } catch (err) {
+      if (err instanceof ProviderConfigError) {
+        // A deployment mistake, not a provider outage: loud in the logs, distinct for the client.
+        request.log.error(err.message);
+        return reply.status(503).send({ error: "misconfigured" });
+      }
       if (err instanceof AllowanceExhaustedError) {
         return reply.status(429).send({ error: "allowance-exhausted" });
       }

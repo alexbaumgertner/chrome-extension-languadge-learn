@@ -8,7 +8,8 @@
  *   `...\n\nLevel: ${level}\nSource paragraph:\n${sourceText}`
  */
 
-export type MockProviderMode = "ok" | "fail" | "malformed";
+/** "config-error": a 400 like Gemini returns for an unsupported thinking level. */
+export type MockProviderMode = "ok" | "fail" | "malformed" | "config-error";
 
 export interface TranslatedResult {
   text: string;
@@ -60,6 +61,14 @@ export function createMockProviders(options: MockProvidersOptions = {}): MockPro
         return new Response("mock gemini failure", { status: 500 });
       }
       if (mode === "fail") return new Response("mock gemini failure", { status: 500 });
+      if (mode === "config-error") {
+        return new Response(
+          JSON.stringify({
+            error: { message: "Thinking level MINIMAL is not supported for this model." },
+          }),
+          { status: 400 },
+        );
+      }
       if (mode === "malformed") {
         return new Response(JSON.stringify({ candidates: [] }), { status: 200 });
       }

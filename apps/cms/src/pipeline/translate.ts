@@ -3,6 +3,17 @@ import { withRetry } from "./retry";
 
 export class UpstreamFailureError extends Error {}
 
+/**
+ * Gemini rejected our configuration (unknown model, unsupported thinking level, bad key). Never
+ * retried, and remembered per process so every later request fails fast with the same clear
+ * message instead of paying for a doomed call per paragraph.
+ */
+export class ProviderConfigError extends Error {}
+
+const CONFIG_ERROR_DETAIL = /thinking|model|api key|permission|not found|not supported/i;
+const configFailures = new Map<string, ProviderConfigError>();
+const configKey = (cfg: GeminiConfig) => `${cfg.GEMINI_MODEL}\0${cfg.GEMINI_THINKING_LEVEL}`;
+
 export type GeminiConfig = Pick<
   Config,
   "GEMINI_API_KEY" | "GEMINI_MODEL" | "GEMINI_THINKING_LEVEL" | "GEMINI_TIMEOUT_MS"
@@ -37,6 +48,9 @@ const LEVEL_GUIDANCE: Record<string, string> = {
     "Keep all main facts; replace rare or bureaucratic words with common ones.",
   "C1+": "Use natural, idiomatic German as a native writer would. Keep all details.",
 };
+
+/** Bump whenever the prompt changes meaningfully, so cached output from the old prompt isn't served. */
+export const PROMPT_VERSION = "1";
 
 /**
  * The prompt's trailing `Level:` / `Source paragraph:` lines are a stable format —
@@ -111,6 +125,16 @@ async function doTranslate(
       .json()
       .then((b: { error?: { message?: string } }) => b.error?.message ?? "")
       .catch(() => "");
+    if (
+      [401, 403, 404].includes(response.status) ||
+      (response.status === 400 && CONFIG_ERROR_DETAIL.test(detail))
+    ) {
+      throw new ProviderConfigError(
+        `Gemini rejected the configuration (GEMINI_MODEL=${cfg.GEMINI_MODEL}, ` +
+          `GEMINI_THINKING_LEVEL=${cfg.GEMINI_THINKING_LEVEL || "(omitted)"}): ` +
+          `${response.status} ${detail.slice(0, 200)}`,
+      );
+    }
     throw new UpstreamFailureError(
       `Gemini call failed: ${response.status}${detail ? ` ${detail.slice(0, 200)}` : ""}`,
     );
@@ -161,5 +185,19 @@ export function translateParagraph(
   level: string,
   cfg: GeminiConfig,
 ): Promise<TranslationResult> {
-  return withRetry(() => doTranslate(sourceText, level, cfg));
+  const known = configFailures.get(configKey(cfg));
+  if (known) return Promise.reject(known);
+  return withRetry(
+    () => doTranslate(sourceText, level, cfg),
+    200,
+    (err) => !(err instanceof ProviderConfigError),
+  ).catch((err: unknown) => {
+    if (err instanceof ProviderConfigError) configFailures.set(configKey(cfg), err);
+    throw err;
+  });
+}
+
+/** Test seam: forget remembered configuration failures. */
+export function resetProviderConfigFailures(): void {
+  configFailures.clear();
 }
