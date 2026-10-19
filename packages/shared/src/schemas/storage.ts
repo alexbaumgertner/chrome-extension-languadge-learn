@@ -81,6 +81,9 @@ export const GermanVariantSchema = z
     text: z.string().min(1),
     markedVocab: z.array(MarkedVocabSpanSchema),
     fetchedAt: z.number().int().nonnegative(),
+    /** What produced the text, for bad-translation reports; absent on variants cached before. */
+    model: z.string().min(1).optional(),
+    promptVersion: z.string().min(1).optional(),
   })
   .refine(
     (variant) =>

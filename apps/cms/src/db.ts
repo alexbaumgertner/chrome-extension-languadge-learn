@@ -50,6 +50,17 @@ const SCHEMA_STATEMENTS = [
      error_code TEXT,
      http_status SMALLINT
    )`,
+  // "Плохой перевод" reports, sent only on that click. No install ID, IP or URL (constitution III).
+  `CREATE TABLE IF NOT EXISTS translation_reports (
+     id BIGSERIAL PRIMARY KEY,
+     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+     source TEXT NOT NULL,
+     output TEXT NOT NULL,
+     level TEXT NOT NULL,
+     density TEXT NOT NULL,
+     model TEXT,
+     prompt_version TEXT
+   )`,
   `CREATE TABLE IF NOT EXISTS usage_counters (
      counter TEXT NOT NULL,
      period_key TEXT NOT NULL,

@@ -1,5 +1,6 @@
 import {
   ExercisesRequestSchema,
+  ReportRequestSchema,
   ExercisesResponseSchema,
   TranslateRequestSchema,
   TranslateResponseSchema,
@@ -8,6 +9,7 @@ import {
   type CmsTranslateRequest,
   type CmsTranslateResponse,
   type Level,
+  type ReportRequest,
 } from "@sprachweise/shared";
 import { CMS_BASE_URL } from "@/lib/config";
 
@@ -78,4 +80,14 @@ export async function generateExercises(
     request,
   );
   return response.exercises;
+}
+
+/** Sends a "Плохой перевод" report. Throws like the other calls; the server answers 204. */
+export async function sendReport(report: ReportRequest): Promise<void> {
+  const res = await fetch(`${CMS_BASE_URL}/api/report`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(ReportRequestSchema.parse(report)),
+  });
+  if (!res.ok) throw new CmsFetchError(`/api/report responded ${res.status}`, res.status);
 }

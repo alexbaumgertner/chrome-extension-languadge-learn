@@ -15,6 +15,7 @@ import FillBlankCard from "./FillBlankCard";
 import MultipleChoiceCard from "./MultipleChoiceCard";
 import WordPairingCard from "./WordPairingCard";
 import AudioDictationCard from "./AudioDictationCard";
+import ReportBadTranslation from "./ReportBadTranslation";
 import { PANEL_CSS } from "./styles";
 
 export default function Panel() {
@@ -127,6 +128,11 @@ export default function Panel() {
               }
             })}
           </div>
+          <ReportBadTranslation
+            key={activeSession.variantId}
+            variantId={activeSession.variantId}
+            sourceText={activeSession.sourceText}
+          />
         </div>
       )}
     </>

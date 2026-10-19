@@ -1,7 +1,7 @@
 import http from "node:http";
 
-/** "exercises-fail": /api/translate works, /api/exercises returns 500. */
-export type MockCmsMode = "ok" | "fail" | "exercises-fail";
+/** "exercises-fail" / "report-fail": everything else works, that endpoint returns 500. */
+export type MockCmsMode = "ok" | "fail" | "exercises-fail" | "report-fail";
 
 /** A request paragraph text containing this marker gets a short, low-vocabulary German variant back. */
 export const SHORT_PARAGRAPH_MARKER = "SHORT_PARA_MARKER";
@@ -72,6 +72,7 @@ export function createMockCmsServer() {
   const requests = {
     translate: [] as unknown[],
     events: [] as Array<{ installId: string; events: Array<Record<string, unknown>> }>,
+    report: [] as Array<Record<string, unknown>>,
   };
 
   const server = http.createServer((req, res) => {
@@ -91,6 +92,18 @@ export function createMockCmsServer() {
         return;
       }
 
+      if (req.url === "/api/report" && req.method === "POST") {
+        if (mode === "report-fail") {
+          res.statusCode = 500;
+          res.end();
+          return;
+        }
+        requests.report.push(JSON.parse(body));
+        res.statusCode = 204;
+        res.end();
+        return;
+      }
+
       if (req.url === "/api/translate" && req.method === "POST") {
         callCounts.translate++;
         requests.translate.push(JSON.parse(body || "{}"));
@@ -100,7 +113,14 @@ export function createMockCmsServer() {
           "Ich moechte einen Kaffee bestellen und dann in Ruhe die Zeitung lesen. " +
           `(${requestText.slice(0, 12)})`;
         res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ ...buildTranslateResponse(requestText, text), cache: "miss" }));
+        res.end(
+          JSON.stringify({
+            ...buildTranslateResponse(requestText, text),
+            cache: "miss",
+            model: "mock-model",
+            promptVersion: "2",
+          }),
+        );
         return;
       }
 

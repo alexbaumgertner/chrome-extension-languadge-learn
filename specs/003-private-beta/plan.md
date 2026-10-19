@@ -29,8 +29,12 @@ offline event queue in `chrome.storage.local`.
   only the UTC day. Events older than 90 days are deleted on the first event write of each day.
   Metric queries: `metrics.sql`. *(Changed 2026-10-19 from per-install counters on the translate
   route, so retention can be computed and the ID never travels with page text.)*
-- `POST /api/report` `{ source, output, level }` — the server adds the current model; body-size
-  capped like translate. Background sends it on the button click; content shows thank-you/error.
+- `POST /api/report` `{ source, output, level, density, model, promptVersion }` — model and
+  prompt version come from the variant (the translate response now names them, and the extension
+  stores them on the cached variant), so a report on an older cached paragraph names the model
+  that actually produced it. The button sits in the exercise panel footer (extension UI, never
+  over host text); background sends it; the panel shows thank-you or error + retry. Reports older
+  than 90 days are deleted on the first report write of each day.
 - `/admin/metrics`: server-rendered HTML behind HTTP Basic auth (`ADMIN_PASSWORD` env), reads the
   two tables plus the existing `usage_counters` global row.
 - Retention: a daily Vercel Cron calls a secret-protected cleanup endpoint (90 days).

@@ -4,6 +4,7 @@ import {
   type Exercise,
   type GermanVariant,
   type ProgressProfile,
+  type ReportBadTranslationResponse,
   type RequestMessage,
   type StorageChangedMessage,
   type TranslateParagraphResponse,
@@ -36,6 +37,7 @@ import {
   CmsFetchError,
   generateExercises,
   isNetworkError,
+  sendReport,
   translateParagraph,
 } from "@/lib/cms/client";
 import { mapCmsExercisesToEntities } from "@/lib/exercises/generate";
@@ -88,6 +90,8 @@ async function handleTranslateParagraph(
           vocabId: vocabIdByGerman[span.german] ?? vocabIdFor(span.german),
         })),
         fetchedAt: Date.now(),
+        model: translated.model,
+        promptVersion: translated.promptVersion,
       };
       await putCachedVariant(cacheKey, variant);
       cmsVocab = translated.markedVocab;
@@ -179,6 +183,38 @@ async function handleSubmitExerciseAttempt(
   return { ok: true, correct, updatedProgress };
 }
 
+/**
+ * The "Плохой перевод" click: the only path that sends a fragment for review (constitution III).
+ * Output, level and model come from the cached variant the content script is showing; no install ID.
+ */
+async function handleReportBadTranslation(
+  message: Extract<RequestMessage, { type: "REPORT_BAD_TRANSLATION" }>,
+): Promise<ReportBadTranslationResponse> {
+  const [variant, settings] = await Promise.all([
+    getCachedVariant(message.variantId),
+    getLearnerSettings(),
+  ]);
+  if (!variant) return { ok: false };
+  try {
+    await sendReport({
+      source: message.sourceText,
+      output: variant.text,
+      level: variant.level,
+      density: settings.translationDensity,
+      model: variant.model ?? null,
+      promptVersion: variant.promptVersion ?? null,
+    });
+    return { ok: true };
+  } catch (error) {
+    void recordEvent({
+      name: "client_error",
+      error: "report-failed",
+      httpStatus: httpStatusOf(error),
+    });
+    return { ok: false };
+  }
+}
+
 async function handleGetSiteStatus(
   message: Extract<RequestMessage, { type: "GET_SITE_STATUS" }>,
 ): Promise<{ status: "enabled" | "disabled" | "undecided" }> {
@@ -257,6 +293,9 @@ async function dispatch(message: RequestMessage): Promise<unknown> {
     case "SET_LEARNER_SETTINGS":
       await setLearnerSettings(message.settings);
       return { ok: true };
+
+    case "REPORT_BAD_TRANSLATION":
+      return handleReportBadTranslation(message);
 
     case "GET_SITE_RULES":
       return { siteRules: await getAllSiteRules() };

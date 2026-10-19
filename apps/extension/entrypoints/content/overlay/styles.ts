@@ -40,6 +40,16 @@ export const PANEL_CSS = `
 .sw-opt-selected { border-color: #1f2933; background: #f0f2f4; }
 .sw-pairing { display: flex; gap: 12px; }
 .sw-pairing-col { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.sw-report {
+  margin-top: auto; padding: 10px 14px; border-top: 1px solid #e4e7eb;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px;
+}
+.sw-report .sw-feedback, .sw-report.sw-feedback-ok { margin-top: 0; }
+.sw-report-btn {
+  border: 1px solid #cbd2d9; background: #fff; color: #52606d; border-radius: 6px;
+  padding: 4px 10px; cursor: pointer; font-size: 12px;
+}
+.sw-report-btn:disabled { opacity: 0.5; cursor: default; }
 .sw-audio-controls { display: flex; gap: 8px; margin-bottom: 8px; }
 .sw-audio-controls button {
   border: 1px solid #cbd2d9; background: #fff; border-radius: 6px; padding: 5px 10px; cursor: pointer;

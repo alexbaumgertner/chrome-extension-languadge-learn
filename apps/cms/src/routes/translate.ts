@@ -20,6 +20,8 @@ class AllowanceExhaustedError extends Error {}
 
 export function registerTranslateRoute(app: FastifyInstance, cfg: Config, db: Db): void {
   const coalescing = createCoalescingMap<CachedTranslation>();
+  // Both are in the cache key, so they also describe any cached answer.
+  const producedBy = { model: cfg.GEMINI_MODEL, promptVersion: PROMPT_VERSION };
 
   app.post("/api/translate", async (request, reply) => {
     const parsed = TranslateRequestSchema.safeParse(request.body);
@@ -46,7 +48,7 @@ export function registerTranslateRoute(app: FastifyInstance, cfg: Config, db: Db
       );
       const cached = await getCacheEntry(db, key);
       if (cached) {
-        return reply.status(200).send({ ...cached, cache: "hit" });
+        return reply.status(200).send({ ...cached, ...producedBy, cache: "hit" });
       }
 
       const result = await coalescing.run(key, async () => {
@@ -90,7 +92,7 @@ export function registerTranslateRoute(app: FastifyInstance, cfg: Config, db: Db
         return validated;
       });
 
-      return reply.status(200).send({ ...result, cache: "miss" });
+      return reply.status(200).send({ ...result, ...producedBy, cache: "miss" });
     } catch (err) {
       if (err instanceof ProviderConfigError) {
         // A deployment mistake, not a provider outage: loud in the logs, distinct for the client.

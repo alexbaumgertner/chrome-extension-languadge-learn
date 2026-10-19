@@ -134,7 +134,8 @@ host-access warning; privacy policy reachable over HTTPS; the unlisted listing i
 - **FR-007**: Each translated paragraph MUST offer a "Плохой перевод" action inside the extension's
   isolated UI; it MUST NOT modify the host page outside the selected paragraph (constitution II).
 - **FR-008**: The report MUST be sent only on that explicit click and contain only the source
-  fragment, its German output, the level and the model that produced it.
+  fragment, its German output, the CEFR level, the translation density, and the model and prompt
+  version that produced it — no install ID.
 - **FR-009**: After sending, the action MUST confirm with a thank-you; on failure it MUST say so
   and allow a retry.
 
@@ -155,8 +156,8 @@ host-access warning; privacy policy reachable over HTTPS; the unlisted listing i
 
 - **Install**: a random ID created by the extension. No personal attributes.
 - **Event**: (install, UTC day, kind) + cache/latency for translations, code/status for errors.
-- **Bad-translation report**: source fragment, German output, level, model, created time. Not
-  linked to an install.
+- **Bad-translation report**: source fragment, German output, level, density, model, prompt
+  version, created time. Not linked to an install.
 
 ## Success Criteria *(mandatory)*
 

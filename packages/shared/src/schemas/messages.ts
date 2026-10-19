@@ -109,6 +109,15 @@ export const GetSiteRulesResponseSchema = z.object({
   siteRules: z.record(z.string(), SiteRuleSchema),
 });
 
+/** Content → background on the "Плохой перевод" click; background adds output, level, density, model. */
+export const ReportBadTranslationRequestSchema = z.object({
+  type: z.literal("REPORT_BAD_TRANSLATION"),
+  variantId: z.string().min(1),
+  sourceText: z.string().min(1),
+});
+
+export const ReportBadTranslationResponseSchema = z.object({ ok: z.boolean() });
+
 export const StorageChangedMessageSchema = z.object({
   type: z.literal("STORAGE_CHANGED"),
   slice: z.enum(["progress", "settings", "siteRules", "vocab"]),
@@ -124,6 +133,7 @@ export const RequestMessageSchema = z.discriminatedUnion("type", [
   SetLearnerSettingsRequestSchema,
   GetProgressSnapshotRequestSchema,
   GetSiteRulesRequestSchema,
+  ReportBadTranslationRequestSchema,
 ]);
 
 /** Every message crossing a chrome.runtime boundary, including the background-originated broadcast. */
@@ -136,5 +146,6 @@ export const AnyMessageSchema = z.discriminatedUnion("type", [
   SetLearnerSettingsRequestSchema,
   GetProgressSnapshotRequestSchema,
   GetSiteRulesRequestSchema,
+  ReportBadTranslationRequestSchema,
   StorageChangedMessageSchema,
 ]);

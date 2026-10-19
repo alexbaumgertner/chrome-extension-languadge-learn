@@ -47,7 +47,12 @@ async function translateAndApply(el: HTMLElement): Promise<void> {
   errorPortals.get(el)?.remove();
   errorPortals.delete(el);
   applyVariant(el, renderVariantHtml(response.variant), contentHash);
-  setExerciseSession({ exercises: response.exercises, sourceParagraphHash: contentHash });
+  setExerciseSession({
+    exercises: response.exercises,
+    sourceParagraphHash: contentHash,
+    variantId: response.variant.id,
+    sourceText: paragraphText,
+  });
   vocabDictionaryPromise = null; // newly encountered vocab may have been added — refetch on next reveal
 }
 

@@ -9,6 +9,7 @@ import {
   GetSiteRulesResponseSchema,
   GetSiteStatusResponseSchema,
   InstallIdSchema,
+  ReportRequestSchema,
   isSafeHtmlSubset,
   LearnerSettingsSchema,
   ProgressProfileSchema,
@@ -444,5 +445,40 @@ describe("metric event schemas", () => {
       }).success,
     ).toBe(false);
     expect(EventsRequestSchema.safeParse({ installId, events: [] }).success).toBe(false);
+  });
+});
+
+describe("bad-translation report schemas", () => {
+  const report = {
+    source: "Колесо обозрения закрыли.",
+    output: "Das Riesenrad ist zu.",
+    level: "A1-A2",
+    density: "medium",
+    model: "gemini-3.8-flash",
+    promptVersion: "2",
+  };
+
+  it("accepts a report and drops any extra field such as an install ID or URL", () => {
+    expect(
+      ReportRequestSchema.parse({ ...report, installId: crypto.randomUUID(), url: "https://x.y" }),
+    ).toEqual(report);
+    expect(ReportRequestSchema.parse({ ...report, model: null, promptVersion: null }).model).toBe(
+      null,
+    );
+  });
+
+  it("requires every field and caps the text length", () => {
+    const { density: _density, ...withoutDensity } = report;
+    expect(ReportRequestSchema.safeParse(withoutDensity).success).toBe(false);
+    expect(ReportRequestSchema.safeParse({ ...report, source: "" }).success).toBe(false);
+    expect(ReportRequestSchema.safeParse({ ...report, source: "x".repeat(10_001) }).success).toBe(
+      false,
+    );
+  });
+
+  it("routes the REPORT_BAD_TRANSLATION message", () => {
+    const message = { type: "REPORT_BAD_TRANSLATION", variantId: "v1", sourceText: "Текст" };
+    expect(RequestMessageSchema.parse(message)).toEqual(message);
+    expect(RequestMessageSchema.safeParse({ ...message, sourceText: "" }).success).toBe(false);
   });
 });

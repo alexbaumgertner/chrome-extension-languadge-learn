@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { InstallIdSchema, LevelSchema } from "./storage";
+import { InstallIdSchema, LevelSchema, TranslationDensitySchema } from "./storage";
 
 export const TranslateRequestSchema = z.object({
   text: z.string().min(1),
@@ -47,6 +47,9 @@ export const TranslateResponseSchema = z
     markedVocab: z.array(CmsMarkedVocabSpanSchema),
     /** Whether the server answered from its shared cache; feeds the paragraph_translated event. */
     cache: z.enum(["hit", "miss"]).optional(),
+    /** The model and prompt version that produced `text` (both are part of the cache key). */
+    model: z.string().min(1).optional(),
+    promptVersion: z.string().min(1).optional(),
   })
   .refine(
     (res) => res.markedVocab.every((span) => span.start < span.end && span.end <= res.text.length),
@@ -145,4 +148,18 @@ export const MetricEventSchema = z.discriminatedUnion("name", [
 export const EventsRequestSchema = z.object({
   installId: InstallIdSchema,
   events: z.array(MetricEventSchema).min(1).max(50),
+});
+
+/**
+ * "Плохой перевод" report, sent only on that explicit click (constitution III). Carries no
+ * install ID, URL or hostname. `model`/`promptVersion` are null for variants cached before the
+ * extension started storing them.
+ */
+export const ReportRequestSchema = z.object({
+  source: z.string().min(1).max(10_000),
+  output: z.string().min(1).max(20_000),
+  level: LevelSchema,
+  density: TranslationDensitySchema,
+  model: z.string().min(1).max(100).nullable(),
+  promptVersion: z.string().min(1).max(20).nullable(),
 });
