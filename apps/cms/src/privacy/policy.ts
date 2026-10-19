@@ -6,7 +6,7 @@
  */
 const UPDATED_RU = "19 октября 2026";
 const UPDATED_EN = "19 October 2026";
-const CONTACT = "TODO_CONTACT_EMAIL";
+const CONTACT = "alex.baumgertner+sprachweise@gmail.com";
 
 const GEMINI_TERMS = "https://ai.google.dev/gemini-api/terms";
 const GOOGLE_PRIVACY = "https://policies.google.com/privacy";

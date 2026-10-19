@@ -11,8 +11,8 @@
 >   has only run against PGlite, not production.
 > - **Next (Part 2):** deploy; run `metrics.sql` against production; T7 `/admin/metrics`; store
 >   upload; add the store item ID to `CORS_ALLOWED_ORIGINS`.
-> - **Open questions:** contact email for the privacy policy (`TODO_CONTACT_EMAIL`); confirm the
->   Gemini API key's project is on paid billing (Gemini API terms allow only Paid Services for
+> - **Contact email:** `alex.baumgertner+sprachweise@gmail.com` (privacy policy).
+> - **Open questions:** confirm the Gemini API key's project is on paid billing (Gemini API terms allow only Paid Services for
 >   users in the EEA, Switzerland or the UK); whether to tick "Location" in the store's data form
 >   (see `docs/store-listing.md`).
 

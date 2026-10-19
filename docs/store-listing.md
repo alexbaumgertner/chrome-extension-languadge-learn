@@ -141,11 +141,47 @@ Certify all three:
 - Regions: all regions (or only the testers' countries).
 - Pricing: free.
 
-## After the first upload (before inviting testers)
+## After first upload
 
-1. Copy the item ID from the dashboard URL (32 letters a–p). The extension's origin is
-   `chrome-extension://<item id>`.
-2. Add it to `CORS_ALLOWED_ORIGINS` on Vercel (production), comma-separated next to the unpacked
-   dev ID, and redeploy. Without this every translation from the store build fails with a CORS
-   error.
-3. Replace `TODO_CONTACT_EMAIL` in `apps/cms/src/privacy/policy.ts` and redeploy before submitting.
+Do this before inviting testers. The backend allows only the extension origins listed in
+`CORS_ALLOWED_ORIGINS` (`apps/cms/src/config.ts`). Until the store build's origin is on the list,
+every translation, event and report from the store build fails with a CORS error.
+
+1. **Store item ID.** Open the item in the developer dashboard. The ID is the 32-letter (a–p)
+   segment in the dashboard URL, also shown under "Item ID". Example:
+   `abcdefghijklmnopabcdefghijklmnop`.
+2. **Local dev ID.** Open `chrome://extensions` with Developer mode on and copy the ID of the
+   unpacked Sprachweise you load for development. The manifest has no `key`, so this ID depends
+   on the folder you loaded from. If you load it from another path, the ID changes and must be
+   updated here too.
+3. **Build the value.** Exact origins, comma-separated, no spaces, no trailing slash. Keep the dev
+   origin:
+
+   ```text
+   chrome-extension://<store item id>,chrome-extension://<local dev id>
+   ```
+
+4. **Set it on Vercel**, team `alexbaumgertner`, project `sprachweise`, environment
+   **Production**. The variable is stored as sensitive, so its current value can't be read back;
+   enter the whole list. Run from the repo root (linked through `.vercel/project.json`):
+
+   ```sh
+   vercel env update CORS_ALLOWED_ORIGINS production
+   # paste the value from step 3 when prompted
+   ```
+
+   Or use Dashboard → sprachweise → Settings → Environment Variables → `CORS_ALLOWED_ORIGINS` →
+   Edit, and paste the full value.
+5. **Redeploy.** Env changes apply only to new deployments. From an up-to-date `main` at the repo
+   root, run `vercel deploy --prod`.
+6. **Check** with the store item ID. The response must include
+   `access-control-allow-origin: chrome-extension://<store item id>`:
+
+   ```sh
+   curl -si -X OPTIONS https://sprachweise.vercel.app/api/translate \
+     -H 'Origin: chrome-extension://<store item id>' \
+     -H 'Access-Control-Request-Method: POST' \
+     -H 'Access-Control-Request-Headers: content-type' | grep -i access-control-allow-origin
+   ```
+
+   Then install from the unlisted store link, enable a site and translate one paragraph.

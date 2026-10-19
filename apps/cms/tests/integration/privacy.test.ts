@@ -17,7 +17,7 @@ describe("GET /privacy", () => {
       "90 days",
       "IP address",
       "Limited Use",
-      "TODO_CONTACT_EMAIL",
+      "mailto:alex.baumgertner+sprachweise@gmail.com",
     ]) {
       expect(html).toContain(phrase);
     }
