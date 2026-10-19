@@ -40,8 +40,9 @@ async function seed(db: Db): Promise<void> {
   ];
   for (const [id, name, daysAgo, cache, latency, error, status] of rows) {
     await db.query(
-      `INSERT INTO events (install_id, name, occurred_on, cache, latency_ms, error_code, http_status)
-       VALUES ($1, $2, current_date - $3::int, $4, $5, $6, $7)`,
+      `INSERT INTO events
+         (event_id, install_id, name, occurred_on, cache, latency_ms, error_code, http_status)
+       VALUES (gen_random_uuid(), $1, $2, current_date - $3::int, $4, $5, $6, $7)`,
       [id, name, daysAgo, cache, latency, error, status],
     );
   }

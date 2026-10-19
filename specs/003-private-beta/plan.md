@@ -13,7 +13,7 @@ unlisted Chrome Web Store build with a privacy policy and no install-time host a
 **Language/Version**: TypeScript 5 strict, Node 24
 **Primary Dependencies**: existing only — Fastify, zod (`packages/shared`), Neon serverless
 driver, WXT + React. No new runtime dependencies planned.
-**Storage**: Neon Postgres — new `events` (install_id, name, occurred_on DATE, cache, latency_ms,
+**Storage**: Neon Postgres — new `events` (event_id UNIQUE for resend dedup, install_id, name, occurred_on DATE, cache, latency_ms,
 error_code, http_status; no text/URL/IP) and `translation_reports` (source, output, level,
 density, model, prompt version, created_at; no install ID). Extension: install ID and an
 offline event queue in `chrome.storage.local`.

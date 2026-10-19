@@ -404,16 +404,17 @@ describe("cms schemas", () => {
 describe("metric event schemas", () => {
   const installId = "0b6c3a62-5d2e-4f0a-9c1b-2e8f7d6a5b4c";
   const occurredAt = "2026-10-19T12:00:00.000Z";
+  const id = "7d3f1c2e-8a4b-4c6d-9e0f-1a2b3c4d5e6f";
 
   it("accepts one of each event kind", () => {
     const request = {
       installId,
       events: [
-        { name: "install", occurredAt },
-        { name: "paragraph_translated", occurredAt, cache: "miss", latencyMs: 1830 },
-        { name: "exercise_completed", occurredAt },
-        { name: "client_error", occurredAt, error: "translate-failed", httpStatus: 502 },
-        { name: "client_error", occurredAt, error: "translate-offline", httpStatus: null },
+        { name: "install", id, occurredAt },
+        { name: "paragraph_translated", id, occurredAt, cache: "miss", latencyMs: 1830 },
+        { name: "exercise_completed", id, occurredAt },
+        { name: "client_error", id, occurredAt, error: "translate-failed", httpStatus: 502 },
+        { name: "client_error", id, occurredAt, error: "translate-offline", httpStatus: null },
       ],
     };
     expect(EventsRequestSchema.parse(request)).toEqual(request);
@@ -423,28 +424,36 @@ describe("metric event schemas", () => {
     const parsed = EventsRequestSchema.parse({
       installId,
       url: "https://example.com/private",
-      events: [{ name: "exercise_completed", occurredAt, text: "Привет", hostname: "example.com" }],
+      events: [
+        { name: "exercise_completed", id, occurredAt, text: "Привет", hostname: "example.com" },
+      ],
     });
-    expect(parsed).toEqual({ installId, events: [{ name: "exercise_completed", occurredAt }] });
+    expect(parsed).toEqual({ installId, events: [{ name: "exercise_completed", id, occurredAt }] });
   });
 
   it("rejects a missing or non-UUID install ID, unknown events and free-form errors", () => {
-    const event = { name: "exercise_completed", occurredAt };
+    const event = { name: "exercise_completed", id, occurredAt };
     expect(EventsRequestSchema.safeParse({ events: [event] }).success).toBe(false);
     expect(EventsRequestSchema.safeParse({ installId: "anon", events: [event] }).success).toBe(
       false,
     );
     expect(
-      EventsRequestSchema.safeParse({ installId, events: [{ name: "page_view", occurredAt }] })
+      EventsRequestSchema.safeParse({ installId, events: [{ name: "page_view", id, occurredAt }] })
         .success,
     ).toBe(false);
     expect(
       EventsRequestSchema.safeParse({
         installId,
-        events: [{ name: "client_error", occurredAt, error: "TypeError: x", httpStatus: null }],
+        events: [{ name: "client_error", id, occurredAt, error: "TypeError: x", httpStatus: null }],
       }).success,
     ).toBe(false);
     expect(EventsRequestSchema.safeParse({ installId, events: [] }).success).toBe(false);
+    expect(
+      EventsRequestSchema.safeParse({
+        installId,
+        events: [{ name: "exercise_completed", occurredAt }],
+      }).success,
+    ).toBe(false);
   });
 });
 

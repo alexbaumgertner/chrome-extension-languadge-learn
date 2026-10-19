@@ -33,7 +33,8 @@ const RU = `
 (UUID, который расширение создаёт при установке; он не связан с вашим именем, почтой, устройством
 или аккаунтом). С ним уходят только события: установка; абзац переведён (взят ли перевод из общего
 кэша и сколько миллисекунд занял запрос); упражнение выполнено; ошибка (код ошибки и HTTP-статус).
-Сервер сохраняет только день (UTC), без точного времени. Идентификатор никогда не отправляется
+У каждого события есть свой случайный номер, чтобы повторно отправленное событие не посчиталось
+дважды. Сервер сохраняет только день (UTC), без точного времени. Идентификатор никогда не отправляется
 вместе с текстом абзаца и не используется ни для чего, кроме подсчёта использования.</li>
 <li><strong>Отчёт «Плохой перевод»</strong> — только если вы нажали эту кнопку: исходный абзац,
 его немецкий перевод, уровень, плотность перевода, название модели и версия промпта. Без
@@ -109,6 +110,7 @@ list of sites are not sent.</li>
 creates when installed; it is not derived from your name, email, device or any account). Only these
 events are sent with it: install; paragraph translated (whether it came from the shared cache and
 how many milliseconds the request took); exercise completed; error (an error code and HTTP status).
+Each event has its own random ID so an event sent twice is counted once.
 The server keeps only the day (UTC), not the exact time. The install ID is never sent together with
 paragraph text and is used for nothing but counting usage.</li>
 <li><strong>A "Плохой перевод" (bad translation) report</strong>, only when you click that button: the

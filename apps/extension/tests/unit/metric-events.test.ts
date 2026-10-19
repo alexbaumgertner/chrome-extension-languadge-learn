@@ -2,12 +2,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { flushEvents, recordEvent, recordInstallIfNew } from "@/lib/metrics/events";
 
 let store: Record<string, unknown>;
-let sent: Array<{ installId: string; events: Array<{ name: string }> }>;
+type Batch = { installId: string; events: Array<{ name: string; id: string }> };
+let sent: Batch[];
+let attempted: Batch[];
 let respond: () => Promise<Response>;
 
 beforeEach(() => {
   store = {};
   sent = [];
+  attempted = [];
   respond = async () => new Response(null, { status: 204 });
   (globalThis as unknown as { chrome: unknown }).chrome = {
     storage: {
@@ -21,6 +24,7 @@ beforeEach(() => {
     "fetch",
     vi.fn(async (_url: string, init: RequestInit) => {
       const res = await respond();
+      attempted.push(JSON.parse(init.body as string));
       if (res.ok) sent.push(JSON.parse(init.body as string));
       return res;
     }),
@@ -73,6 +77,18 @@ describe("metric events", () => {
     respond = async () => new Response(null, { status: 400 });
     await flushEvents();
     expect(queued()).toEqual([]);
+  });
+
+  it("resends a batch whose response failed with the same event IDs, so the server can skip it", async () => {
+    await recordInstallIfNew();
+    respond = async () => new Response(null, { status: 502 });
+    await recordEvent({ name: "exercise_completed" });
+    const firstTry = attempted.at(-1)!.events.map((e) => e.id);
+
+    respond = async () => new Response(null, { status: 204 });
+    await flushEvents();
+    expect(sent.at(-1)!.events.map((e) => e.id)).toEqual(firstTry);
+    expect(new Set(sent.flatMap((b) => b.events.map((e) => e.id))).size).toBe(names().length);
   });
 
   it("loses no event when many are recorded at once", async () => {

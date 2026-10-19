@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { config } from "../../src/config";
 import { withSchema } from "../../src/db";
@@ -20,11 +21,23 @@ describe("POST /api/events", () => {
     const response = await post({
       installId: INSTALL_ID,
       events: [
-        { name: "install", occurredAt },
-        { name: "paragraph_translated", occurredAt, cache: "miss", latencyMs: 1830 },
-        { name: "paragraph_translated", occurredAt, cache: "hit", latencyMs: 95 },
-        { name: "exercise_completed", occurredAt },
-        { name: "client_error", occurredAt, error: "translate-failed", httpStatus: 502 },
+        { name: "install", id: randomUUID(), occurredAt },
+        {
+          name: "paragraph_translated",
+          id: randomUUID(),
+          occurredAt,
+          cache: "miss",
+          latencyMs: 1830,
+        },
+        { name: "paragraph_translated", id: randomUUID(), occurredAt, cache: "hit", latencyMs: 95 },
+        { name: "exercise_completed", id: randomUUID(), occurredAt },
+        {
+          name: "client_error",
+          id: randomUUID(),
+          occurredAt,
+          error: "translate-failed",
+          httpStatus: 502,
+        },
       ],
     });
 
@@ -49,7 +62,7 @@ describe("POST /api/events", () => {
     const { db, post } = setup();
     await post({
       installId: INSTALL_ID,
-      events: [{ name: "install", occurredAt: new Date().toISOString() }],
+      events: [{ name: "install", id: randomUUID(), occurredAt: new Date().toISOString() }],
     });
     const columns = await db.query<{ column_name: string }>(
       `SELECT column_name FROM information_schema.columns WHERE table_name = 'events' ORDER BY 1`,
@@ -57,6 +70,7 @@ describe("POST /api/events", () => {
     expect(columns.map((c) => c.column_name)).toEqual([
       "cache",
       "error_code",
+      "event_id",
       "http_status",
       "id",
       "install_id",
@@ -66,9 +80,25 @@ describe("POST /api/events", () => {
     ]);
   });
 
+  it("stores a batch sent twice (lost response, retried) only once", async () => {
+    const { db, post } = setup();
+    const occurredAt = new Date().toISOString();
+    const first = { name: "exercise_completed", id: randomUUID(), occurredAt };
+    const second = { name: "exercise_completed", id: randomUUID(), occurredAt };
+
+    expect((await post({ installId: INSTALL_ID, events: [first] })).statusCode).toBe(204);
+    expect((await post({ installId: INSTALL_ID, events: [first, second] })).statusCode).toBe(204);
+    const ids = await db.query<{ event_id: string }>(
+      "SELECT event_id::text FROM events ORDER BY id",
+    );
+    expect(ids.map((r) => r.event_id)).toEqual([first.id, second.id]);
+  });
+
   it("rejects a batch without a valid install ID and stores nothing", async () => {
     const { db, post } = setup();
-    const events = [{ name: "exercise_completed", occurredAt: new Date().toISOString() }];
+    const events = [
+      { name: "exercise_completed", id: randomUUID(), occurredAt: new Date().toISOString() },
+    ];
 
     expect((await post({ events })).statusCode).toBe(400);
     expect((await post({ installId: "anonymous", events })).statusCode).toBe(400);
@@ -106,8 +136,10 @@ describe("deleteExpiredEvents", () => {
   it("deletes events older than 90 days and keeps the rest", async () => {
     const db = withSchema(createTestDb());
     await db.query(
-      `INSERT INTO events (install_id, name, occurred_on) VALUES
-         ($1, 'install', '2029-10-02'), ($1, 'install', '2029-10-03'), ($1, 'install', '2030-01-01')`,
+      `INSERT INTO events (event_id, install_id, name, occurred_on) VALUES
+         (gen_random_uuid(), $1, 'install', '2029-10-02'),
+         (gen_random_uuid(), $1, 'install', '2029-10-03'),
+         (gen_random_uuid(), $1, 'install', '2030-01-01')`,
       [INSTALL_ID],
     );
     await deleteExpiredEvents(db, () => {}, new Date("2030-01-01T12:00:00Z"));

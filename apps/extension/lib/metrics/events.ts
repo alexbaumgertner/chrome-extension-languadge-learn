@@ -11,8 +11,16 @@ const BATCH_SIZE = 50;
 const QueueSchema = z.array(MetricEventSchema);
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
-/** What callers record; the timestamp is added here and the install event is implicit. */
-export type UsageEvent = Exclude<DistributiveOmit<MetricEvent, "occurredAt">, { name: "install" }>;
+/** What callers record; the ID and timestamp are added here and the install event is implicit. */
+export type UsageEvent = Exclude<
+  DistributiveOmit<MetricEvent, "id" | "occurredAt">,
+  { name: "install" }
+>;
+
+/** The ID is fixed when the event is recorded, so a resend after a lost response is deduplicated. */
+function stamp<T extends object>(event: T): T & { id: string; occurredAt: string } {
+  return { ...event, id: crypto.randomUUID(), occurredAt: new Date().toISOString() };
+}
 
 async function readQueue(): Promise<MetricEvent[]> {
   const parsed = QueueSchema.safeParse((await chrome.storage.local.get(QUEUE_KEY))[QUEUE_KEY]);
@@ -37,7 +45,8 @@ async function enqueue(events: MetricEvent[]): Promise<void> {
 
 /**
  * Sends queued events, oldest first. Sent or rejected (400) batches leave the queue; a network
- * failure or server error keeps them for the next attempt.
+ * failure or server error keeps them for the next attempt. A batch the server stored but whose
+ * response was lost is sent again; the server skips event IDs it already has.
  */
 async function flush(): Promise<void> {
   const { installId } = await getOrCreateInstallId();
@@ -69,9 +78,8 @@ export function recordEvent(event: UsageEvent): Promise<void> {
   return serialized(async () => {
     // Storage cleared since install: the new ID starts with its own install event.
     const { created } = await getOrCreateInstallId();
-    const occurredAt = new Date().toISOString();
-    const events: MetricEvent[] = created ? [{ name: "install", occurredAt }] : [];
-    events.push({ ...event, occurredAt });
+    const events: MetricEvent[] = created ? [stamp({ name: "install" as const })] : [];
+    events.push(stamp(event));
     await enqueue(events);
     await flush();
   }).catch((err: unknown) => console.error("Sprachweise: metric event failed", err));
@@ -81,7 +89,7 @@ export function recordEvent(event: UsageEvent): Promise<void> {
 export function recordInstallIfNew(): Promise<void> {
   return serialized(async () => {
     const { created } = await getOrCreateInstallId();
-    if (created) await enqueue([{ name: "install", occurredAt: new Date().toISOString() }]);
+    if (created) await enqueue([stamp({ name: "install" as const })]);
     await flush();
   }).catch((err: unknown) => console.error("Sprachweise: install event failed", err));
 }

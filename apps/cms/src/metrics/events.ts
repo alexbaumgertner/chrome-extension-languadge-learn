@@ -15,6 +15,7 @@ export function eventDay(occurredAt: string, now: Date): string {
   return new Date(trusted ? at : nowMs).toISOString().slice(0, 10);
 }
 
+/** Inserts a batch; events whose ID is already stored (a batch sent again) are skipped. */
 export async function insertEvents(
   db: Db,
   installId: string,
@@ -24,6 +25,7 @@ export async function insertEvents(
   const params: unknown[] = [];
   const rows = events.map((event) => {
     params.push(
+      event.id,
       installId,
       event.name,
       eventDay(event.occurredAt, now),
@@ -32,12 +34,14 @@ export async function insertEvents(
       event.name === "client_error" ? event.error : null,
       event.name === "client_error" ? event.httpStatus : null,
     );
-    const base = params.length - 7;
-    return `($${base + 1}, $${base + 2}, $${base + 3}::date, $${base + 4}, $${base + 5}, $${base + 6}, $${base + 7})`;
+    const base = params.length - 8;
+    return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}::date, $${base + 5}, $${base + 6}, $${base + 7}, $${base + 8})`;
   });
   await db.query(
-    `INSERT INTO events (install_id, name, occurred_on, cache, latency_ms, error_code, http_status)
-     VALUES ${rows.join(", ")}`,
+    `INSERT INTO events
+       (event_id, install_id, name, occurred_on, cache, latency_ms, error_code, http_status)
+     VALUES ${rows.join(", ")}
+     ON CONFLICT (event_id) DO NOTHING`,
     params,
   );
 }

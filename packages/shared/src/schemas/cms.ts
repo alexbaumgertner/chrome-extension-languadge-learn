@@ -120,25 +120,29 @@ export const ClientErrorCodeSchema = z.enum([
   "report-failed",
 ]);
 
-const EventTimeSchema = z.string().datetime();
+/**
+ * Every event carries a random ID generated when it is recorded, so the server can drop a batch
+ * that is sent again after a lost response. It is not derived from anything and identifies nothing.
+ */
+const eventFields = { id: z.string().uuid(), occurredAt: z.string().datetime() };
 
 /**
  * Usage-metric events (constitution III): only what DAU, D1/D3/D7 retention, paragraphs per
  * install, errors and latency need. No text, no URL, no hostname.
  */
 export const MetricEventSchema = z.discriminatedUnion("name", [
-  z.object({ name: z.literal("install"), occurredAt: EventTimeSchema }),
+  z.object({ name: z.literal("install"), ...eventFields }),
   z.object({
     name: z.literal("paragraph_translated"),
-    occurredAt: EventTimeSchema,
+    ...eventFields,
     cache: z.enum(["hit", "miss"]),
     /** End-to-end /api/translate round trip measured by the extension. */
     latencyMs: z.number().int().nonnegative().max(600_000),
   }),
-  z.object({ name: z.literal("exercise_completed"), occurredAt: EventTimeSchema }),
+  z.object({ name: z.literal("exercise_completed"), ...eventFields }),
   z.object({
     name: z.literal("client_error"),
-    occurredAt: EventTimeSchema,
+    ...eventFields,
     error: ClientErrorCodeSchema,
     /** The backend's HTTP status; null when no response arrived (offline, DNS, CORS). */
     httpStatus: z.number().int().min(100).max(599).nullable(),
