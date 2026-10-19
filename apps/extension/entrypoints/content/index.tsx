@@ -60,6 +60,11 @@ const SELECTION_MESSAGES: Record<SelectionProblem, string> = {
 const PAGE_CHANGED_MESSAGE = "The page changed while translating. Select the text again.";
 
 let notice: ShadowPortal | null = null;
+/**
+ * Bumped by Restore and by invalidation. A translation in flight compares it after every await
+ * and stops before touching the page or the panel if it changed: the learner undid it meanwhile.
+ */
+let generation = 0;
 let activeTooltip: ShadowPortal | null = null;
 let vocabDictionaryPromise: Promise<Record<string, VocabularyItem>> | null = null;
 
@@ -161,7 +166,9 @@ async function translateSelection(): Promise<void> {
 
   selection?.removeAllRanges();
   showNotice(first, "Translating…", "info");
+  const started = generation;
   const settings = await sendMessage<LearnerSettings>({ type: "GET_LEARNER_SETTINGS" });
+  if (generation !== started) return;
   let exercisesShown = false;
   for (const item of items) {
     const contentHash = hashParagraphText(item.text);
@@ -172,6 +179,7 @@ async function translateSelection(): Promise<void> {
       level: settings.level,
       topic: settings.currentTopic,
     });
+    if (generation !== started) return;
     if (!response.ok) {
       // The rest would almost certainly fail the same way; the learner retries the selection.
       showNotice(item.block, FAILURE_MESSAGES[response.reason], "error");
@@ -204,6 +212,7 @@ async function translateSelection(): Promise<void> {
 }
 
 function restoreEverything(): void {
+  generation++;
   clearNotice();
   activeTooltip?.remove();
   activeTooltip = null;
@@ -302,6 +311,7 @@ export default defineContentScript({
     // A newer copy of this script took over (the extension was updated or reloaded): leave the
     // page as it was, since that copy can't restore what this one translated.
     ctx.onInvalidated(() => {
+      generation++;
       chrome.runtime.onMessage.removeListener(onMessage);
       restoreAll();
       notice?.remove();

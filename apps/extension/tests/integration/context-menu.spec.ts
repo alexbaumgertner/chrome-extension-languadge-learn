@@ -208,3 +208,30 @@ test("selecting already-translated text again re-translates the original, not th
   await expect(tab.locator("#target .sw-vocab")).toHaveCount(0);
   expect(await tab.locator("#target").evaluate((el) => el.outerHTML)).toBe(before);
 });
+
+test("Restore while a translation is in flight wins: the late answer changes nothing", async ({
+  context,
+  fixtureServer,
+  cmsServer,
+  selectText,
+  clickMenu,
+}) => {
+  fixtureServer.setHtml(page(`<p id="target">Ein Absatz, dessen Übersetzung zu spät ankommt.</p>`));
+  const tab = await context.newPage();
+  await tab.goto(FIXTURE_ORIGIN);
+  const original = await tab.locator("article").evaluate((el) => el.innerHTML);
+
+  const release = cmsServer.holdTranslate();
+  await selectText(tab, "#target");
+  await clickMenu(tab, "translate");
+  await expect.poll(() => cmsServer.callCounts.translate).toBe(1);
+  await clickMenu(tab, "restore");
+  await expect(tab.getByText("Translating…")).toHaveCount(0);
+
+  release();
+  // The background fetches exercises after the translation; the content script gets both after.
+  await expect.poll(() => cmsServer.callCounts.exercises).toBe(1);
+  await tab.waitForTimeout(500);
+  expect(await tab.locator("article").evaluate((el) => el.innerHTML)).toBe(original);
+  await expect(tab.locator(".sw-panel .sw-card")).toHaveCount(0);
+});

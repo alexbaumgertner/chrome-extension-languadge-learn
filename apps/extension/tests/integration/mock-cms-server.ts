@@ -79,12 +79,15 @@ export function createMockCmsServer() {
     report: [] as Array<Record<string, unknown>>,
   };
 
+  // While set, translate requests are counted and recorded but answered only once it resolves.
+  let translateGate: Promise<void> | null = null;
+
   const server = createLoopbackServer(
     withCors(
       (req, res) => {
         let body = "";
         req.on("data", (chunk: Buffer) => (body += chunk.toString()));
-        req.on("end", () => {
+        req.on("end", async () => {
           if (mode === "fail") {
             res.statusCode = 500;
             res.end("mock CMS forced failure");
@@ -119,6 +122,7 @@ export function createMockCmsServer() {
               return;
             }
             requests.translate.push(JSON.parse(body || "{}"));
+            await translateGate;
             const parsed = JSON.parse(body || "{}") as { text?: string };
             const requestText = parsed.text ?? "";
             const text =
@@ -162,6 +166,15 @@ export function createMockCmsServer() {
     requests,
     setMode(next: MockCmsMode): void {
       mode = next;
+    },
+    /** Holds every translate response until the returned function is called. */
+    holdTranslate(): () => void {
+      let release!: () => void;
+      translateGate = new Promise((resolve) => (release = resolve));
+      return () => {
+        translateGate = null;
+        release();
+      };
     },
     listen: server.listen,
     close: server.close,
