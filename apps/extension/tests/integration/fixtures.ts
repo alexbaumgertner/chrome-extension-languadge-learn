@@ -1,4 +1,10 @@
-import { test as base, chromium, type BrowserContext, type Worker } from "@playwright/test";
+import {
+  expect as baseExpect,
+  test as base,
+  chromium,
+  type BrowserContext,
+  type Worker,
+} from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -70,6 +76,16 @@ export const test = base.extend<Fixtures>({
         rules[h] = { hostname: h, status: "enabled", grantedPermissionOrigin: null };
         await chrome.storage.local.set({ siteRules: rules });
       }, hostname);
+      // The background registers the content script for the site asynchronously after the
+      // storage write; navigating before that would load the page without it.
+      await baseExpect
+        .poll(() =>
+          serviceWorker.evaluate(async (h) => {
+            const scripts = await chrome.scripting.getRegisteredContentScripts();
+            return scripts.some((s) => s.matches?.includes(`*://${h}/*`));
+          }, hostname),
+        )
+        .toBe(true);
     });
   },
 });

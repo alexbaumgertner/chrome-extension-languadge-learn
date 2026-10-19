@@ -95,8 +95,8 @@ host-access warning; privacy policy reachable over HTTPS; the unlisted listing i
 - Extension storage cleared or reinstalled → a new install ID; the metrics count it as a new
   install (acceptable for a 3–5 person beta).
 - Paragraphs re-opened from the extension's local cache send no request and are not counted.
-- A missing or malformed install ID on a translation request → the request is rejected, not
-  silently counted under an anonymous bucket.
+- A missing or malformed install ID on a metric event batch → the batch is rejected, not
+  silently counted under an anonymous bucket. Translation requests carry no install ID at all.
 - The same paragraph reported twice by the same tester → two reports (no dedupe needed at this
   scale).
 - Metrics page during an empty day → shows zeros, not an error.
@@ -109,15 +109,20 @@ host-access warning; privacy policy reachable over HTTPS; the unlisted listing i
 
 - **FR-001**: On first run the extension MUST generate a random install ID (≥122 bits of
   randomness, not derived from device or user data) and keep it in extension storage.
-- **FR-002**: The install ID MUST be sent only with translation requests, never with the page URL,
-  browsing history, email or account data (constitution III).
+- **FR-002**: The install ID MUST be sent only with usage-metric events (`POST /api/events`) —
+  never with a translation request, a bad-translation report, the page URL, browsing history,
+  email or account data (constitution III). *(Amended 2026-10-19: was "only with translation
+  requests"; separating it from page text is the stricter reading of III.)*
 - **FR-003**: The server MUST NOT use the install ID as a cache key, MUST NOT log it, and MUST NOT
   store it together with page content (reports carry no install ID).
 
 **Usage metrics**
 
-- **FR-004**: The server MUST count, per install per UTC day: translations served, of which from
-  the shared cache, and failures. No paragraph text is stored with these counts.
+- **FR-004**: The extension MUST record events — install, paragraph translated (server cache hit
+  or miss, end-to-end latency), exercise completed, client error (fixed code + HTTP status) — and
+  the server MUST store them per install per UTC day, enough for DAU, D1/D3/D7 retention,
+  paragraphs per install, errors and latency. No paragraph text, URL, hostname or IP is stored
+  with them. Queries: [metrics.sql](./metrics.sql).
 - **FR-005**: An admin metrics page MUST show daily totals (active installs, translations, cache
   hits, failures, reports) for the last 30 days, a per-install table (shortened ID, totals, last
   active day), and the 50 most recent bad-translation reports.
@@ -129,7 +134,8 @@ host-access warning; privacy policy reachable over HTTPS; the unlisted listing i
 - **FR-007**: Each translated paragraph MUST offer a "Плохой перевод" action inside the extension's
   isolated UI; it MUST NOT modify the host page outside the selected paragraph (constitution II).
 - **FR-008**: The report MUST be sent only on that explicit click and contain only the source
-  fragment, its German output, the level and the model that produced it.
+  fragment, its German output, the CEFR level, the translation density, and the model and prompt
+  version that produced it — no install ID.
 - **FR-009**: After sending, the action MUST confirm with a thank-you; on failure it MUST say so
   and allow a retry.
 
@@ -149,9 +155,9 @@ host-access warning; privacy policy reachable over HTTPS; the unlisted listing i
 ### Key Entities
 
 - **Install**: a random ID created by the extension. No personal attributes.
-- **Daily usage**: (install, UTC day) → translations, cache hits, failures.
-- **Bad-translation report**: source fragment, German output, level, model, created time. Not
-  linked to an install.
+- **Event**: (install, UTC day, kind) + cache/latency for translations, code/status for errors.
+- **Bad-translation report**: source fragment, German output, level, density, model, prompt
+  version, created time. Not linked to an install.
 
 ## Success Criteria *(mandatory)*
 

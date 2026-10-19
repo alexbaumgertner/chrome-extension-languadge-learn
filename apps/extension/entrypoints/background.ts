@@ -4,6 +4,7 @@ import {
   type Exercise,
   type GermanVariant,
   type ProgressProfile,
+  type ReportBadTranslationResponse,
   type RequestMessage,
   type StorageChangedMessage,
   type TranslateParagraphResponse,
@@ -32,10 +33,22 @@ import {
   putCachedExercises,
   putCachedVariant,
 } from "@/lib/storage/content-cache";
-import { generateExercises, isNetworkError, translateParagraph } from "@/lib/cms/client";
+import {
+  CmsFetchError,
+  generateExercises,
+  isNetworkError,
+  sendReport,
+  translateParagraph,
+} from "@/lib/cms/client";
 import { mapCmsExercisesToEntities } from "@/lib/exercises/generate";
 import { checkExerciseAnswer } from "@/lib/exercises/match";
 import { recordVocabEncounters, vocabIdFor } from "@/lib/vocab/upsert";
+import { flushEvents, recordEvent, recordInstallIfNew } from "@/lib/metrics/events";
+import {
+  injectIntoOpenTabs,
+  originPatternFor,
+  syncContentScriptRegistration,
+} from "@/lib/content-script-registration";
 
 async function handleTranslateParagraph(
   message: Extract<RequestMessage, { type: "TRANSLATE_PARAGRAPH" }>,
@@ -56,11 +69,17 @@ async function handleTranslateParagraph(
     cmsVocab = await cmsVocabFromVariant(variant);
   } else {
     try {
+      const started = performance.now();
       const translated = await translateParagraph(
         message.paragraphText,
         message.level,
         message.topic,
       );
+      void recordEvent({
+        name: "paragraph_translated",
+        cache: translated.cache ?? "miss",
+        latencyMs: Math.round(performance.now() - started),
+      });
       const vocabIdByGerman = await recordVocabEncounters(translated.markedVocab, Date.now());
 
       variant = {
@@ -75,11 +94,19 @@ async function handleTranslateParagraph(
           vocabId: vocabIdByGerman[span.german] ?? vocabIdFor(span.german),
         })),
         fetchedAt: Date.now(),
+        model: translated.model,
+        promptVersion: translated.promptVersion,
       };
       await putCachedVariant(cacheKey, variant);
       cmsVocab = translated.markedVocab;
     } catch (error) {
-      return { ok: false, reason: isNetworkError(error) ? "offline-no-cache" : "fetch-failed" };
+      const offline = isNetworkError(error);
+      void recordEvent({
+        name: "client_error",
+        error: offline ? "translate-offline" : "translate-failed",
+        httpStatus: httpStatusOf(error),
+      });
+      return { ok: false, reason: offline ? "offline-no-cache" : "fetch-failed" };
     }
   }
 
@@ -95,14 +122,23 @@ async function handleTranslateParagraph(
     );
     exercises = mapCmsExercisesToEntities(cmsExercises, message.contentHash);
     await putCachedExercises(cacheKey, exercises);
-  } catch {
+  } catch (error) {
     // Left uncached on purpose so it's retried.
+    void recordEvent({
+      name: "client_error",
+      error: "exercises-failed",
+      httpStatus: httpStatusOf(error),
+    });
   }
 
   return { ok: true, variant, exercises };
 }
 
 type CmsMarkedVocab = CmsExercisesRequest["markedVocab"];
+
+function httpStatusOf(error: unknown): number | null {
+  return error instanceof CmsFetchError ? (error.status ?? null) : null;
+}
 
 /** Rebuilds the CMS-shaped glossed spans for a cached variant from the local vocabulary store. */
 async function cmsVocabFromVariant(variant: GermanVariant): Promise<CmsMarkedVocab> {
@@ -141,6 +177,7 @@ async function handleSubmitExerciseAttempt(
     await markExerciseAnswered(found.cacheKey, message.exerciseId, lastAttempt);
   }
 
+  void recordEvent({ name: "exercise_completed" });
   const updatedProgress = await recordAttempt({
     correct,
     affectedVocabIds: message.affectedVocabIds,
@@ -150,8 +187,36 @@ async function handleSubmitExerciseAttempt(
   return { ok: true, correct, updatedProgress };
 }
 
-function originPatternFor(hostname: string): string {
-  return `*://${hostname}/*`;
+/**
+ * The "Плохой перевод" click: the only path that sends a fragment for review (constitution III).
+ * Output, level and model come from the cached variant the content script is showing; no install ID.
+ */
+async function handleReportBadTranslation(
+  message: Extract<RequestMessage, { type: "REPORT_BAD_TRANSLATION" }>,
+): Promise<ReportBadTranslationResponse> {
+  const [variant, settings] = await Promise.all([
+    getCachedVariant(message.variantId),
+    getLearnerSettings(),
+  ]);
+  if (!variant) return { ok: false };
+  try {
+    await sendReport({
+      source: message.sourceText,
+      output: variant.text,
+      level: variant.level,
+      density: settings.translationDensity,
+      model: variant.model ?? null,
+      promptVersion: variant.promptVersion ?? null,
+    });
+    return { ok: true };
+  } catch (error) {
+    void recordEvent({
+      name: "client_error",
+      error: "report-failed",
+      httpStatus: httpStatusOf(error),
+    });
+    return { ok: false };
+  }
 }
 
 async function handleGetSiteStatus(
@@ -185,6 +250,11 @@ async function handleSetSiteStatus(
       status: "enabled",
       grantedPermissionOrigin: origin,
     });
+    // Register for later loads first, then start it in the tabs already open on this site.
+    await syncContentScriptRegistration();
+    await injectIntoOpenTabs(origin).catch((err: unknown) =>
+      console.error("Sprachweise: injecting into open tabs failed", err),
+    );
     return { ok: true };
   }
 
@@ -232,6 +302,9 @@ async function dispatch(message: RequestMessage): Promise<unknown> {
     case "SET_LEARNER_SETTINGS":
       await setLearnerSettings(message.settings);
       return { ok: true };
+
+    case "REPORT_BAD_TRANSLATION":
+      return handleReportBadTranslation(message);
 
     case "GET_SITE_RULES":
       return { siteRules: await getAllSiteRules() };
@@ -290,7 +363,21 @@ export default defineBackground(() => {
       if (slice) slices.add(slice);
     }
     for (const slice of slices) broadcastStorageChanged(slice);
+    if (changes.siteRules) void syncContentScriptRegistration();
   });
+
+  // Registered scripts persist across sessions; re-syncing on install/update/startup and on any
+  // permission change keeps them equal to the granted enabled origins regardless.
+  chrome.runtime.onInstalled.addListener(() => {
+    void syncContentScriptRegistration();
+    void recordInstallIfNew();
+  });
+  chrome.runtime.onStartup.addListener(() => {
+    void syncContentScriptRegistration();
+    void flushEvents();
+  });
+  chrome.permissions.onAdded.addListener(() => void syncContentScriptRegistration());
+  chrome.permissions.onRemoved.addListener(() => void syncContentScriptRegistration());
 
   console.log("Sprachweise background worker started", { id: browser.runtime.id });
 });

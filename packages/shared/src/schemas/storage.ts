@@ -2,6 +2,14 @@ import { z } from "zod";
 
 export const LevelSchema = z.enum(["A1-A2", "B1-B2", "C1+"]);
 
+/**
+ * Random per-install ID for usage metrics only (constitution III): a UUID v4 from
+ * `crypto.randomUUID()` — 122 random bits, derived from nothing on the device or about the user.
+ */
+export const InstallIdSchema = z
+  .string()
+  .regex(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+
 export const TranslationDensitySchema = z.enum(["low", "medium", "max"]);
 
 export const SiteStatusSchema = z.enum(["enabled", "disabled", "undecided"]);
@@ -73,6 +81,9 @@ export const GermanVariantSchema = z
     text: z.string().min(1),
     markedVocab: z.array(MarkedVocabSpanSchema),
     fetchedAt: z.number().int().nonnegative(),
+    /** What produced the text, for bad-translation reports; absent on variants cached before. */
+    model: z.string().min(1).optional(),
+    promptVersion: z.string().min(1).optional(),
   })
   .refine(
     (variant) =>

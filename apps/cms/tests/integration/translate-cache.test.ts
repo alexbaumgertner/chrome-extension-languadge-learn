@@ -23,7 +23,10 @@ describe("POST /api/translate — User Story 2 (cache reuse)", () => {
 
     expect(first.statusCode).toBe(200);
     expect(second.statusCode).toBe(200);
-    expect(second.json()).toEqual(first.json());
+    const { cache: firstCache, ...firstBody } = first.json();
+    const { cache: secondCache, ...secondBody } = second.json();
+    expect(secondBody).toEqual(firstBody);
+    expect([firstCache, secondCache]).toEqual(["miss", "hit"]);
     expect(providers.callCounts.gemini).toBe(1);
   });
 

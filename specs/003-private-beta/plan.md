@@ -13,18 +13,28 @@ unlisted Chrome Web Store build with a privacy policy and no install-time host a
 **Language/Version**: TypeScript 5 strict, Node 24
 **Primary Dependencies**: existing only — Fastify, zod (`packages/shared`), Neon serverless
 driver, WXT + React. No new runtime dependencies planned.
-**Storage**: Neon Postgres — new `install_daily_usage` (install_id, day, translations, cache_hits,
-failures) and `translation_reports` (source, output, level, model, created_at; no install ID).
-Extension: install ID in `chrome.storage.local`.
+**Storage**: Neon Postgres — new `events` (event_id UNIQUE for resend dedup, install_id, name, occurred_on DATE, cache, latency_ms,
+error_code, http_status; no text/URL/IP) and `translation_reports` (source, output, level,
+density, model, prompt version, created_at; no install ID). Extension: install ID and an
+offline event queue in `chrome.storage.local`.
 **Testing**: vitest + PGlite (backend), vitest + Playwright (extension), as in Phase 1.
 **Target Platform**: Chrome MV3; Vercel (fra1).
 **Constraints**: constitution 2.0.0; no secrets in repo.
 
 **Key design points**
-- `installId` (UUID v4, `crypto.randomUUID`) becomes a required field of the translate request;
-  the route upserts `install_daily_usage` after answering (cache hit / success / failure).
-- `POST /api/report` `{ source, output, level }` — the server adds the current model; body-size
-  capped like translate. Background sends it on the button click; content shows thank-you/error.
+- `installId` (UUID v4, `crypto.randomUUID`) travels only in `POST /api/events`
+  `{ installId, events[] }` (install, paragraph_translated, exercise_completed, client_error).
+  The translate request carries no ID; its response gains `cache: hit|miss`. Events queue in
+  `chrome.storage.local` while offline (cap 200) and carry their client time; the server keeps
+  only the UTC day. Events older than 90 days are deleted on the first event write of each day.
+  Metric queries: `metrics.sql`. *(Changed 2026-10-19 from per-install counters on the translate
+  route, so retention can be computed and the ID never travels with page text.)*
+- `POST /api/report` `{ source, output, level, density, model, promptVersion }` — model and
+  prompt version come from the variant (the translate response now names them, and the extension
+  stores them on the cached variant), so a report on an older cached paragraph names the model
+  that actually produced it. The button sits in the exercise panel footer (extension UI, never
+  over host text); background sends it; the panel shows thank-you or error + retry. Reports older
+  than 90 days are deleted on the first report write of each day.
 - `/admin/metrics`: server-rendered HTML behind HTTP Basic auth (`ADMIN_PASSWORD` env), reads the
   two tables plus the existing `usage_counters` global row.
 - Retention: a daily Vercel Cron calls a secret-protected cleanup endpoint (90 days).

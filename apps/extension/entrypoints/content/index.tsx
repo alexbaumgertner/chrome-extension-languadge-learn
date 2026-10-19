@@ -47,7 +47,12 @@ async function translateAndApply(el: HTMLElement): Promise<void> {
   errorPortals.get(el)?.remove();
   errorPortals.delete(el);
   applyVariant(el, renderVariantHtml(response.variant), contentHash);
-  setExerciseSession({ exercises: response.exercises, sourceParagraphHash: contentHash });
+  setExerciseSession({
+    exercises: response.exercises,
+    sourceParagraphHash: contentHash,
+    variantId: response.variant.id,
+    sourceText: paragraphText,
+  });
   vocabDictionaryPromise = null; // newly encountered vocab may have been added — refetch on next reveal
 }
 
@@ -160,14 +165,32 @@ function deactivate(): void {
   attachedListeners.clear();
 }
 
+/**
+ * Set while an instance runs in this page. The script can arrive twice: injected into the open tab
+ * when the user enables the site, and again from the registration; a second run must not mount a
+ * second panel or attach a second set of click listeners.
+ */
+const RUNNING_FLAG = "__sprachweiseContentScript";
+
+// Not declared in the manifest: Chrome counts manifest content-script matches as install-time host
+// access. The background registers this script at runtime for each enabled site's granted origin
+// (lib/content-script-registration.ts), so installing asks for no website access (Constitution I).
 export default defineContentScript({
-  matches: ["*://*/*"],
+  registration: "runtime",
   async main(ctx) {
+    const page = window as unknown as Record<string, unknown>;
+    if (page[RUNNING_FLAG]) return;
+    page[RUNNING_FLAG] = true;
+    ctx.onInvalidated(() => delete page[RUNNING_FLAG]);
+
     const status = await sendMessage<GetSiteStatusResponse>({
       type: "GET_SITE_STATUS",
       hostname: location.hostname,
     });
-    if (status.status !== "enabled") return;
+    if (status.status !== "enabled") {
+      delete page[RUNNING_FLAG];
+      return;
+    }
 
     const ui = await createShadowRootUi(ctx, {
       name: "sprachweise-panel",
@@ -191,7 +214,9 @@ export default defineContentScript({
         type: "GET_SITE_STATUS",
         hostname: location.hostname,
       }).then((next) => {
-        if (next.status !== "enabled") deactivate();
+        // Re-enabled without a reload: re-attach (activate skips paragraphs already attached).
+        if (next.status === "enabled") void activate();
+        else deactivate();
       });
     });
   },

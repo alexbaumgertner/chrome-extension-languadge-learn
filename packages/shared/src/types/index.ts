@@ -10,6 +10,8 @@ import type {
   GetSiteRulesResponseSchema,
   GetSiteStatusRequestSchema,
   GetSiteStatusResponseSchema,
+  ReportBadTranslationRequestSchema,
+  ReportBadTranslationResponseSchema,
   RequestMessageSchema,
   SetLearnerSettingsRequestSchema,
   SetLearnerSettingsResponseSchema,
@@ -22,9 +24,13 @@ import type {
   TranslateParagraphResponseSchema,
 } from "../schemas/messages";
 import type {
+  ClientErrorCodeSchema,
   CmsExerciseSchema,
+  EventsRequestSchema,
   ExercisesRequestSchema,
   ExercisesResponseSchema,
+  MetricEventSchema,
+  ReportRequestSchema,
   TranslateRequestSchema,
   TranslateResponseSchema,
 } from "../schemas/cms";
@@ -75,6 +81,8 @@ export type ExerciseSet = z.infer<typeof ExerciseSetSchema>;
 export type AnswerPayload = z.infer<typeof AnswerPayloadSchema>;
 export type TranslateParagraphRequest = z.infer<typeof TranslateParagraphRequestSchema>;
 export type TranslateParagraphResponse = z.infer<typeof TranslateParagraphResponseSchema>;
+export type ReportBadTranslationRequest = z.infer<typeof ReportBadTranslationRequestSchema>;
+export type ReportBadTranslationResponse = z.infer<typeof ReportBadTranslationResponseSchema>;
 export type SubmitExerciseAttemptRequest = z.infer<typeof SubmitExerciseAttemptRequestSchema>;
 export type SubmitExerciseAttemptResponse = z.infer<typeof SubmitExerciseAttemptResponseSchema>;
 export type GetSiteStatusRequest = z.infer<typeof GetSiteStatusRequestSchema>;
@@ -99,3 +107,7 @@ export type CmsTranslateResponse = z.infer<typeof TranslateResponseSchema>;
 export type CmsExercisesRequest = z.infer<typeof ExercisesRequestSchema>;
 export type CmsExercise = z.infer<typeof CmsExerciseSchema>;
 export type CmsExercisesResponse = z.infer<typeof ExercisesResponseSchema>;
+export type ClientErrorCode = z.infer<typeof ClientErrorCodeSchema>;
+export type MetricEvent = z.infer<typeof MetricEventSchema>;
+export type EventsRequest = z.infer<typeof EventsRequestSchema>;
+export type ReportRequest = z.infer<typeof ReportRequestSchema>;

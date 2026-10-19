@@ -3,6 +3,9 @@ import type { Exercise } from "@sprachweise/shared";
 export interface ExerciseSession {
   exercises: Exercise[];
   sourceParagraphHash: string;
+  /** The shown variant's cache key and the paragraph's original text, for "Плохой перевод". */
+  variantId: string;
+  sourceText: string;
 }
 
 type Listener = (session: ExerciseSession) => void;

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  EventsRequestSchema,
   ExercisesRequestSchema,
   ExercisesResponseSchema,
   ExerciseSchema,
@@ -7,6 +8,8 @@ import {
   GetProgressSnapshotResponseSchema,
   GetSiteRulesResponseSchema,
   GetSiteStatusResponseSchema,
+  InstallIdSchema,
+  ReportRequestSchema,
   isSafeHtmlSubset,
   LearnerSettingsSchema,
   ProgressProfileSchema,
@@ -23,6 +26,15 @@ import {
 } from "../src/index";
 
 describe("storage schemas", () => {
+  it("InstallId accepts crypto.randomUUID() output and rejects anything else", () => {
+    for (let i = 0; i < 20; i++) expect(InstallIdSchema.parse(crypto.randomUUID())).toBeTruthy();
+    expect(InstallIdSchema.safeParse("").success).toBe(false);
+    expect(InstallIdSchema.safeParse("not-a-uuid").success).toBe(false);
+    // UUID v1 (time + MAC based) is not random, and upper case is not what randomUUID emits.
+    expect(InstallIdSchema.safeParse("6ba7b810-9dad-11d1-80b4-00c04fd430c8").success).toBe(false);
+    expect(InstallIdSchema.safeParse("3F2504E0-4F89-41D3-9A0C-0305E82C3301").success).toBe(false);
+  });
+
   it("LearnerSettings round-trips a valid fixture", () => {
     const fixture = { level: "B1-B2", currentTopic: "dative-case", translationDensity: "medium" };
     expect(LearnerSettingsSchema.parse(fixture)).toEqual(fixture);
@@ -386,5 +398,96 @@ describe("cms schemas", () => {
       markedVocab: [{ start: 4, end: 11, german: "wollte", russian: "хотел бы" }],
     });
     expect(result.success).toBe(false);
+  });
+});
+
+describe("metric event schemas", () => {
+  const installId = "0b6c3a62-5d2e-4f0a-9c1b-2e8f7d6a5b4c";
+  const occurredAt = "2026-10-19T12:00:00.000Z";
+  const id = "7d3f1c2e-8a4b-4c6d-9e0f-1a2b3c4d5e6f";
+
+  it("accepts one of each event kind", () => {
+    const request = {
+      installId,
+      events: [
+        { name: "install", id, occurredAt },
+        { name: "paragraph_translated", id, occurredAt, cache: "miss", latencyMs: 1830 },
+        { name: "exercise_completed", id, occurredAt },
+        { name: "client_error", id, occurredAt, error: "translate-failed", httpStatus: 502 },
+        { name: "client_error", id, occurredAt, error: "translate-offline", httpStatus: null },
+      ],
+    };
+    expect(EventsRequestSchema.parse(request)).toEqual(request);
+  });
+
+  it("strips anything beyond the allowed fields, so page text or URLs never reach the server", () => {
+    const parsed = EventsRequestSchema.parse({
+      installId,
+      url: "https://example.com/private",
+      events: [
+        { name: "exercise_completed", id, occurredAt, text: "Привет", hostname: "example.com" },
+      ],
+    });
+    expect(parsed).toEqual({ installId, events: [{ name: "exercise_completed", id, occurredAt }] });
+  });
+
+  it("rejects a missing or non-UUID install ID, unknown events and free-form errors", () => {
+    const event = { name: "exercise_completed", id, occurredAt };
+    expect(EventsRequestSchema.safeParse({ events: [event] }).success).toBe(false);
+    expect(EventsRequestSchema.safeParse({ installId: "anon", events: [event] }).success).toBe(
+      false,
+    );
+    expect(
+      EventsRequestSchema.safeParse({ installId, events: [{ name: "page_view", id, occurredAt }] })
+        .success,
+    ).toBe(false);
+    expect(
+      EventsRequestSchema.safeParse({
+        installId,
+        events: [{ name: "client_error", id, occurredAt, error: "TypeError: x", httpStatus: null }],
+      }).success,
+    ).toBe(false);
+    expect(EventsRequestSchema.safeParse({ installId, events: [] }).success).toBe(false);
+    expect(
+      EventsRequestSchema.safeParse({
+        installId,
+        events: [{ name: "exercise_completed", occurredAt }],
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe("bad-translation report schemas", () => {
+  const report = {
+    source: "Колесо обозрения закрыли.",
+    output: "Das Riesenrad ist zu.",
+    level: "A1-A2",
+    density: "medium",
+    model: "gemini-3.8-flash",
+    promptVersion: "2",
+  };
+
+  it("accepts a report and drops any extra field such as an install ID or URL", () => {
+    expect(
+      ReportRequestSchema.parse({ ...report, installId: crypto.randomUUID(), url: "https://x.y" }),
+    ).toEqual(report);
+    expect(ReportRequestSchema.parse({ ...report, model: null, promptVersion: null }).model).toBe(
+      null,
+    );
+  });
+
+  it("requires every field and caps the text length", () => {
+    const { density: _density, ...withoutDensity } = report;
+    expect(ReportRequestSchema.safeParse(withoutDensity).success).toBe(false);
+    expect(ReportRequestSchema.safeParse({ ...report, source: "" }).success).toBe(false);
+    expect(ReportRequestSchema.safeParse({ ...report, source: "x".repeat(10_001) }).success).toBe(
+      false,
+    );
+  });
+
+  it("routes the REPORT_BAD_TRANSLATION message", () => {
+    const message = { type: "REPORT_BAD_TRANSLATION", variantId: "v1", sourceText: "Текст" };
+    expect(RequestMessageSchema.parse(message)).toEqual(message);
+    expect(RequestMessageSchema.safeParse({ ...message, sourceText: "" }).success).toBe(false);
   });
 });

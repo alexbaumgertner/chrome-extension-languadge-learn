@@ -48,7 +48,7 @@ describe("POST /api/translate — User Story 4 (resilience)", () => {
     providers.setMode("fail");
     const cached = await app.inject({ method: "POST", url: "/api/translate", payload });
     expect(cached.statusCode).toBe(200);
-    expect(cached.json()).toEqual(primed.json());
+    expect(cached.json()).toEqual({ ...primed.json(), cache: "hit" });
   });
 
   it("Scenario 2: a new combination returns a clear 502 upstream-failure, not a hang or partial body", async () => {

@@ -38,6 +38,32 @@ const SCHEMA_STATEMENTS = [
      cost_usd NUMERIC(12, 8),
      latency_ms INTEGER NOT NULL
    )`,
+  // Usage-metric events keyed by the extension's random install ID (constitution III). Day
+  // granularity only, no IP, no text, no URL: nothing here can be joined to page content.
+  // event_id is the client's random per-event ID; its unique index drops a re-sent batch.
+  `CREATE TABLE IF NOT EXISTS events (
+     id BIGSERIAL PRIMARY KEY,
+     event_id UUID NOT NULL,
+     install_id UUID NOT NULL,
+     name TEXT NOT NULL,
+     occurred_on DATE NOT NULL,
+     cache TEXT,
+     latency_ms INTEGER,
+     error_code TEXT,
+     http_status SMALLINT
+   )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS events_event_id ON events (event_id)`,
+  // "Плохой перевод" reports, sent only on that click. No install ID, IP or URL (constitution III).
+  `CREATE TABLE IF NOT EXISTS translation_reports (
+     id BIGSERIAL PRIMARY KEY,
+     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+     source TEXT NOT NULL,
+     output TEXT NOT NULL,
+     level TEXT NOT NULL,
+     density TEXT NOT NULL,
+     model TEXT,
+     prompt_version TEXT
+   )`,
   `CREATE TABLE IF NOT EXISTS usage_counters (
      counter TEXT NOT NULL,
      period_key TEXT NOT NULL,

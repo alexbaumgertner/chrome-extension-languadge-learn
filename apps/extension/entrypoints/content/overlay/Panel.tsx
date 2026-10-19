@@ -15,6 +15,7 @@ import FillBlankCard from "./FillBlankCard";
 import MultipleChoiceCard from "./MultipleChoiceCard";
 import WordPairingCard from "./WordPairingCard";
 import AudioDictationCard from "./AudioDictationCard";
+import ReportBadTranslation from "./ReportBadTranslation";
 import { PANEL_CSS } from "./styles";
 
 export default function Panel() {
@@ -28,7 +29,9 @@ export default function Panel() {
       subscribeExerciseSession((next) => {
         setSession(next);
         setExercises(next.exercises);
-        setCollapsed(false); // a fresh translation opens the panel (FR-007 replacement is visible)
+        // A fresh translation opens the panel (FR-007 replacement is visible). Without exercises
+        // (failed or none generated) it stays a collapsed tab that still offers the report.
+        setCollapsed(next.exercises.length === 0);
       }),
     [],
   );
@@ -38,7 +41,7 @@ export default function Panel() {
     void sendMessage<LearnerSettings>({ type: "GET_LEARNER_SETTINGS" }).then(setSettings);
   }, [session]);
 
-  if (!session || exercises.length === 0 || !settings) return null;
+  if (!session || !settings) return null;
 
   const activeSession = session;
   const activeSettings = settings;
@@ -83,7 +86,9 @@ export default function Panel() {
       <style>{PANEL_CSS}</style>
       {collapsed ? (
         <button className="sw-tab" onClick={() => setCollapsed(false)}>
-          {pendingCount} exercise{pendingCount === 1 ? "" : "s"}
+          {exercises.length === 0
+            ? "No exercises"
+            : `${pendingCount} exercise${pendingCount === 1 ? "" : "s"}`}
         </button>
       ) : (
         <div className="sw-panel">
@@ -94,6 +99,7 @@ export default function Panel() {
             </button>
           </div>
           <div className="sw-list">
+            {exercises.length === 0 && <p className="sw-empty">No exercises for this paragraph.</p>}
             {exercises.map((exercise) => {
               switch (exercise.kind) {
                 case "fill-blank":
@@ -127,6 +133,11 @@ export default function Panel() {
               }
             })}
           </div>
+          <ReportBadTranslation
+            key={activeSession.variantId}
+            variantId={activeSession.variantId}
+            sourceText={activeSession.sourceText}
+          />
         </div>
       )}
     </>

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LevelSchema } from "./storage";
+import { InstallIdSchema, LevelSchema, TranslationDensitySchema } from "./storage";
 
 export const TranslateRequestSchema = z.object({
   text: z.string().min(1),
@@ -45,6 +45,11 @@ export const TranslateResponseSchema = z
   .object({
     text: z.string().min(1),
     markedVocab: z.array(CmsMarkedVocabSpanSchema),
+    /** Whether the server answered from its shared cache; feeds the paragraph_translated event. */
+    cache: z.enum(["hit", "miss"]).optional(),
+    /** The model and prompt version that produced `text` (both are part of the cache key). */
+    model: z.string().min(1).optional(),
+    promptVersion: z.string().min(1).optional(),
   })
   .refine(
     (res) => res.markedVocab.every((span) => span.start < span.end && span.end <= res.text.length),
@@ -105,4 +110,60 @@ export const CmsExerciseSchema = z.discriminatedUnion("kind", [
 
 export const ExercisesResponseSchema = z.object({
   exercises: z.array(CmsExerciseSchema).min(0).max(4),
+});
+
+/** Fixed codes only — an error event never carries a message, URL or page text. */
+export const ClientErrorCodeSchema = z.enum([
+  "translate-failed",
+  "translate-offline",
+  "exercises-failed",
+  "report-failed",
+]);
+
+/**
+ * Every event carries a random ID generated when it is recorded, so the server can drop a batch
+ * that is sent again after a lost response. It is not derived from anything and identifies nothing.
+ */
+const eventFields = { id: z.string().uuid(), occurredAt: z.string().datetime() };
+
+/**
+ * Usage-metric events (constitution III): only what DAU, D1/D3/D7 retention, paragraphs per
+ * install, errors and latency need. No text, no URL, no hostname.
+ */
+export const MetricEventSchema = z.discriminatedUnion("name", [
+  z.object({ name: z.literal("install"), ...eventFields }),
+  z.object({
+    name: z.literal("paragraph_translated"),
+    ...eventFields,
+    cache: z.enum(["hit", "miss"]),
+    /** End-to-end /api/translate round trip measured by the extension. */
+    latencyMs: z.number().int().nonnegative().max(600_000),
+  }),
+  z.object({ name: z.literal("exercise_completed"), ...eventFields }),
+  z.object({
+    name: z.literal("client_error"),
+    ...eventFields,
+    error: ClientErrorCodeSchema,
+    /** The backend's HTTP status; null when no response arrived (offline, DNS, CORS). */
+    httpStatus: z.number().int().min(100).max(599).nullable(),
+  }),
+]);
+
+export const EventsRequestSchema = z.object({
+  installId: InstallIdSchema,
+  events: z.array(MetricEventSchema).min(1).max(50),
+});
+
+/**
+ * "Плохой перевод" report, sent only on that explicit click (constitution III). Carries no
+ * install ID, URL or hostname. `model`/`promptVersion` are null for variants cached before the
+ * extension started storing them.
+ */
+export const ReportRequestSchema = z.object({
+  source: z.string().min(1).max(10_000),
+  output: z.string().min(1).max(20_000),
+  level: LevelSchema,
+  density: TranslationDensitySchema,
+  model: z.string().min(1).max(100).nullable(),
+  promptVersion: z.string().min(1).max(20).nullable(),
 });
