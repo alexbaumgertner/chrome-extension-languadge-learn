@@ -1,0 +1,61 @@
+name: Preview smoke
+
+# Runs against every Vercel preview once Vercel reports the deployment as ready.
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Smoke test + Lighthouse (preview)
+    if: github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Preview'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      URL: ${{ github.event.deployment_status.environment_url }}
+      # Preview deployments sit behind Vercel Authentication. Create a "Protection Bypass for
+      # Automation" secret in the Vercel project and store it as this repo secret.
+      BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+    steps:
+      - name: Require bypass secret
+        run: |
+          if [ -z "$BYPASS" ]; then
+            echo "::error::VERCEL_AUTOMATION_BYPASS_SECRET is not set; preview is behind Vercel Authentication."
+            exit 1
+          fi
+      - name: Health endpoint
+        run: |
+          body=$(curl -fsS -H "x-vercel-protection-bypass: $BYPASS" "$URL/api/health")
+          echo "$body"
+          echo "$body" | grep -q '"ok":true'
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Lighthouse (/api/health is JSON, so audit the public privacy page)
+        run: |
+          npx --yes lighthouse@12.8.2 "$URL/privacy" \
+            --chrome-flags="--headless=new --no-sandbox" \
+            --extra-headers="{\"x-vercel-protection-bypass\":\"$BYPASS\"}" \
+            --only-categories=performance,accessibility,best-practices,seo \
+            --output=json --output=html --output-path=./lighthouse
+      - name: Enforce score thresholds
+        run: |
+          node -e '
+            const r = require("./lighthouse.report.json");
+            const min = { performance: 0.8, accessibility: 0.9, "best-practices": 0.9, seo: 0.9 };
+            let bad = 0;
+            for (const [k, v] of Object.entries(min)) {
+              const s = r.categories[k].score;
+              console.log(`${k}: ${Math.round(s * 100)} (min ${v * 100})`);
+              if (s < v) bad++;
+            }
+            process.exit(bad ? 1 : 0);
+          '
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse
+          path: lighthouse.report.*

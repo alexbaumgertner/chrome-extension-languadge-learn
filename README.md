@@ -68,12 +68,12 @@ pnpm install
 This is a pnpm workspace (`apps/extension` + `packages/shared`). Useful
 scripts from the root `package.json`:
 
-| Command                    | What it does                                                            |
-| --------------------------- | ------------------------------------------------------------------------ |
-| `pnpm --filter apps/extension dev` | Starts the WXT dev server with hot-reload (`wxt`).               |
-| `pnpm build`                | Builds the extension into `apps/extension/.output/chrome-mv3`.          |
-| `pnpm test:unit`            | Runs the Vitest unit tests.                                             |
-| `pnpm test:integration`     | Builds a test bundle and runs the Playwright integration suite.         |
+| Command                            | What it does                                                    |
+| ---------------------------------- | --------------------------------------------------------------- |
+| `pnpm --filter apps/extension dev` | Starts the WXT dev server with hot-reload (`wxt`).              |
+| `pnpm build`                       | Builds the extension into `apps/extension/.output/chrome-mv3`.  |
+| `pnpm test:unit`                   | Runs the Vitest unit tests.                                     |
+| `pnpm test:integration`            | Builds a test bundle and runs the Playwright integration suite. |
 
 ### Translation backend
 
