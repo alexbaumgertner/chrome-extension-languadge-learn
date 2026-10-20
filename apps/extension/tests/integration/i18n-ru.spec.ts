@@ -1,3 +1,4 @@
+import type { Locator } from "@playwright/test";
 import { expect, test } from "./fixtures";
 import { FIXTURE_ORIGIN } from "./ports";
 import { msg } from "./locale";
@@ -16,6 +17,29 @@ function latinWords(text: string, allowed: string[]): string[] {
   return (text.match(/[A-Za-zÄÖÜäöüß]{2,}/g) ?? []).filter(
     (w) => w !== "Sprachweise" && !allowed.some((a) => a.includes(w)),
   );
+}
+
+/**
+ * Panel copy cut off at the panel's real width: placeholders (measured by typing them in, then
+ * clearing the field without telling React) and the labels of the panel's own buttons.
+ */
+async function overflowingCopy(panel: Locator): Promise<string[]> {
+  return panel.evaluate((el) => {
+    const cut: string[] = [];
+    for (const input of el.querySelectorAll<HTMLInputElement>("input[placeholder]")) {
+      const before = input.value;
+      input.value = input.placeholder;
+      if (input.scrollWidth > input.clientWidth) cut.push(`placeholder: ${input.placeholder}`);
+      input.value = before;
+    }
+    const buttons = el.querySelectorAll<HTMLElement>(
+      ".sw-header button, .sw-submit, .sw-audio-controls button, .sw-report-btn",
+    );
+    for (const button of buttons) {
+      if (button.scrollWidth > button.clientWidth) cut.push(`button: ${button.textContent}`);
+    }
+    return cut;
+  });
 }
 
 test("the panel, its exercises and the report footer are in Russian", async ({
@@ -44,6 +68,9 @@ test("the panel, its exercises and the report footer are in Russian", async ({
   await expect(
     panel.getByRole("button", { name: msg("ru", "exerciseCheck") }).first(),
   ).toBeVisible();
+
+  // Every placeholder and button label fits the 412px panel.
+  expect(await overflowingCopy(panel)).toEqual([]);
 
   // Nothing English left: only the German of the exercises themselves.
   const german = await panel
