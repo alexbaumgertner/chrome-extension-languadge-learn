@@ -11,11 +11,14 @@ import { fileURLToPath } from "node:url";
 import { createFixtureServer } from "./fixture-server";
 import { createMockCmsServer } from "./mock-cms-server";
 import { CMS_PORT, FIXTURE_ORIGIN, FIXTURE_PORT } from "./ports";
+import { localeLaunchOptions, type UiLocale } from "./locale";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EXTENSION_PATH = path.resolve(__dirname, "../../.output/chrome-mv3");
 
 type Fixtures = {
+  /** The browser language the extension UI is shown in. Override with `test.use({ uiLocale })`. */
+  uiLocale: UiLocale;
   fixtureServer: ReturnType<typeof createFixtureServer>;
   cmsServer: ReturnType<typeof createMockCmsServer>;
   context: BrowserContext;
@@ -54,6 +57,8 @@ interface TestHooks {
 }
 
 export const test = base.extend<Fixtures>({
+  uiLocale: ["en", { option: true }],
+
   // eslint-disable-next-line no-empty-pattern -- Playwright requires the literal destructuring pattern here.
   fixtureServer: async ({}, use) => {
     const server = createFixtureServer();
@@ -71,7 +76,7 @@ export const test = base.extend<Fixtures>({
   },
 
   context: async (
-    { fixtureServer: _fixtureServer, cmsServer: _cmsServer, headless, channel },
+    { fixtureServer: _fixtureServer, cmsServer: _cmsServer, headless, channel, uiLocale },
     use,
   ) => {
     if (!fs.existsSync(EXTENSION_PATH)) {
@@ -82,10 +87,18 @@ export const test = base.extend<Fixtures>({
     // Extensions need the full Chromium build (channel "chromium", set in
     // playwright.config.ts): the default chromium-headless-shell silently never
     // registers the MV3 service worker. Full Chromium loads them in new headless mode.
+    // A fixed language, so the copy the specs look for doesn't depend on the machine's locale.
+    const locale = localeLaunchOptions(uiLocale);
     const context = await chromium.launchPersistentContext("", {
       channel,
       headless,
-      args: [`--disable-extensions-except=${EXTENSION_PATH}`, `--load-extension=${EXTENSION_PATH}`],
+      env: locale.env,
+      locale: locale.locale,
+      args: [
+        `--disable-extensions-except=${EXTENSION_PATH}`,
+        `--load-extension=${EXTENSION_PATH}`,
+        ...locale.args,
+      ],
     });
     await use(context);
     await context.close();
