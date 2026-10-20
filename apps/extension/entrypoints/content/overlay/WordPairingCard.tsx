@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { WordPairingExercise } from "@sprachweise/shared";
 import { vocabIdFor } from "@/lib/vocab/upsert";
 import type { OnAnswer } from "./types";
+import { t } from "@/lib/i18n";
 
 export default function WordPairingCard({
   kicker,
@@ -24,7 +25,7 @@ export default function WordPairingCard({
 
   async function chooseRussian(russian: string): Promise<void> {
     if (!selectedGerman) {
-      setHint("Choose a German word on the left first.");
+      setHint(t("pairingHint"));
       return;
     }
     const german = selectedGerman;
@@ -36,7 +37,7 @@ export default function WordPairingCard({
   return (
     <div className="sw-card card elev-sm">
       <span className="card-kicker">{kicker}</span>
-      <p className="sw-instruction">Match each German word to its Russian meaning.</p>
+      <p className="sw-instruction">{t("pairingInstruction")}</p>
       <div className="sw-pairing">
         <div className="sw-pairing-col">
           {exercise.prompt.pairs.map(({ german }) => {

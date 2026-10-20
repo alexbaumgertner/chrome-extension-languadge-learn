@@ -3,6 +3,7 @@ import type { AudioDictationExercise } from "@sprachweise/shared";
 import { playDictationAudio } from "@/lib/audio/play-dictation";
 import type { OnAnswer } from "./types";
 import { PlayIcon } from "@/lib/design/icons";
+import { t } from "@/lib/i18n";
 
 export default function AudioDictationCard({
   kicker,
@@ -40,23 +41,23 @@ export default function AudioDictationCard({
   return (
     <div className="sw-card card elev-sm">
       <span className="card-kicker">{kicker}</span>
-      <p className="sw-instruction">Listen and type the whole sentence.</p>
+      <p className="sw-instruction">{t("dictationInstruction")}</p>
       <div className="sw-audio-controls">
         <button
           className="btn btn-primary"
           onClick={() => void play("normal")}
           disabled={playing}
-          aria-label="Play at normal speed"
+          aria-label={t("dictationListenLabel")}
         >
-          <PlayIcon size={14} /> Listen
+          <PlayIcon size={14} /> {t("dictationListen")}
         </button>
         <button
           className="btn btn-ghost"
           onClick={() => void play("slow")}
           disabled={playing}
-          aria-label="Play slowly"
+          aria-label={t("dictationSlowLabel")}
         >
-          slow
+          {t("dictationSlow")}
         </button>
       </div>
       <div className="sw-answer-row">
@@ -65,18 +66,20 @@ export default function AudioDictationCard({
           value={value}
           onChange={(e) => setValue(e.target.value)}
           disabled={result !== null}
-          placeholder="Type what you heard"
+          placeholder={t("dictationPlaceholder")}
         />
         <button
           className="sw-submit btn btn-primary"
           onClick={() => void submit()}
           disabled={result !== null || value.trim().length === 0}
         >
-          Check
+          {t("exerciseCheck")}
         </button>
       </div>
-      {result === "incorrect" && <p className="sw-feedback">Correct: "{exercise.correctAnswer}"</p>}
-      {result === "correct" && <p className="sw-feedback-ok">Correct!</p>}
+      {result === "incorrect" && (
+        <p className="sw-feedback">{t("dictationWrong", exercise.correctAnswer)}</p>
+      )}
+      {result === "correct" && <p className="sw-feedback-ok">{t("exerciseCorrect")}</p>}
     </div>
   );
 }

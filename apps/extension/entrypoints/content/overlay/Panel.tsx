@@ -18,17 +18,18 @@ import AudioDictationCard from "./AudioDictationCard";
 import ReportBadTranslation from "./ReportBadTranslation";
 import { PANEL_CSS } from "./styles";
 import { ChevronRightIcon } from "@/lib/design/icons";
+import { t, tPlural, topicLabel, uiLanguage, type MessageKey } from "@/lib/i18n";
 
 /** Card kickers, numbered in panel order (design handoff: "01 · из этой статьи"). */
-const KICKERS: Record<Exercise["kind"], string> = {
-  "fill-blank": "From this page",
-  "multiple-choice": "Choose the word",
-  "word-pairing": "Match the pairs",
-  "audio-dictation": "Audio dictation",
+const KICKERS: Record<Exercise["kind"], MessageKey> = {
+  "fill-blank": "kickerFillBlank",
+  "multiple-choice": "kickerMultipleChoice",
+  "word-pairing": "kickerWordPairing",
+  "audio-dictation": "kickerAudioDictation",
 };
 
 function kicker(index: number, kind: Exercise["kind"]): string {
-  return `${String(index + 1).padStart(2, "0")} · ${KICKERS[kind]}`;
+  return `${String(index + 1).padStart(2, "0")} · ${t(KICKERS[kind])}`;
 }
 
 export default function Panel() {
@@ -61,9 +62,8 @@ export default function Panel() {
   const pendingCount = exercises.filter((ex) => !ex.answered).length;
   const answeredCount = exercises.length - pendingCount;
   const tabLabel =
-    exercises.length === 0
-      ? "No exercises"
-      : `${pendingCount} exercise${pendingCount === 1 ? "" : "s"}`;
+    exercises.length === 0 ? t("panelTabNoExercises") : tPlural(pendingCount, "panelTabExercises");
+  const lang = uiLanguage();
 
   async function handleAnswer(
     exercise: Exercise,
@@ -103,7 +103,12 @@ export default function Panel() {
     <>
       <style>{PANEL_CSS}</style>
       {collapsed ? (
-        <button className="sw-tab" aria-label={tabLabel} onClick={() => setCollapsed(false)}>
+        <button
+          className="sw-tab"
+          lang={lang}
+          aria-label={tabLabel}
+          onClick={() => setCollapsed(false)}
+        >
           <span className="sw-tab-word" aria-hidden="true">
             Sprachweise
           </span>
@@ -115,7 +120,7 @@ export default function Panel() {
           <span className="visually-hidden">{tabLabel}</span>
         </button>
       ) : (
-        <div className="sw-panel">
+        <div className="sw-panel" lang={lang}>
           <div className="sw-header">
             <div className="sw-header-row">
               <span className="brand-mark" aria-hidden="true">
@@ -124,17 +129,17 @@ export default function Panel() {
               <span className="sw-title">Sprachweise</span>
               <button
                 className="btn btn-ghost"
-                aria-label="Collapse"
+                aria-label={t("panelCollapse")}
                 onClick={() => setCollapsed(true)}
               >
-                Collapse <ChevronRightIcon size={14} />
+                {t("panelCollapse")} <ChevronRightIcon size={14} />
               </button>
             </div>
             <div className="sw-tags">
               <span className="tag tag-accent">
-                Topic: {activeSettings.currentTopic.replace(/[-_]+/g, " ")}
+                {t("panelTopic", topicLabel(activeSettings.currentTopic))}
               </span>
-              <span className="tag tag-accent-2">Level {activeSettings.level}</span>
+              <span className="tag tag-accent-2">{t("panelLevel", activeSettings.level)}</span>
             </div>
             {exercises.length > 0 && (
               <div className="sw-progress">
@@ -145,13 +150,13 @@ export default function Panel() {
                   />
                 </div>
                 <span className="sw-progress-label">
-                  {answeredCount} of {exercises.length}
+                  {t("panelProgress", [String(answeredCount), String(exercises.length)])}
                 </span>
               </div>
             )}
           </div>
           <div className="sw-list">
-            {exercises.length === 0 && <p className="sw-empty">No exercises for this paragraph.</p>}
+            {exercises.length === 0 && <p className="sw-empty">{t("panelEmpty")}</p>}
             {exercises.map((exercise, index) => {
               const label = kicker(index, exercise.kind);
               switch (exercise.kind) {

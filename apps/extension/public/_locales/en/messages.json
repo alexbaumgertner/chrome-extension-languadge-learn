@@ -5,5 +5,108 @@
   },
   "menuTranslate": { "message": "Translate to German (Sprachweise)" },
   "menuRestore": { "message": "Restore original text (Sprachweise)" },
-  "commandTranslate": { "message": "Translate the selected text to German" }
+  "commandTranslate": { "message": "Translate the selected text to German" },
+
+  "popupHowto": { "message": "Select text on any page, right-click it and choose $1." },
+  "popupShortcut": { "message": "Keyboard shortcut: $1" },
+  "popupNoShortcut": {
+    "message": "No keyboard shortcut set. Add one at chrome://extensions/shortcuts."
+  },
+  "popupSolvedToday": { "message": "Exercises solved today" },
+  "popupStreak": { "message": "Day streak" },
+
+  "panelCollapse": { "message": "Collapse" },
+  "panelTopic": { "message": "Topic: $1" },
+  "panelLevel": { "message": "Level $1" },
+  "panelProgress": { "message": "$1 of $2" },
+  "panelEmpty": { "message": "No exercises for this paragraph." },
+  "panelTabNoExercises": { "message": "No exercises" },
+  "panelTabExercisesOne": { "message": "$1 exercise" },
+  "panelTabExercisesFew": { "message": "$1 exercises" },
+  "panelTabExercisesMany": { "message": "$1 exercises" },
+  "panelTabExercisesOther": { "message": "$1 exercises" },
+  "topicGeneral": { "message": "general" },
+
+  "kickerFillBlank": { "message": "From this page" },
+  "kickerMultipleChoice": { "message": "Choose the word" },
+  "kickerWordPairing": { "message": "Match the pairs" },
+  "kickerAudioDictation": { "message": "Audio dictation" },
+
+  "exerciseCheck": { "message": "Check" },
+  "exerciseCorrect": { "message": "Correct!" },
+  "fillBlankPlaceholder": { "message": "Type the missing word" },
+  "fillBlankWrong": { "message": "Not quite — \"$1\"" },
+  "multipleChoiceWrong": { "message": "Correct answer: $1 — \"$2\"" },
+  "pairingInstruction": { "message": "Match each German word to its Russian meaning." },
+  "pairingHint": { "message": "Choose a German word on the left first." },
+  "dictationInstruction": { "message": "Listen and type the whole sentence." },
+  "dictationListen": { "message": "Listen" },
+  "dictationListenLabel": { "message": "Play at normal speed" },
+  "dictationSlow": { "message": "slow" },
+  "dictationSlowLabel": { "message": "Play slowly" },
+  "dictationPlaceholder": { "message": "Type what you heard" },
+  "dictationWrong": { "message": "Correct: \"$1\"" },
+
+  "reportButton": { "message": "Bad translation" },
+  "reportRetry": { "message": "Retry" },
+  "reportTitle": { "message": "Sends this paragraph and its German translation for review" },
+  "reportSent": { "message": "Thanks! Sent for review." },
+  "reportFailed": { "message": "Couldn't send. Try again." },
+
+  "noticeOffline": {
+    "message": "You're offline. Text you've translated before still works; new text needs a connection."
+  },
+  "noticeUnavailable": {
+    "message": "The translation service is unavailable right now. Try again in a few minutes."
+  },
+  "noticeLimit": { "message": "Today's translation limit is used up. Try again tomorrow." },
+  "noticeTextTooLong": {
+    "message": "This text is too long to translate at once. Select at most $1 characters."
+  },
+  "noticeFailed": { "message": "Couldn't translate this text. Select it and try again." },
+  "noticeSelectFirst": { "message": "Select the text you want to translate first." },
+  "noticeEditable": { "message": "Sprachweise doesn't translate text you're typing." },
+  "noticeExcluded": {
+    "message": "Selection includes code or form fields — select plain text only."
+  },
+  "noticeMixed": {
+    "message": "Selection includes text outside a paragraph — select text inside paragraphs only."
+  },
+  "noticeSelectionTooLong": {
+    "message": "The selection is too long ($1 characters). Select at most $2 characters — about five paragraphs — at a time."
+  },
+  "noticePageChanged": { "message": "The page changed while translating. Select the text again." },
+  "noticeTranslating": { "message": "Translating…" },
+  "noticeDismiss": { "message": "Dismiss" },
+
+  "optionsTitle": { "message": "Sprachweise — Settings" },
+  "optionsTabProgress": { "message": "Progress" },
+  "optionsTabSettings": { "message": "Settings" },
+  "optionsLoading": { "message": "Loading…" },
+
+  "progressHeading": { "message": "Progress" },
+  "progressStreakKicker": { "message": "Streak" },
+  "progressStreakLabel": { "message": "day streak" },
+  "progressVocabKicker": { "message": "Vocabulary" },
+  "progressVocabLabel": { "message": "active vocabulary" },
+  "progressTodayKicker": { "message": "Today" },
+  "progressTodayLabel": { "message": "solved today" },
+  "progressAccuracyHeading": { "message": "Per-topic accuracy" },
+  "progressNoAnswers": { "message": "No exercises answered yet." },
+  "progressQueueHeading": { "message": "Review queue" },
+  "progressQueueEmpty": {
+    "message": "Nothing scheduled yet — answer an exercise to start building your review queue."
+  },
+  "progressColumnWord": { "message": "Word" },
+  "progressColumnMeaning": { "message": "Meaning" },
+  "progressColumnReviews": { "message": "Reviews" },
+  "progressColumnNext": { "message": "Next" },
+  "progressDue": { "message": "due $1" },
+
+  "settingsHeading": { "message": "Settings" },
+  "settingsNote": {
+    "message": "Changes apply to text translated after you save — text already translated on the page keeps its current version."
+  },
+  "settingsLevel": { "message": "Level" },
+  "settingsSaved": { "message": "Saved." }
 }

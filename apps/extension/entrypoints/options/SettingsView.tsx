@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { LearnerSettings, Level } from "@sprachweise/shared";
 import { sendMessage } from "@/lib/messaging/send";
+import { t } from "@/lib/i18n";
 
 const LEVELS: Level[] = ["A1-A2", "B1-B2", "C1+"];
 
@@ -19,20 +20,17 @@ export default function SettingsView() {
     setTimeout(() => setSaved(false), 1500);
   }
 
-  if (!settings) return <p>Loading…</p>;
+  if (!settings) return <p>{t("optionsLoading")}</p>;
 
   return (
     <section className="options-grid">
       <div className="options-column">
-        <h1 className="options-heading">Settings</h1>
-        <p className="options-note">
-          Changes apply to text translated after you save — text already translated on the page
-          keeps its current version.
-        </p>
+        <h1 className="options-heading">{t("settingsHeading")}</h1>
+        <p className="options-note">{t("settingsNote")}</p>
 
         <div className="options-fields">
           <fieldset className="field">
-            <legend>Level</legend>
+            <legend>{t("settingsLevel")}</legend>
             <div className="seg">
               {LEVELS.map((level) => (
                 <label key={level} htmlFor={`sw-level-${level}`} className="seg-opt">
@@ -51,7 +49,7 @@ export default function SettingsView() {
           </fieldset>
           {saved && (
             <span className="tag tag-accent-2" role="status">
-              Saved.
+              {t("settingsSaved")}
             </span>
           )}
         </div>

@@ -1,10 +1,11 @@
 import { expect, test } from "./fixtures";
 import { FIXTURE_ORIGIN } from "./ports";
+import { msg } from "./locale";
 
 const PARAGRAPH =
   "Report button paragraph padded well past the eighty character minimum threshold so the parser treats this as real article content.";
 
-test("'Плохой перевод' sends the fragment once on click, thanks the user, and retries after a failure", async ({
+test("'Bad translation' sends the fragment once on click, thanks the user, and retries after a failure", async ({
   context,
   fixtureServer,
   cmsServer,
@@ -30,12 +31,12 @@ test("'Плохой перевод' sends the fragment once on click, thanks the
 
   // A failed send says so and offers a retry.
   cmsServer.setMode("report-fail");
-  await panel.getByRole("button", { name: "Плохой перевод" }).click();
-  await expect(panel.getByText("Не удалось отправить")).toBeVisible();
+  await panel.getByRole("button", { name: msg("en", "reportButton") }).click();
+  await expect(panel.getByText(msg("en", "reportFailed"))).toBeVisible();
 
   cmsServer.setMode("ok");
-  await panel.getByRole("button", { name: "Повторить" }).click();
-  await expect(panel.getByText("Спасибо! Отправили на проверку.")).toBeVisible();
+  await panel.getByRole("button", { name: msg("en", "reportRetry") }).click();
+  await expect(panel.getByText(msg("en", "reportSent"))).toBeVisible();
 
   expect(cmsServer.requests.report).toHaveLength(1);
   const report = cmsServer.requests.report[0]!;
@@ -62,7 +63,7 @@ test("'Плохой перевод' sends the fragment once on click, thanks the
   expect(await target.evaluate((el) => el.outerHTML)).toBe(translatedHtml);
 });
 
-test("'Плохой перевод' is still offered when the paragraph has no exercises", async ({
+test("'Bad translation' is still offered when the paragraph has no exercises", async ({
   context,
   fixtureServer,
   cmsServer,
@@ -87,8 +88,8 @@ test("'Плохой перевод' is still offered when the paragraph has no e
   await expect(panel.getByText("No exercises for this paragraph.")).toBeVisible();
 
   cmsServer.setMode("ok");
-  await panel.getByRole("button", { name: "Плохой перевод" }).click();
-  await expect(panel.getByText("Спасибо! Отправили на проверку.")).toBeVisible();
+  await panel.getByRole("button", { name: msg("en", "reportButton") }).click();
+  await expect(panel.getByText(msg("en", "reportSent"))).toBeVisible();
   expect(cmsServer.requests.report).toHaveLength(1);
   expect(cmsServer.requests.report[0]).toMatchObject({ source: PARAGRAPH });
 });
