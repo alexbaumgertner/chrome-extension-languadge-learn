@@ -3,6 +3,7 @@ import type { FillBlankExercise } from "@sprachweise/shared";
 import { vocabIdFor } from "@/lib/vocab/upsert";
 import type { OnAnswer } from "./types";
 import BlankedSentence from "./BlankedSentence";
+import { t } from "@/lib/i18n";
 
 export default function FillBlankCard({
   kicker,
@@ -36,20 +37,20 @@ export default function FillBlankCard({
           value={value}
           onChange={(e) => setValue(e.target.value)}
           disabled={result !== null}
-          placeholder="Type the missing word"
+          placeholder={t("fillBlankPlaceholder")}
         />
         <button
           className="sw-submit btn btn-primary"
           onClick={() => void submit()}
           disabled={result !== null || value.trim().length === 0}
         >
-          Check
+          {t("exerciseCheck")}
         </button>
       </div>
       {result === "incorrect" && (
-        <p className="sw-feedback">Not quite — "{exercise.sourceSentence}"</p>
+        <p className="sw-feedback">{t("fillBlankWrong", exercise.sourceSentence)}</p>
       )}
-      {result === "correct" && <p className="sw-feedback-ok">Correct!</p>}
+      {result === "correct" && <p className="sw-feedback-ok">{t("exerciseCorrect")}</p>}
     </div>
   );
 }

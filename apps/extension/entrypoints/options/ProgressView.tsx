@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { GetProgressSnapshotResponse, StorageChangedMessage } from "@sprachweise/shared";
 import { sendMessage } from "@/lib/messaging/send";
 import { formatLocalDate } from "@/lib/srs/scheduler";
+import { t, topicLabel } from "@/lib/i18n";
 
 /** Accuracy bar fills, in turn (design handoff, progress view). */
 const FILLS = ["var(--color-accent-500)", "var(--color-accent-2-500)", "var(--color-accent-400)"];
@@ -27,7 +28,7 @@ export default function ProgressView() {
     return () => chrome.runtime.onMessage.removeListener(onMessage);
   }, []);
 
-  if (!snapshot) return <p>Loading…</p>;
+  if (!snapshot) return <p>{t("optionsLoading")}</p>;
 
   const { profile, vocab, reviewQueue } = snapshot;
   const vocabById = new Map(vocab.map((item) => [item.id, item]));
@@ -35,30 +36,30 @@ export default function ProgressView() {
 
   return (
     <section className="options-section">
-      <h1 className="visually-hidden">Progress</h1>
+      <h1 className="visually-hidden">{t("progressHeading")}</h1>
       <div className="stats">
         <div className="card stat">
-          <span className="card-kicker">Streak</span>
+          <span className="card-kicker">{t("progressStreakKicker")}</span>
           <strong>{profile.currentStreak}</strong>
-          <span>day streak</span>
+          <span>{t("progressStreakLabel")}</span>
         </div>
         <div className="card stat">
-          <span className="card-kicker">Vocabulary</span>
+          <span className="card-kicker">{t("progressVocabKicker")}</span>
           <strong>{profile.activeVocabCount}</strong>
-          <span>active vocabulary</span>
+          <span>{t("progressVocabLabel")}</span>
         </div>
         <div className="card stat">
-          <span className="card-kicker">Today</span>
+          <span className="card-kicker">{t("progressTodayKicker")}</span>
           <strong>{profile.solvedTodayCount}</strong>
-          <span>solved today</span>
+          <span>{t("progressTodayLabel")}</span>
         </div>
       </div>
 
       <div className="options-grid options-grid-even">
         <div className="options-column">
-          <h3>Per-topic accuracy</h3>
+          <h3>{t("progressAccuracyHeading")}</h3>
           {Object.keys(profile.topicAccuracy).length === 0 ? (
-            <p className="options-note">No exercises answered yet.</p>
+            <p className="options-note">{t("progressNoAnswers")}</p>
           ) : (
             <div className="accuracy">
               {Object.entries(profile.topicAccuracy).map(([topic, acc], i) => {
@@ -66,7 +67,7 @@ export default function ProgressView() {
                 return (
                   <div key={topic} className="accuracy-item">
                     <div className="accuracy-label">
-                      <span>{topic}</span>
+                      <span>{topicLabel(topic)}</span>
                       <strong>
                         {percent}%
                         <small>
@@ -77,7 +78,7 @@ export default function ProgressView() {
                     <div
                       className="accuracy-track"
                       role="meter"
-                      aria-label={topic}
+                      aria-label={topicLabel(topic)}
                       aria-valuemin={0}
                       aria-valuemax={100}
                       aria-valuenow={percent}
@@ -95,19 +96,17 @@ export default function ProgressView() {
         </div>
 
         <div className="options-column">
-          <h3>Review queue</h3>
+          <h3>{t("progressQueueHeading")}</h3>
           {reviewQueue.length === 0 ? (
-            <p className="options-note">
-              Nothing scheduled yet — answer an exercise to start building your review queue.
-            </p>
+            <p className="options-note">{t("progressQueueEmpty")}</p>
           ) : (
             <table className="table">
               <thead>
                 <tr>
-                  <th>Word</th>
-                  <th>Meaning</th>
-                  <th>Reviews</th>
-                  <th>Next</th>
+                  <th>{t("progressColumnWord")}</th>
+                  <th>{t("progressColumnMeaning")}</th>
+                  <th>{t("progressColumnReviews")}</th>
+                  <th>{t("progressColumnNext")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -120,9 +119,9 @@ export default function ProgressView() {
                     <td>{entry.repetitions}</td>
                     <td>
                       {entry.dueDate <= today ? (
-                        <span className="tag tag-accent">due {entry.dueDate}</span>
+                        <span className="tag tag-accent">{t("progressDue", entry.dueDate)}</span>
                       ) : (
-                        `due ${entry.dueDate}`
+                        t("progressDue", entry.dueDate)
                       )}
                     </td>
                   </tr>

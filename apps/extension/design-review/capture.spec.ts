@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium, expect, test, type Locator, type Page, type Worker } from "@playwright/test";
 import { CMS_PORT, FIXTURE_ORIGIN, FIXTURE_PORT } from "../tests/integration/ports";
+import { localeLaunchOptions, msg, type UiLocale } from "../tests/integration/locale";
 import {
   ARTICLE,
   GERMAN,
@@ -13,14 +14,17 @@ import {
 } from "../store/mock-backend";
 
 /**
- * Captures every UI surface for the design review (docs/design-review/<phase>/). Run it once on
- * the old UI with DESIGN_REVIEW_PHASE=before and once on the new one with =after; it only relies
- * on selectors and copy both share. Run: pnpm design:capture
+ * Captures every UI surface for the design review (docs/design-review/<phase>/<locale>/), with
+ * the browser set to DESIGN_REVIEW_LOCALE (ru by default, as most learners are). Run it once on
+ * the old UI with DESIGN_REVIEW_PHASE=before and once on the new one with =after. Copy is looked
+ * up in public/_locales, so the spec follows the UI's language. Run: pnpm design:capture
  */
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EXTENSION_PATH = path.resolve(__dirname, "../.output/chrome-mv3");
 const PHASE = process.env.DESIGN_REVIEW_PHASE ?? "after";
-const OUT_DIR = path.resolve(__dirname, "../../../docs/design-review", PHASE);
+const LOCALE = (process.env.DESIGN_REVIEW_LOCALE ?? "ru") as UiLocale;
+const OUT_DIR = path.resolve(__dirname, "../../../docs/design-review", PHASE, LOCALE);
+const m = (key: string, ...subs: string[]): string => msg(LOCALE, key, ...subs);
 
 const LONG_PARAGRAPH = `${ARTICLE.paragraphs.join(" ")} `.repeat(4);
 
@@ -105,11 +109,18 @@ test("design review screenshots", async () => {
   const backend = createStoreMockBackend(() => failing);
   await backend.listen(CMS_PORT);
 
+  const locale = localeLaunchOptions(LOCALE);
   const context = await chromium.launchPersistentContext("", {
     channel: "chromium",
     viewport: { width: 1280, height: 800 },
     deviceScaleFactor: 1,
-    args: [`--disable-extensions-except=${EXTENSION_PATH}`, `--load-extension=${EXTENSION_PATH}`],
+    env: locale.env,
+    locale: locale.locale,
+    args: [
+      `--disable-extensions-except=${EXTENSION_PATH}`,
+      `--load-extension=${EXTENSION_PATH}`,
+      ...locale.args,
+    ],
   });
   try {
     const worker = context.serviceWorkers()[0] ?? (await context.waitForEvent("serviceworker"));
@@ -119,14 +130,16 @@ test("design review screenshots", async () => {
     // Info notice: the menu without a selection.
     await select(page, null);
     await translate(worker);
-    const infoNotice = page.getByText("Select the text you want to translate first.");
+    const infoNotice = page.getByText(m("noticeSelectFirst"));
     await expect(infoNotice).toBeVisible();
     await shootAround(page, infoNotice, "notice-info", 48);
 
     // Error notice: a selection over the limit.
     await select(page, "#long");
     await translate(worker);
-    const tooLong = page.getByText(/The selection is too long/);
+    // The message up to its character count, e.g. "The selection is too long".
+    const tooLongStart = m("noticeSelectionTooLong").split("(")[0]!.trim();
+    const tooLong = page.getByText(tooLongStart, { exact: false });
     await expect(tooLong).toBeVisible();
     await tooLong.scrollIntoViewIfNeeded();
     await shootAround(page, tooLong, "notice-too-long", 48);
@@ -145,7 +158,7 @@ test("design review screenshots", async () => {
     // Answered: fill-blank right, multiple choice wrong, one pair right and one wrong.
     const fillBlank = panel
       .locator(".sw-card")
-      .filter({ has: page.locator('input[placeholder="Type the missing word"]') });
+      .filter({ has: page.locator(`input[placeholder="${m("fillBlankPlaceholder")}"]`) });
     const blanked = (await fillBlank.locator("p").first().textContent()) ?? "";
     const answer = GLOSSES.map((g) => g.german).find((w) =>
       GERMAN.includes(blanked.replace(/_+/, w).trim()),
@@ -175,13 +188,13 @@ test("design review screenshots", async () => {
     await shoot(page, "panel-answered");
 
     // The report footer after sending.
-    await panel.getByRole("button", { name: "Плохой перевод" }).click();
-    const thanks = panel.getByText("Спасибо! Отправили на проверку.");
+    await panel.getByRole("button", { name: m("reportButton") }).click();
+    const thanks = panel.getByText(m("reportSent"));
     await expect(thanks).toBeVisible();
     await shootAround(page, thanks, "report-sent", 24);
 
     // Collapsed tab, then a word's gloss.
-    await panel.getByRole("button", { name: "Collapse" }).click();
+    await panel.getByRole("button", { name: m("panelCollapse") }).click();
     await expect(page.locator(".sw-tab")).toBeVisible();
     await shoot(page, "panel-collapsed");
     await first.locator(".sw-vocab", { hasText: "Fernsehturm" }).click();
@@ -194,9 +207,7 @@ test("design review screenshots", async () => {
     failing = "translate";
     await select(page, "#p1");
     await translate(worker);
-    const unavailable = page.getByText("The translation service is unavailable right now.", {
-      exact: false,
-    });
+    const unavailable = page.getByText(m("noticeUnavailable"));
     await expect(unavailable).toBeVisible();
     await shootAround(page, unavailable, "notice-error", 48);
 
@@ -204,25 +215,25 @@ test("design review screenshots", async () => {
     failing = "exercises";
     await select(page, "#p2");
     await translate(worker);
-    await expect(page.locator(".sw-tab", { hasText: "No exercises" })).toBeVisible();
+    await expect(page.locator(".sw-tab", { hasText: m("panelTabNoExercises") })).toBeVisible();
     await shoot(page, "panel-no-exercises");
     failing = null;
 
     const extensionId = new URL(worker.url()).host;
     const options_ = await context.newPage();
     await options_.goto(`chrome-extension://${extensionId}/options.html`);
-    await expect(options_.locator(".stats")).toContainText("day streak");
+    await expect(options_.locator(".stats")).toContainText(m("progressStreakLabel"));
     await options_.waitForTimeout(500);
     await options_.screenshot({ path: path.join(OUT_DIR, "options-progress.png") });
-    await options_.getByRole("button", { name: "Settings" }).click();
-    await expect(options_.getByRole("heading", { name: "Settings" })).toBeVisible();
+    await options_.getByRole("button", { name: m("optionsTabSettings") }).click();
+    await expect(options_.getByRole("heading", { name: m("settingsHeading") })).toBeVisible();
     await options_.waitForTimeout(300);
     await options_.screenshot({ path: path.join(OUT_DIR, "options-settings.png") });
 
     const popup = await context.newPage();
     await popup.setViewportSize({ width: 420, height: 480 });
     await popup.goto(`chrome-extension://${extensionId}/popup.html`);
-    await expect(popup.getByText("solved today", { exact: false })).toBeVisible();
+    await expect(popup.getByText(m("popupSolvedToday"))).toBeVisible();
     await popup.waitForTimeout(500);
     await popup.locator("body").screenshot({ path: path.join(OUT_DIR, "popup.png") });
   } finally {

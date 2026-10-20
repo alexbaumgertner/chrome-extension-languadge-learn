@@ -33,8 +33,8 @@ body {
   margin: 0;
 }
 .popup-howto-text {
-  font-family: var(--font-heading);
-  font-weight: var(--font-heading-weight);
+  font-family: var(--font-body);
+  font-weight: 400;
   font-size: 15px;
   line-height: 1.35;
 }

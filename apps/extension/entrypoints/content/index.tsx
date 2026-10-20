@@ -30,6 +30,7 @@ import { setExerciseSession } from "@/lib/state/exercise-session";
 import Panel from "./overlay/Panel";
 import { NOTICE_CSS, TOOLTIP_CSS } from "./overlay/styles";
 import { X_ICON_SVG } from "@/lib/design/icons";
+import { t, uiLanguage, type MessageKey } from "@/lib/i18n";
 
 type FailureReason = Extract<TranslateParagraphResponse, { ok: false }>["reason"];
 
@@ -42,23 +43,22 @@ interface TranslationItem {
   html: string;
 }
 
-const NUMBER = new Intl.NumberFormat("en");
+const NUMBER = new Intl.NumberFormat(uiLanguage());
 const MAX_CHARS = NUMBER.format(TRANSLATE_MAX_CHARS);
 
-const FAILURE_MESSAGES: Record<FailureReason, string> = {
-  offline:
-    "You're offline. Text you've translated before still works; new text needs a connection.",
-  unavailable: "The translation service is unavailable right now. Try again in a few minutes.",
-  limit: "Today's translation limit is used up. Try again tomorrow.",
-  "too-long": `This text is too long to translate at once. Select at most ${MAX_CHARS} characters.`,
-  failed: "Couldn't translate this text. Select it and try again.",
+const FAILURE_MESSAGES: Record<FailureReason, MessageKey> = {
+  offline: "noticeOffline",
+  unavailable: "noticeUnavailable",
+  limit: "noticeLimit",
+  "too-long": "noticeTextTooLong",
+  failed: "noticeFailed",
 };
 
-const SELECTION_MESSAGES: Record<SelectionProblem, string> = {
-  empty: "Select the text you want to translate first.",
-  editable: "Sprachweise doesn't translate text you're typing.",
-  excluded: "Selection includes code or form fields — select plain text only.",
-  mixed: "Selection includes text outside a paragraph — select text inside paragraphs only.",
+const SELECTION_MESSAGES: Record<SelectionProblem, MessageKey> = {
+  empty: "noticeSelectFirst",
+  editable: "noticeEditable",
+  excluded: "noticeExcluded",
+  mixed: "noticeMixed",
 };
 
 /** Refusals worth counting: the learner selected something real that the extension can't take. */
@@ -66,8 +66,6 @@ const SELECTION_ERROR_CODES: Partial<Record<SelectionProblem, ClientErrorCode>> 
   excluded: "selection-excluded",
   mixed: "selection-mixed",
 };
-
-const PAGE_CHANGED_MESSAGE = "The page changed while translating. Select the text again.";
 
 let notice: ShadowPortal | null = null;
 /**
@@ -84,6 +82,7 @@ function showNotice(anchor: Element | null, message: string, tone: "error" | "in
   const portal = createShadowPortal(NOTICE_CSS);
   const wrap = document.createElement("div");
   wrap.className = `msg ${tone}`;
+  wrap.lang = uiLanguage();
   wrap.setAttribute("role", tone === "error" ? "alert" : "status");
   const text = document.createElement("span");
   text.textContent = message;
@@ -91,7 +90,7 @@ function showNotice(anchor: Element | null, message: string, tone: "error" | "in
   if (tone === "error") {
     const dismiss = document.createElement("button");
     dismiss.innerHTML = X_ICON_SVG; // a constant, not page or server content
-    dismiss.setAttribute("aria-label", "Dismiss");
+    dismiss.setAttribute("aria-label", t("noticeDismiss"));
     dismiss.addEventListener("click", (e) => {
       e.stopPropagation();
       portal.remove();
@@ -154,7 +153,7 @@ async function translateSelection(): Promise<void> {
   if (typeof items === "string") {
     const code = SELECTION_ERROR_CODES[items];
     if (code) void sendMessage({ type: "RECORD_CLIENT_ERROR", error: code });
-    showNotice(null, SELECTION_MESSAGES[items], code ? "error" : "info");
+    showNotice(null, t(SELECTION_MESSAGES[items]), code ? "error" : "info");
     return;
   }
 
@@ -163,16 +162,12 @@ async function translateSelection(): Promise<void> {
   if (totalChars > TRANSLATE_MAX_CHARS) {
     // Nothing is sent: the learner selects less instead.
     void sendMessage({ type: "RECORD_CLIENT_ERROR", error: "translate-too-long" });
-    showNotice(
-      first,
-      `The selection is too long (${NUMBER.format(totalChars)} characters). Select at most ${MAX_CHARS} characters — about five paragraphs — at a time.`,
-      "error",
-    );
+    showNotice(first, t("noticeSelectionTooLong", [NUMBER.format(totalChars), MAX_CHARS]), "error");
     return;
   }
 
   selection?.removeAllRanges();
-  showNotice(first, "Translating…", "info");
+  showNotice(first, t("noticeTranslating"), "info");
   const started = generation;
   const settings = await sendMessage<LearnerSettings>({ type: "GET_LEARNER_SETTINGS" });
   if (generation !== started) return;
@@ -189,12 +184,12 @@ async function translateSelection(): Promise<void> {
     if (generation !== started) return;
     if (!response.ok) {
       // The rest would almost certainly fail the same way; the learner retries the selection.
-      showNotice(item.block, FAILURE_MESSAGES[response.reason], "error");
+      showNotice(item.block, t(FAILURE_MESSAGES[response.reason], MAX_CHARS), "error");
       reportTranslationsChanged();
       return;
     }
     if (!stillShows(item)) {
-      showNotice(item.block, PAGE_CHANGED_MESSAGE, "error");
+      showNotice(item.block, t("noticePageChanged"), "error");
       continue;
     }
 

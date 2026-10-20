@@ -3,6 +3,7 @@ import type { MultipleChoiceExercise } from "@sprachweise/shared";
 import { vocabIdFor } from "@/lib/vocab/upsert";
 import type { OnAnswer } from "./types";
 import BlankedSentence from "./BlankedSentence";
+import { t } from "@/lib/i18n";
 
 export default function MultipleChoiceCard({
   kicker,
@@ -58,11 +59,13 @@ export default function MultipleChoiceCard({
       </div>
       {correct === false && (
         <p className="sw-feedback">
-          Correct answer: {exercise.prompt.options[exercise.correctAnswer]} — "
-          {exercise.sourceSentence}"
+          {t("multipleChoiceWrong", [
+            exercise.prompt.options[exercise.correctAnswer] ?? "",
+            exercise.sourceSentence,
+          ])}
         </p>
       )}
-      {correct === true && <p className="sw-feedback-ok">Correct!</p>}
+      {correct === true && <p className="sw-feedback-ok">{t("exerciseCorrect")}</p>}
     </div>
   );
 }
