@@ -33,7 +33,7 @@ export default function ReportBadTranslation({
   return (
     <div className="sw-report">
       <button
-        className="sw-report-btn"
+        className="sw-report-btn btn btn-secondary"
         disabled={state === "sending"}
         title="Отправит этот абзац и его немецкий перевод на проверку"
         onClick={() => void report()}

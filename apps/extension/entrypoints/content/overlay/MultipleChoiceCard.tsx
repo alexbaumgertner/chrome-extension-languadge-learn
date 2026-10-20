@@ -2,11 +2,14 @@ import { useState } from "react";
 import type { MultipleChoiceExercise } from "@sprachweise/shared";
 import { vocabIdFor } from "@/lib/vocab/upsert";
 import type { OnAnswer } from "./types";
+import BlankedSentence from "./BlankedSentence";
 
 export default function MultipleChoiceCard({
+  kicker,
   exercise,
   onAnswer,
 }: {
+  kicker: string;
   exercise: MultipleChoiceExercise;
   onAnswer: OnAnswer;
 }) {
@@ -26,8 +29,9 @@ export default function MultipleChoiceCard({
   }
 
   return (
-    <div className="sw-card">
-      <p>{exercise.prompt.blankedSentence}</p>
+    <div className="sw-card card elev-sm">
+      <span className="card-kicker">{kicker}</span>
+      <BlankedSentence text={exercise.prompt.blankedSentence} />
       <div className="sw-options">
         {exercise.prompt.options.map((option, index) => {
           const showState = selected !== null;
@@ -43,7 +47,7 @@ export default function MultipleChoiceCard({
           return (
             <button
               key={option}
-              className={className}
+              className={`${className} sw-choice btn btn-secondary`}
               onClick={() => void choose(index)}
               disabled={showState}
             >

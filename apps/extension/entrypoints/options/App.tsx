@@ -14,15 +14,23 @@ export default function App() {
 
   return (
     <div>
-      <nav>
+      <nav className="nav options-nav">
+        <span className="nav-brand">Sprachweise</span>
         {TABS.map((t) => (
-          <button key={t.id} aria-current={tab === t.id} onClick={() => setTab(t.id)}>
+          <button
+            key={t.id}
+            className="nav-link"
+            aria-current={tab === t.id}
+            onClick={() => setTab(t.id)}
+          >
             {t.label}
           </button>
         ))}
       </nav>
-      {tab === "progress" && <ProgressView />}
-      {tab === "settings" && <SettingsView />}
+      <main className="options-main">
+        {tab === "progress" && <ProgressView />}
+        {tab === "settings" && <SettingsView />}
+      </main>
     </div>
   );
 }

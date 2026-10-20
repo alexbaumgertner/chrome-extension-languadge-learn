@@ -22,28 +22,40 @@ export default function SettingsView() {
   if (!settings) return <p>Loading…</p>;
 
   return (
-    <section>
-      <h1>Settings</h1>
-      <p style={{ fontSize: 12, color: "#52606d" }}>
-        Changes apply to text translated after you save — text already translated on the page keeps
-        its current version.
-      </p>
+    <section className="options-grid">
+      <div className="options-column">
+        <h1 className="options-heading">Settings</h1>
+        <p className="options-note">
+          Changes apply to text translated after you save — text already translated on the page
+          keeps its current version.
+        </p>
 
-      <label>
-        Level
-        <select
-          value={settings.level}
-          onChange={(e) => void save({ ...settings, level: e.target.value as Level })}
-        >
-          {LEVELS.map((level) => (
-            <option key={level} value={level}>
-              {level}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      {saved && <p style={{ color: "#1b5e20", fontSize: 12 }}>Saved.</p>}
+        <div className="options-fields">
+          <fieldset className="field">
+            <legend>Level</legend>
+            <div className="seg">
+              {LEVELS.map((level) => (
+                <label key={level} htmlFor={`sw-level-${level}`} className="seg-opt">
+                  <input
+                    type="radio"
+                    id={`sw-level-${level}`}
+                    name="sw-level"
+                    value={level}
+                    checked={settings.level === level}
+                    onChange={() => void save({ ...settings, level })}
+                  />
+                  <span>{level}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          {saved && (
+            <span className="tag tag-accent-2" role="status">
+              Saved.
+            </span>
+          )}
+        </div>
+      </div>
     </section>
   );
 }
