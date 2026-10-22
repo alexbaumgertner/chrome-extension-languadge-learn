@@ -43,6 +43,8 @@ jobs:
             --output=json --output=html --output-path=./lighthouse
       - name: Enforce score thresholds
         run: |
+          # The ${...} below are JS template literals evaluated by node, not shell expansions.
+          # shellcheck disable=SC2016
           node -e '
             const r = require("./lighthouse.report.json");
             const min = { performance: 0.8, accessibility: 0.9, "best-practices": 0.9, seo: 0.9 };
