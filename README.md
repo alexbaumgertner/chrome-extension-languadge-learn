@@ -65,6 +65,7 @@ message and API contract).
 | `pnpm test:unit`                                    | Vitest unit tests.                                            |
 | `pnpm test:integration`                             | API tests (PGlite) and the extension's Playwright suite.      |
 | `pnpm store:zip`                                    | Production Chrome Web Store package, with manifest checks.    |
+| `pnpm build:release`                                | Release zip; requires `WXT_CMS_BASE_URL`, `EXPECTED_VERSION`. |
 | `pnpm --filter @sprachweise/extension store:assets` | Re-renders icons and store screenshots.                       |
 
 The extension's API base URL is `WXT_CMS_BASE_URL` at build time; otherwise

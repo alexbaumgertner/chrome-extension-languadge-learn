@@ -16,6 +16,7 @@
     "typecheck": "tsc --noEmit",
     "store:assets": "pnpm run build:test && playwright test -c store/playwright.config.ts",
     "store:zip": "node scripts/build-store-zip.mjs",
+    "build:release": "node scripts/build-store-zip.mjs --release",
     "design:capture": "pnpm run build:test && playwright test -c design-review/playwright.config.ts"
   },
   "dependencies": {
