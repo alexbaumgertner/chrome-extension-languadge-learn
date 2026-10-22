@@ -1,16 +1,37 @@
 # Chrome Web Store listing — Sprachweise (private beta)
 
-Everything to paste into the Chrome Web Store developer dashboard for the first, **unlisted**
-upload. Package: `pnpm store:zip` → `apps/extension/.output/sprachweise-<version>-chrome.zip`.
-Privacy policy: <https://sprachweise.vercel.app/privacy>. Spec: `specs/003-private-beta`.
-Store item ID: `ahkgdlbpociadhocjjomkkeliiligebj` (draft, never published).
+What goes into the Chrome Web Store developer dashboard. The item is published as **unlisted**;
+store item ID `ahkgdlbpociadhocjjomkkeliiligebj`. Privacy policy:
+<https://sprachweise.vercel.app/privacy>. Spec: `specs/003-private-beta`.
+
+The package is built and uploaded by the release workflow (see "Releasing" in the
+[README](../README.md#releasing)). The Chrome Web Store API can't edit the listing, so the form is
+filled in by hand. Don't copy the texts from this page: copy them from the body of the GitHub
+Release for the version you're submitting. The workflow renders it from
+[`store/release-notes.md.tmpl`](../store/release-notes.md.tmpl) and these sources:
+
+| Dashboard field | Source |
+| --- | --- |
+| Store listing → Summary | manifest, `extDescription` in `apps/extension/public/_locales/*/messages.json` |
+| Store listing → Description | `store/description.txt` |
+| Privacy practices → Permission justification | `store/permissions.json` (or `store/permissions.md`) |
+| Test instructions → Additional instructions | `store/test-instructions.txt` (or `.md`) |
+| Single purpose, remote code, data usage, privacy policy URL | `store/release-notes.md.tmpl` itself |
+
+If a `store/*` file is missing, the release body shows a PLACEHOLDER warning in its place and the
+pre-release checklist gets a warning; the release itself doesn't fail. The workflow reads the files
+at the tagged commit, so to change a text, edit the file on `main` and tag a new version;
+re-running the workflow on an old tag renders the old texts again.
+
+This page keeps the rest: what the package contains, graphics, the data-usage reasoning and the
+one-time CORS setup.
 
 ## Package
 
 | Field | Value |
 | --- | --- |
 | Name | Sprachweise (from `_locales/*/messages.json`) |
-| Version | 0.1.0 |
+| Version | from the release tag: `vX.Y.Z` → `X.Y.Z`; must be higher than the version in the store |
 | Default locale | `en`; also `ru` |
 | Permissions | `storage`, `activeTab`, `scripting`, `contextMenus` |
 | Optional host permissions | none |
@@ -23,66 +44,20 @@ Store item ID: `ahkgdlbpociadhocjjomkkeliiligebj` (draft, never published).
 
 **Name:** Sprachweise
 
-**Summary** (from the manifest, ≤ 132 characters, shown in the viewer's language):
-
-- RU: Выделите текст на любой странице, нажмите правую кнопку и читайте его по-немецки на своём
-  уровне, а потом решайте упражнения.
-- EN: Select text on any page, right-click, and read it in German at your level. Then practice with
-  exercises built from it.
+**Summary:** from the manifest (`extDescription`, ≤ 132 characters, shown in the viewer's
+language). The dashboard shows it read-only; the release body repeats it per locale with its
+length.
 
 **Category:** Education (under Productivity)
 
 **Language:** Russian (primary); add English as a second listing language.
 
-### Detailed description — RU
+### Detailed description
 
-```text
-Sprachweise превращает статьи, которые вы и так читаете, в практику немецкого.
-
-Как это работает
-• Выделите фразу или абзац на любой странице, нажмите правую кнопку мыши и выберите «Перевести на немецкий (Sprachweise)». Если сайт подменяет меню правой кнопки, нажмите Alt+Shift+G.
-• Выделенный текст заменится немецкой версией на вашем уровне: A1–A2, B1–B2 или C1+. Переводится ровно выделенный текст, даже если он занимает несколько абзацев.
-• Подчёркнутые слова — новая лексика. Кликните слово, чтобы увидеть перевод.
-• Справа появятся упражнения по этому тексту: пропущенное слово, выбор варианта, пары слов и диктант.
-• «Вернуть исходный текст (Sprachweise)» в меню правой кнопки возвращает оригинал. Страница не меняется ни в чём, кроме выделенного текста.
-
-Ничего не нужно включать для отдельных сайтов, и расширение не просит доступа к сайтам при установке: оно видит страницу только после того, как вы выбрали пункт меню.
-
-Прогресс, словарь и повторения хранятся только в вашем браузере и работают без интернета.
-
-Приватность
-• На сервер уходит только выделенный текст и только после того, как вы выбрали пункт меню, — без адреса страницы. За один раз — не больше 1500 знаков.
-• Для подсчёта использования расширение отправляет случайный идентификатор установки и события («абзац переведён», «упражнение выполнено», ошибки) — без текста.
-• Кнопка «Плохой перевод» отправляет абзац и перевод на проверку только по вашему клику.
-Подробно: https://sprachweise.vercel.app/privacy
-
-Это закрытая бета: возможны ошибки перевода — пожалуйста, отмечайте их кнопкой «Плохой перевод».
-```
-
-### Detailed description — EN
-
-```text
-Sprachweise turns the articles you already read into German practice.
-
-How it works
-• Select a phrase or a paragraph on any page, right-click and choose "Translate to German (Sprachweise)". If a site replaces the right-click menu, press Alt+Shift+G.
-• The selected text is swapped for a German version at your level: A1–A2, B1–B2 or C1+. Exactly the selected text is translated, even across several paragraphs.
-• Underlined words are new vocabulary. Click one to see its meaning.
-• Exercises built from that text appear on the right: fill in the blank, multiple choice, word pairs and dictation.
-• "Restore original text (Sprachweise)" in the right-click menu brings back the original. Nothing on the page changes except the text you selected.
-
-There is nothing to enable per site, and the extension asks for no website access at install: it sees a page only after you choose the menu item.
-
-Progress, vocabulary and reviews stay in your browser and work offline.
-
-Privacy
-• Only the text you selected is sent to our server, only after you choose the menu item, and never the page address. At most 1,500 characters at a time.
-• To count usage, the extension sends a random install ID with events ("paragraph translated", "exercise completed", errors), never with text.
-• The "Плохой перевод" (bad translation) button sends the paragraph and its translation for review, only when you click it.
-Details: https://sprachweise.vercel.app/privacy
-
-This is a private beta. Translations can contain mistakes; please flag them with the "Плохой перевод" button.
-```
+From [`store/description.txt`](../store/description.txt) (Russian, the primary listing language).
+The release body shows it with its length against the 16,000-character limit. The English text for
+the second listing language is in [`store/description.en.txt`](../store/description.en.txt); the
+release body doesn't include it, so copy it from the file.
 
 ### Graphics (`docs/store-assets/`, rendered by `pnpm --filter @sprachweise/extension store:assets`)
 
@@ -105,12 +80,9 @@ exercise generator, so they never call production.
 
 ### Permission justifications
 
-| Permission | Justification |
-| --- | --- |
-| `storage` | Keeps the learner's settings, vocabulary, exercise progress, saved translations, the random install ID and unsent usage events in the browser, so learning works offline. |
-| `contextMenus` | Adds "Translate to German (Sprachweise)" to the right-click menu when text is selected, and "Restore original text (Sprachweise)" while the current tab shows a translation. This menu item is how the user starts every translation. |
-| `activeTab` | Gives temporary access to the current tab only when the user picks one of those menu items or presses the extension's keyboard shortcut, so the extension can read the selected text and replace it with German. No other tab and no other moment. |
-| `scripting` | Injects the extension's script into that tab (chrome.scripting.executeScript) at that moment, under the activeTab grant. The extension declares no content scripts and no host permissions, so it never runs on a page the user didn't act on. |
+From [`store/permissions.json`](../store/permissions.json), one justification per permission or
+host pattern. The release body lists every permission the release manifest requests next to its
+justification, flags any that have none, and names entries the manifest no longer requests.
 
 The keyboard shortcut (`commands`, suggested Alt+Shift+G) does the same as the menu item, for
 sites that replace the right-click menu. It needs no permission and shows no warning.
@@ -118,6 +90,8 @@ sites that replace the right-click menu. It needs no permission and shows no war
 **Remote code:** No. All JavaScript is in the package; the server returns JSON only.
 
 ### Data usage
+
+The release body carries the same table (`store/release-notes.md.tmpl`); keep the two in sync.
 
 Tick these data types:
 
@@ -147,24 +121,8 @@ Certify all three:
 
 ## Test instructions tab
 
-No account or login is needed. Paste into "Additional instructions":
-
-```text
-No sign-in needed. There is nothing to enable per site.
-
-1. Open any German or Russian news article, e.g. https://www.tagesschau.de or https://meduza.io.
-2. Select a paragraph (or a sentence) with the mouse.
-3. Right-click the selection and choose "Translate to German (Sprachweise)"
-   (Russian UI: "Перевести на немецкий (Sprachweise)").
-4. Within a few seconds the selected text is replaced by a German version with underlined
-   vocabulary, and an "Exercises" panel opens on the right. No page reload is needed.
-5. Click an underlined word to see its Russian meaning. Solve an exercise in the panel.
-6. Right-click an empty part of the page and choose "Restore original text (Sprachweise)" to
-   bring the original text back.
-
-If a site replaces the right-click menu, select text and press Alt+Shift+G instead.
-Selections over 1,500 characters are refused with a message, by design.
-```
+No account or login is needed. "Additional instructions" come from
+[`store/test-instructions.txt`](../store/test-instructions.txt).
 
 ## Distribution tab
 
@@ -173,6 +131,10 @@ Selections over 1,500 characters are refused with a message, by design.
 - Pricing: free.
 
 ## After first upload
+
+Done once for the published item; repeat if the store item ID or the backend changes. The release
+workflow's smoke test sends CORS preflights with `Origin: chrome-extension://<CWS_ITEM_ID>` and
+fails the release if the backend doesn't grant that origin.
 
 Do this before inviting testers. The backend allows only the extension origins listed in
 `CORS_ALLOWED_ORIGINS` (`apps/cms/src/config.ts`). Until the store build's origin is on the list,
