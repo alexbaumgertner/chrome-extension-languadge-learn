@@ -1,0 +1,94 @@
+# Sprachweise {{version}}
+
+Tag `{{tag}}` · commit `{{commit}}` · API `{{cms_base_url}}`
+
+## Changes since {{previous_tag}}
+
+{{changelog}}
+
+## Package
+
+| | |
+| --- | --- |
+| File | `{{zip_name}}` (attached) |
+| SHA-256 | `{{sha256}}` |
+| Manifest version | `{{version}}` (must be higher than the version live in the store) |
+| Store item | `{{item_id}}` |
+
+Check the download: `sha256sum -c {{zip_name}}.sha256`
+
+## Chrome Web Store dashboard
+
+The Chrome Web Store API only uploads and publishes; it can't edit the listing. Copy these fields
+into the developer dashboard by hand.
+
+### Store listing → Summary
+
+From the manifest (`_locales/*/messages.json`, `extDescription`), so it ships with the package;
+the dashboard shows it read-only. Limit: 132 characters.
+
+{{summary}}
+
+### Store listing → Description
+
+From `store/description.txt`. Limit: 16,000 characters.
+
+{{description}}
+
+### Privacy practices → Single purpose
+
+```text
+Replaces text the user selects and sends to it from the right-click menu with a German version at the user's level, with vocabulary glosses and exercises built from that text.
+```
+
+### Privacy practices → Permission justification
+
+Every permission and host the release manifest requests, with its justification from `store/`.
+
+{{permissions}}
+
+### Privacy practices → Remote code
+
+**No, I am not using remote code.** All JavaScript is in the package; the server returns JSON only.
+
+### Privacy practices → Data usage
+
+| Data type | Collected? | What and why |
+| --- | --- | --- |
+| Personally identifiable information | No | |
+| Health information | No | |
+| Financial and payment information | No | |
+| Authentication information | No | |
+| Personal communications | No | |
+| Location | No (see `docs/store-listing.md`) | No IP addresses stored by the app; Vercel request logs record them, as the privacy policy says. |
+| Web history | No | No URLs, titles or visit times. |
+| User activity | **Yes** | Usage events tied to a random install ID: paragraph translated (cache hit/miss, latency), exercise completed, error codes. Only for usage metrics. |
+| Website content | **Yes** | The text the user selects and sends with "Translate to German" (at most 1,500 characters at a time), sent to our server and Google Gemini to translate it; on an explicit "Плохой перевод" click, that text and its translation for quality review. |
+
+Certify all three:
+
+- [ ] I do not sell or transfer user data to third parties, outside of the approved use cases.
+- [ ] I do not use or transfer user data for purposes that are unrelated to my item's single purpose.
+- [ ] I do not use or transfer user data to determine creditworthiness or for lending purposes.
+
+### Privacy practices → Privacy policy URL
+
+{{privacy_url}}
+
+### Test instructions → Additional instructions
+
+From `store/test-instructions.txt`. No test account is needed.
+
+{{test_instructions}}
+
+## Pre-release checklist
+
+Filled in by the release workflow from what its steps actually did:
+
+{{checklist}}
+
+Before you press "Submit for review":
+
+- [ ] The store's current version is lower than `{{version}}` (the upload is refused otherwise).
+- [ ] Every dashboard field above is pasted; visibility is still **Unlisted**.
+- [ ] After approval: install from the unlisted link, translate a paragraph, solve an exercise.
