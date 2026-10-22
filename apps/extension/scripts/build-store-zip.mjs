@@ -1,5 +1,9 @@
 // Builds the Chrome Web Store package: a production build zipped by `wxt zip`, then checked so a
 // test or dev build can never be uploaded. Run from the repo root with `pnpm store:zip`.
+//
+// `--release` (`pnpm build:release`) is the same build for a tagged release: the API comes from
+// WXT_CMS_BASE_URL (required, https://) instead of the production default, and the manifest version
+// must equal EXPECTED_VERSION (required).
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
@@ -97,6 +101,7 @@ export function verifyBundle(dir, { cmsBaseUrl, expectedVersion }) {
 }
 
 function main() {
+  const release = process.argv.includes("--release");
   const root = new URL("..", import.meta.url).pathname;
   const out = join(root, ".output");
   const fail = (lines) => {
@@ -105,11 +110,23 @@ function main() {
   };
 
   // Test/dev overrides must not leak into the store build (they add a host permission or point the
-  // API elsewhere).
+  // API elsewhere). A release keeps WXT_CMS_BASE_URL, but only an https one.
   const env = { ...process.env };
   for (const key of ["WXT_TEST_MODE", "WXT_TEST_ORIGIN", "WXT_CMS_BASE_URL"]) delete env[key];
-  const cmsBaseUrl = PRODUCTION_API;
-  const expectedVersion = process.env.EXPECTED_VERSION || undefined;
+  let cmsBaseUrl = PRODUCTION_API;
+  let expectedVersion = process.env.EXPECTED_VERSION || undefined;
+  if (release) {
+    cmsBaseUrl = process.env.WXT_CMS_BASE_URL ?? "";
+    const envProblems = [];
+    if (!httpsHost(cmsBaseUrl) || cmsBaseUrl.endsWith("/")) {
+      envProblems.push(
+        `WXT_CMS_BASE_URL must be an https:// URL without a trailing slash, got "${cmsBaseUrl}"`,
+      );
+    }
+    if (!expectedVersion) envProblems.push("EXPECTED_VERSION is not set");
+    if (envProblems.length) fail(envProblems);
+    env.WXT_CMS_BASE_URL = cmsBaseUrl;
+  }
 
   execFileSync("pnpm", ["exec", "wxt", "zip"], { cwd: root, env, stdio: "inherit" });
 
