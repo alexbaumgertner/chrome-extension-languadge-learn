@@ -14,3 +14,4 @@ specs
 docs
 design_handoff_sprachweise
 .agents/
+apps/cms/src/landing/assets.generated.ts
