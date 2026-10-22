@@ -74,6 +74,8 @@ scripts from the root `package.json`:
 | `pnpm build`                       | Builds the extension into `apps/extension/.output/chrome-mv3`.  |
 | `pnpm test:unit`                   | Runs the Vitest unit tests.                                     |
 | `pnpm test:integration`            | Builds a test bundle and runs the Playwright integration suite. |
+| `pnpm store:zip`                   | Builds and checks the store zip against the production API.     |
+| `pnpm build:release`               | Store zip for `WXT_CMS_BASE_URL` (https) at `EXPECTED_VERSION`. |
 
 ### Translation backend
 
