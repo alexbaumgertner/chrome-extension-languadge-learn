@@ -1,6 +1,116 @@
 {
   "extName": { "message": "Sprachweise" },
   "extDescription": {
-    "message": "Кликните абзац на сайте, где включили расширение, и читайте его по-немецки на своём уровне, а потом решайте упражнения."
-  }
+    "message": "Выделите текст на любой странице, нажмите правую кнопку и читайте его по-немецки на своём уровне, а потом решайте упражнения."
+  },
+  "menuTranslate": { "message": "Перевести на немецкий (Sprachweise)" },
+  "menuRestore": { "message": "Вернуть исходный текст (Sprachweise)" },
+  "commandTranslate": { "message": "Перевести выделенный текст на немецкий" },
+
+  "popupHowto": {
+    "message": "Выделите текст на любой странице, нажмите правую кнопку мыши и выберите «$1»."
+  },
+  "popupShortcut": { "message": "Сочетание клавиш: $1" },
+  "popupNoShortcut": {
+    "message": "Сочетание клавиш не задано. Назначьте его на странице chrome://extensions/shortcuts."
+  },
+  "popupSolvedToday": { "message": "Решено сегодня" },
+  "popupStreak": { "message": "Дней подряд" },
+
+  "panelCollapse": { "message": "Свернуть" },
+  "panelTopic": { "message": "Тема: $1" },
+  "panelLevel": { "message": "Уровень $1" },
+  "panelProgress": { "message": "$1 из $2" },
+  "panelEmpty": { "message": "Для этого абзаца упражнений нет." },
+  "panelTabNoExercises": { "message": "Нет упражнений" },
+  "panelTabExercisesOne": { "message": "$1 упражнение" },
+  "panelTabExercisesFew": { "message": "$1 упражнения" },
+  "panelTabExercisesMany": { "message": "$1 упражнений" },
+  "panelTabExercisesOther": { "message": "$1 упражнения" },
+  "topicGeneral": { "message": "общая" },
+
+  "kickerFillBlank": { "message": "Из этого текста" },
+  "kickerMultipleChoice": { "message": "Выберите слово" },
+  "kickerWordPairing": { "message": "Найдите пары" },
+  "kickerAudioDictation": { "message": "Диктант" },
+
+  "exerciseCheck": { "message": "Проверить" },
+  "exerciseCorrect": { "message": "Верно!" },
+  "fillBlankPlaceholder": { "message": "Пропущенное слово" },
+  "fillBlankWrong": { "message": "Не совсем — «$1»" },
+  "multipleChoiceWrong": { "message": "Правильный ответ: $1 — «$2»" },
+  "pairingInstruction": { "message": "Сопоставьте немецкие слова с русскими." },
+  "pairingHint": { "message": "Сначала выберите немецкое слово слева." },
+  "dictationInstruction": { "message": "Послушайте и напишите всё предложение." },
+  "dictationListen": { "message": "Слушать" },
+  "dictationListenLabel": { "message": "Слушать в обычном темпе" },
+  "dictationSlow": { "message": "медленно" },
+  "dictationSlowLabel": { "message": "Слушать медленно" },
+  "dictationPlaceholder": { "message": "Напишите, что услышали" },
+  "dictationWrong": { "message": "Правильно: «$1»" },
+
+  "reportButton": { "message": "Плохой перевод" },
+  "reportRetry": { "message": "Повторить" },
+  "reportTitle": { "message": "Отправит этот абзац и его немецкий перевод на проверку" },
+  "reportSent": { "message": "Спасибо! Отправили на проверку." },
+  "reportFailed": { "message": "Не удалось отправить, попробуйте ещё раз." },
+
+  "noticeOffline": {
+    "message": "Нет подключения к интернету. Уже переведённый текст доступен, для нового нужна сеть."
+  },
+  "noticeUnavailable": {
+    "message": "Сервис перевода сейчас недоступен. Попробуйте через несколько минут."
+  },
+  "noticeLimit": { "message": "Дневной лимит переводов исчерпан. Попробуйте завтра." },
+  "noticeTextTooLong": {
+    "message": "Текст слишком длинный, чтобы перевести его за раз. Выделите не больше $1 знаков."
+  },
+  "noticeFailed": { "message": "Не удалось перевести текст. Выделите его и попробуйте ещё раз." },
+  "noticeSelectFirst": { "message": "Сначала выделите текст, который хотите перевести." },
+  "noticeEditable": { "message": "Sprachweise не переводит текст, который вы набираете." },
+  "noticeExcluded": {
+    "message": "В выделении есть код или поля формы — выделите только обычный текст."
+  },
+  "noticeMixed": {
+    "message": "Выделение выходит за пределы абзаца — выделяйте текст внутри абзацев."
+  },
+  "noticeSelectionTooLong": {
+    "message": "Выделение слишком длинное (знаков: $1). Выделяйте не больше $2 знаков — примерно пять абзацев — за раз."
+  },
+  "noticePageChanged": {
+    "message": "Страница изменилась во время перевода. Выделите текст ещё раз."
+  },
+  "noticeTranslating": { "message": "Переводим…" },
+  "noticeDismiss": { "message": "Закрыть" },
+
+  "optionsTitle": { "message": "Sprachweise — настройки" },
+  "optionsTabProgress": { "message": "Прогресс" },
+  "optionsTabSettings": { "message": "Настройки" },
+  "optionsLoading": { "message": "Загрузка…" },
+
+  "progressHeading": { "message": "Прогресс" },
+  "progressStreakKicker": { "message": "Серия" },
+  "progressStreakLabel": { "message": "дней подряд" },
+  "progressVocabKicker": { "message": "Словарь" },
+  "progressVocabLabel": { "message": "слов в работе" },
+  "progressTodayKicker": { "message": "Сегодня" },
+  "progressTodayLabel": { "message": "решено сегодня" },
+  "progressAccuracyHeading": { "message": "Точность по темам" },
+  "progressNoAnswers": { "message": "Вы ещё не ответили ни на одно упражнение." },
+  "progressQueueHeading": { "message": "Очередь повторения" },
+  "progressQueueEmpty": {
+    "message": "Пока ничего не запланировано — ответьте на упражнение, и здесь появятся слова для повторения."
+  },
+  "progressColumnWord": { "message": "Слово" },
+  "progressColumnMeaning": { "message": "Перевод" },
+  "progressColumnReviews": { "message": "Повторений" },
+  "progressColumnNext": { "message": "Когда" },
+  "progressDue": { "message": "повтор $1" },
+
+  "settingsHeading": { "message": "Настройки" },
+  "settingsNote": {
+    "message": "Изменения действуют на текст, переведённый после сохранения. Уже переведённый текст на странице не меняется."
+  },
+  "settingsLevel": { "message": "Уровень" },
+  "settingsSaved": { "message": "Сохранено." }
 }

@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium, expect, test, type Page } from "@playwright/test";
 import { CMS_PORT, FIXTURE_ORIGIN, FIXTURE_PORT } from "../tests/integration/ports";
+import { localeLaunchOptions, msg } from "../tests/integration/locale";
 import { ARTICLE, createStoreMockBackend } from "./mock-backend";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -68,7 +69,7 @@ function articleHtml(): string {
     header b { font: 600 15px system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
     h1 { font-size: 38px; line-height: 1.2; margin: 36px 0 6px; }
     .by { font: 14px system-ui, sans-serif; color: #777; margin-bottom: 26px; }
-    p { margin: 0 0 22px; cursor: pointer; }
+    p { margin: 0 0 22px; }
   </style></head>
   <body><header><div><b>Путевые заметки</b></div></header>
   <main><h1>${ARTICLE.title}</h1><div class="by">Анна К. · 6 мин чтения</div>${paragraphs}</main>
@@ -87,31 +88,42 @@ test("1280×800 screenshots", async () => {
   const backend = createStoreMockBackend();
   await backend.listen(CMS_PORT);
 
+  // The store listing's screenshots show the Russian UI, as most learners see it.
+  const locale = localeLaunchOptions("ru");
   const context = await chromium.launchPersistentContext("", {
-    headless: false, // MV3 extensions don't load headless with this Playwright build
+    channel: "chromium", // full Chromium (new headless); the default headless shell can't load extensions
     viewport: { width: 1280, height: 800 },
     deviceScaleFactor: 1,
-    args: [`--disable-extensions-except=${EXTENSION_PATH}`, `--load-extension=${EXTENSION_PATH}`],
+    env: locale.env,
+    locale: locale.locale,
+    args: [
+      `--disable-extensions-except=${EXTENSION_PATH}`,
+      `--load-extension=${EXTENSION_PATH}`,
+      ...locale.args,
+    ],
   });
   try {
     const worker = context.serviceWorkers()[0] ?? (await context.waitForEvent("serviceworker"));
-    await worker.evaluate(async () => {
-      await chrome.storage.local.set({
-        siteRules: {
-          "127.0.0.1": { hostname: "127.0.0.1", status: "enabled", grantedPermissionOrigin: null },
-        },
-      });
-    });
-    await expect
-      .poll(() =>
-        worker.evaluate(async () => (await chrome.scripting.getRegisteredContentScripts()).length),
-      )
-      .toBe(1);
-
     const page = await context.newPage();
     await page.goto(FIXTURE_ORIGIN);
     const first = page.locator("#p0");
-    await first.evaluate((el) => el.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    // Select the first paragraph and pick "Translate to German" (the test build exposes the menu
+    // handler, since Playwright can't click Chrome's native context menu).
+    await first.evaluate((el) => getSelection()!.selectAllChildren(el));
+    await worker.evaluate(async (pattern) => {
+      const [tab] = await chrome.tabs.query({ url: pattern });
+      const hooks = (
+        globalThis as unknown as {
+          sprachweiseTest: {
+            onMenuClicked(info: chrome.contextMenus.OnClickData, tab: chrome.tabs.Tab): void;
+          };
+        }
+      ).sprachweiseTest;
+      hooks.onMenuClicked(
+        { menuItemId: "sprachweise-translate", frameId: 0, editable: false, pageUrl: tab!.url! },
+        tab!,
+      );
+    }, `${FIXTURE_ORIGIN}/*`);
     await expect(first.locator(".sw-vocab").first()).toBeVisible();
     const panel = page.locator(".sw-panel");
     await expect(panel.locator(".sw-card").first()).toBeVisible();
@@ -123,11 +135,11 @@ test("1280×800 screenshots", async () => {
     // Solve the fill-in-the-blank (counts towards progress), then show a word's gloss.
     const fillBlank = panel
       .locator(".sw-card")
-      .filter({ has: page.locator('input[placeholder="Type the missing word"]') });
+      .filter({ has: page.locator(`input[placeholder="${msg("ru", "fillBlankPlaceholder")}"]`) });
     await fillBlank.locator("input").fill("Wochenende");
     await fillBlank.locator("button.sw-submit").click();
     await expect(fillBlank.locator(".sw-feedback-ok")).toBeVisible();
-    await panel.getByRole("button", { name: "Collapse" }).click();
+    await panel.getByRole("button", { name: msg("ru", "panelCollapse") }).click();
     await first.locator(".sw-vocab", { hasText: "Fernsehturm" }).click();
     await expect(page.getByText("телебашня")).toBeVisible();
     await page.screenshot({ path: path.join(ASSET_DIR, "screenshot-2-word-gloss.png") });

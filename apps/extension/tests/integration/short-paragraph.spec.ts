@@ -5,10 +5,6 @@ import { SHORT_PARAGRAPH_MARKER } from "./mock-cms-server";
 const LONG = (label: string): string =>
   `${label} padded well past the eighty character minimum threshold so the parser treats this as real article content.`;
 
-async function dispatchClick(locator: import("@playwright/test").Locator): Promise<void> {
-  await locator.evaluate((el) => el.dispatchEvent(new MouseEvent("click", { bubbles: true })));
-}
-
 /**
  * Edge Case (spec.md): a paragraph too short/low-vocabulary to support all
  * four exercise kinds still shows its German translation, and the panel
@@ -18,9 +14,9 @@ async function dispatchClick(locator: import("@playwright/test").Locator): Promi
 test("a short, low-vocabulary paragraph still translates and yields fewer than 4 valid exercise cards", async ({
   context,
   fixtureServer,
-  enableSite,
+  selectText,
+  clickMenu,
 }) => {
-  await enableSite("127.0.0.1");
   fixtureServer.setHtml(`<!doctype html>
 <html><body>
 <article>
@@ -32,7 +28,8 @@ test("a short, low-vocabulary paragraph still translates and yields fewer than 4
   await page.goto(FIXTURE_ORIGIN);
 
   const target = page.locator("#target");
-  await dispatchClick(target);
+  await selectText(page, "#target");
+  await clickMenu(page, "translate");
 
   // German translation still appears, marked vocabulary included.
   await expect(target.locator(".sw-vocab").first()).toBeVisible();

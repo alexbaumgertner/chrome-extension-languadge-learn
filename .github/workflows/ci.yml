@@ -44,9 +44,9 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @sprachweise/extension exec playwright install --with-deps chromium
-      # Extensions only load in headed Chromium, so run under a virtual display.
-      - run: xvfb-run --auto-servernum pnpm --filter @sprachweise/extension test:integration
+      # Tests use the full Chromium build (new headless), so the headless shell isn't needed.
+      - run: pnpm --filter @sprachweise/extension exec playwright install --with-deps --no-shell chromium
+      - run: pnpm --filter @sprachweise/extension test:integration
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

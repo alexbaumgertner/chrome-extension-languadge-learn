@@ -1,0 +1,111 @@
+/* The options page: the handoff's admin (screen 3) and progress (screen 4) shell. */
+.options-nav {
+  background: var(--color-surface);
+  padding-inline: 38px;
+}
+.options-main {
+  padding: 34px 38px 42px;
+  max-width: 1240px;
+}
+.options-section {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+.options-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 34px;
+}
+.options-grid-even {
+  grid-template-columns: 1fr 1fr;
+}
+.options-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.options-heading {
+  font-size: 25px;
+}
+.options-column h1,
+.options-column h3,
+.options-column p {
+  margin: 0;
+}
+.options-note {
+  font-size: 14px;
+  opacity: 0.7;
+  max-width: 52ch;
+}
+.options-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 28px;
+}
+fieldset.field {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+/* — progress — */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.stat {
+  gap: 2px;
+}
+.stat:first-child {
+  background: var(--color-accent-100);
+}
+.stat:last-child {
+  background: var(--color-accent-2-100);
+}
+.stat strong {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 46px;
+  line-height: 1;
+}
+.stat > span:last-child {
+  font-size: 13px;
+  opacity: 0.7;
+}
+.accuracy {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.accuracy-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.accuracy-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+.accuracy-label small {
+  font-size: 12px;
+  opacity: 0.6;
+  font-weight: 400;
+  margin-left: 6px;
+}
+.accuracy-track {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--color-neutral-300);
+  overflow: hidden;
+}
+.accuracy-fill {
+  height: 100%;
+  border-radius: 999px;
+}

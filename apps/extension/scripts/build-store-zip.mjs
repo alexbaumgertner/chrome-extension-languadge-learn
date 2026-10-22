@@ -10,8 +10,9 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 
 const PRODUCTION_API = "https://sprachweise.vercel.app";
-const EXPECTED_PERMISSIONS = ["activeTab", "scripting", "storage"];
-const LOCAL_HOST = /localhost|127\.0\.0\.1|:58733/;
+const EXPECTED_PERMISSIONS = ["activeTab", "contextMenus", "scripting", "storage"];
+// Only test builds contain these: local hosts (mock API, fixture page) and the test hooks.
+const TEST_ONLY = /localhost|127\.0\.0\.1|:58733|sprachweiseTest/;
 const BINARY = /\.(png|jpe?g|gif|webp|ico|woff2?|ttf|zip)$/i;
 // CSP sources that grant no network host.
 const CSP_KEYWORD = /^('[^']*'|data:|blob:)$/;
@@ -60,9 +61,10 @@ export function verifyBundle(dir, { cmsBaseUrl, expectedVersion }) {
     `unexpected permissions: ${manifest.permissions}`,
   );
   check(
-    JSON.stringify(manifest.optional_host_permissions) === JSON.stringify(["*://*/*"]),
-    "optional_host_permissions changed",
+    !manifest.optional_host_permissions,
+    `optional_host_permissions present: ${manifest.optional_host_permissions}`,
   );
+  check(manifest.commands?.["translate-selection"], "no translate-selection keyboard command");
   check(manifest.icons?.["128"], "no 128px icon");
   check(manifest.version !== "0.0.0", "version is 0.0.0");
   if (expectedVersion !== undefined) {
@@ -79,10 +81,10 @@ export function verifyBundle(dir, { cmsBaseUrl, expectedVersion }) {
     check(length <= 132, `${locale} description is ${length} characters (store limit 132)`);
   }
 
-  // Manifest and bundle alike: a local host means a test or dev build.
+  // Manifest and bundle alike: any of these means a test or dev build.
   const scanned = files(dir).filter((file) => !BINARY.test(file));
   for (const file of scanned) {
-    const hit = LOCAL_HOST.exec(readFileSync(file, "utf8"));
+    const hit = TEST_ONLY.exec(readFileSync(file, "utf8"));
     if (hit) check(false, `${relative(dir, file)} contains ${hit[0]}`);
   }
 
@@ -95,7 +97,7 @@ export function verifyBundle(dir, { cmsBaseUrl, expectedVersion }) {
     `permissions ${manifest.permissions?.join(", ")}`,
     `host_permissions ${hostPermissions.join(", ") || "none"}`,
     `CSP ${cspText || "default"}`,
-    `scanned ${scanned.length} files for localhost/127.0.0.1/:58733`,
+    `scanned ${scanned.length} files for localhost/127.0.0.1/:58733/sprachweiseTest`,
   ];
   return { problems, summary, manifest };
 }

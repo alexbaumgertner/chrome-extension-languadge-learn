@@ -1,4 +1,5 @@
 import {
+  type ClientErrorCode,
   ExercisesRequestSchema,
   ReportRequestSchema,
   ExercisesResponseSchema,
@@ -10,6 +11,7 @@ import {
   type CmsTranslateResponse,
   type Level,
   type ReportRequest,
+  type TranslateParagraphResponse,
 } from "@sprachweise/shared";
 import { CMS_BASE_URL } from "@/lib/config";
 
@@ -24,14 +26,67 @@ export class CmsFetchError extends Error {
 }
 
 /**
- * `fetch()` rejects with a `TypeError` for network-level failures (offline,
- * DNS, connection refused) — a more reliable offline signal than
- * `navigator.onLine`, which doesn't always reflect real connectivity inside
- * a service worker. A `CmsFetchError` means we got a response (or parsed
- * one) and it just wasn't usable, which is a distinct "fetch-failed" case.
+ * `fetch()` rejects with a `TypeError` whenever no usable response arrived: no network, DNS,
+ * connection refused, or a response the browser blocked for CORS — `classifyTranslateFailure`
+ * tells these apart. A `CmsFetchError` means a response arrived (or was parsed) but wasn't usable.
  */
 export function isNetworkError(error: unknown): boolean {
   return error instanceof TypeError;
+}
+
+type FailureReason = Extract<TranslateParagraphResponse, { ok: false }>["reason"];
+
+export interface TranslateFailure {
+  /** Recorded in the client_error event. */
+  code: ClientErrorCode;
+  /** Shown to the learner. */
+  reason: FailureReason;
+  httpStatus: number | null;
+}
+
+/**
+ * Whether the backend answers at all. A `no-cors` request needs no CORS grant (the response is
+ * opaque), so it succeeds when the server is up even if it refuses this extension's origin.
+ */
+async function backendAnswers(): Promise<boolean> {
+  try {
+    await fetch(`${CMS_BASE_URL}/api/health`, {
+      mode: "no-cors",
+      cache: "no-store",
+      signal: AbortSignal.timeout(3000),
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Sorts a failed /api/translate call into what the learner is told and what the error event
+ * records. A rejected fetch (TypeError) means no usable response: no network at all if the
+ * browser says it is offline; otherwise a probe tells a backend that is down or unreachable from
+ * one that answered but whose response the browser blocked (CORS).
+ */
+export async function classifyTranslateFailure(error: unknown): Promise<TranslateFailure> {
+  if (error instanceof CmsFetchError) {
+    const status = error.status ?? null;
+    if (status === 413)
+      return { code: "translate-too-long", reason: "too-long", httpStatus: status };
+    if (status === 429) return { code: "translate-limit", reason: "limit", httpStatus: status };
+    if (status !== null && status >= 500) {
+      return { code: "translate-server-error", reason: "unavailable", httpStatus: status };
+    }
+    return { code: "translate-failed", reason: "failed", httpStatus: status };
+  }
+  if (isNetworkError(error)) {
+    if (!navigator.onLine)
+      return { code: "translate-offline", reason: "offline", httpStatus: null };
+    if (await backendAnswers()) {
+      return { code: "translate-cors", reason: "unavailable", httpStatus: null };
+    }
+    return { code: "translate-unreachable", reason: "unavailable", httpStatus: null };
+  }
+  return { code: "translate-failed", reason: "failed", httpStatus: null };
 }
 
 async function postJson<TReq, TRes>(

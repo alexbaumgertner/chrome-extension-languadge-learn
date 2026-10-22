@@ -10,8 +10,8 @@ const API = "https://example.test";
 const manifest = {
   manifest_version: 3,
   version: "1.2.3",
-  permissions: ["storage", "activeTab", "scripting"],
-  optional_host_permissions: ["*://*/*"],
+  permissions: ["storage", "activeTab", "scripting", "contextMenus"],
+  commands: { "translate-selection": { suggested_key: { default: "Alt+Shift+G" } } },
   icons: { "128": "icon/128.png" },
 };
 
@@ -69,10 +69,11 @@ describe("verifyBundle", () => {
           ...manifest,
           version: "0.1.0",
           host_permissions: ["*://127.0.0.1/*"],
+          optional_host_permissions: ["*://*/*"],
           content_security_policy: { extension_pages: "connect-src 'self' https://other.test" },
         },
-        "background.js": 'fetch("http://127.0.0.1:58733/api/translate")',
-        "chunks/popup.js": 'const dev="http://localhost:8787"',
+        "background.js": 'fetch("http://localhost:58733/api/translate")',
+        "chunks/popup.js": "globalThis.sprachweiseTest = {}",
       }),
       { cmsBaseUrl: API, expectedVersion: "1.2.3" },
     );
@@ -81,14 +82,15 @@ describe("verifyBundle", () => {
       expect.arrayContaining([
         "unexpected host_permissions: *://127.0.0.1/*",
         "unexpected CSP source: https://other.test",
+        "optional_host_permissions present: *://*/*",
         "manifest version 0.1.0 != EXPECTED_VERSION 1.2.3",
         "manifest.json contains 127.0.0.1",
-        "background.js contains 127.0.0.1",
-        "chunks/popup.js contains localhost",
+        "background.js contains localhost",
+        "chunks/popup.js contains sprachweiseTest",
         `background does not call ${API}`,
       ]),
     );
-    expect(result.problems).toHaveLength(7);
+    expect(result.problems).toHaveLength(8);
   });
 
   it("rejects an http API URL", () => {

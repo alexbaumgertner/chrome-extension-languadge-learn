@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ExercisesResponseSchema } from "@sprachweise/shared";
+import { ExercisesResponseSchema, TRANSLATE_MAX_CHARS } from "@sprachweise/shared";
 import { buildTestApp } from "../helpers/test-app";
 
 describe("POST /api/exercises", () => {
@@ -23,6 +23,18 @@ describe("POST /api/exercises", () => {
     expect(response.statusCode).toBe(200);
     const body = ExercisesResponseSchema.parse(response.json());
     expect(body.exercises.map((e) => e.kind)).toContain("word-pairing");
+  });
+
+  it("accepts a German rewrite longer than the translate cap, up to twice it", async () => {
+    const app = buildTestApp();
+    const send = (variantText: string) =>
+      app.inject({
+        method: "POST",
+        url: "/api/exercises",
+        payload: { variantText, markedVocab: [], level: "A1-A2", topic: "general" },
+      });
+    expect((await send("a".repeat(2 * TRANSLATE_MAX_CHARS))).statusCode).toBe(200);
+    expect((await send("a".repeat(2 * TRANSLATE_MAX_CHARS + 1))).statusCode).toBe(400);
   });
 
   it("rejects an invalid request with 400", async () => {

@@ -1,14 +1,13 @@
 import { useState } from "react";
 import ProgressView from "./ProgressView";
 import SettingsView from "./SettingsView";
-import SiteRulesView from "./SiteRulesView";
+import { t, type MessageKey } from "@/lib/i18n";
 
-type Tab = "progress" | "settings" | "siteRules";
+type Tab = "progress" | "settings";
 
-const TABS: Array<{ id: Tab; label: string }> = [
-  { id: "progress", label: "Progress" },
-  { id: "settings", label: "Settings" },
-  { id: "siteRules", label: "Site Rules" },
+const TABS: Array<{ id: Tab; label: MessageKey }> = [
+  { id: "progress", label: "optionsTabProgress" },
+  { id: "settings", label: "optionsTabSettings" },
 ];
 
 export default function App() {
@@ -16,16 +15,23 @@ export default function App() {
 
   return (
     <div>
-      <nav>
-        {TABS.map((t) => (
-          <button key={t.id} aria-current={tab === t.id} onClick={() => setTab(t.id)}>
-            {t.label}
+      <nav className="nav options-nav">
+        <span className="nav-brand">Sprachweise</span>
+        {TABS.map((item) => (
+          <button
+            key={item.id}
+            className="nav-link"
+            aria-current={tab === item.id}
+            onClick={() => setTab(item.id)}
+          >
+            {t(item.label)}
           </button>
         ))}
       </nav>
-      {tab === "progress" && <ProgressView />}
-      {tab === "settings" && <SettingsView />}
-      {tab === "siteRules" && <SiteRulesView />}
+      <main className="options-main">
+        {tab === "progress" && <ProgressView />}
+        {tab === "settings" && <SettingsView />}
+      </main>
     </div>
   );
 }

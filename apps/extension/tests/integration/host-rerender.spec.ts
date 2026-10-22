@@ -4,10 +4,6 @@ import { FIXTURE_ORIGIN } from "./ports";
 const LONG = (label: string): string =>
   `${label} padded well past the eighty character minimum threshold so the parser treats this as real article content.`;
 
-async function dispatchClick(locator: import("@playwright/test").Locator): Promise<void> {
-  await locator.evaluate((el) => el.dispatchEvent(new MouseEvent("click", { bubbles: true })));
-}
-
 /**
  * Edge Case (spec.md): a client-side framework replacing the DOM subtree
  * containing a translated paragraph must not throw, corrupt surrounding
@@ -18,9 +14,9 @@ async function dispatchClick(locator: import("@playwright/test").Locator): Promi
 test("a host-driven DOM replacement of a translated paragraph leaves no orphaned node and throws nothing", async ({
   context,
   fixtureServer,
-  enableSite,
+  selectText,
+  clickMenu,
 }) => {
-  await enableSite("127.0.0.1");
   const originalText = LONG("Host re-render variant");
   fixtureServer.setHtml(`<!doctype html>
 <html><body>
@@ -37,7 +33,8 @@ test("a host-driven DOM replacement of a translated paragraph leaves no orphaned
   await page.goto(FIXTURE_ORIGIN);
 
   const target = page.locator("#target");
-  await dispatchClick(target);
+  await selectText(page, "#target");
+  await clickMenu(page, "translate");
   await expect(target.locator(".sw-vocab").first()).toBeVisible();
 
   // Simulate a client-side framework re-render: the host replaces the whole subtree

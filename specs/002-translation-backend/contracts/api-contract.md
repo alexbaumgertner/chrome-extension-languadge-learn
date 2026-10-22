@@ -33,11 +33,12 @@ May be served either from the shared cache (no external calls made) or from a fr
 
 | Status | Body | When |
 |---|---|---|
-| `400` | `{ error: 'invalid-request', detail: string }` | missing/empty `text`, `level`, or `topic` (FR-003); `text` exceeds `TRANSLATE_MAX_CHARS` (FR-003a); `level` not one of the closed enum (FR-003b) |
+| `400` | `{ error: 'invalid-request', detail: string }` | missing/empty `text`, `level`, or `topic` (FR-003); `level` not one of the closed enum (FR-003b) |
+| `413` | `{ error: 'text-too-long', maxChars: number }` | `text` exceeds `TRANSLATE_MAX_CHARS` (FR-003a; default 1,500, shared with the extension's selection cap — `packages/shared/src/schemas/cms.ts`). Changed from `400 invalid-request` on 2026-10-19 so the extension can show "select less" |
 | `429` | `{ error: 'allowance-exhausted' }` | request is not a cache hit, and proceeding would exceed either provider's configured Usage Counter allowance (FR-010) — no external call is made |
 | `502` | `{ error: 'upstream-failure' }` | Google Translate or Gemini unreachable, times out, or returns a response that fails internal validation (FR-011, FR-012) — nothing is cached in this case |
 
-No response shape ever includes a partial/malformed success body (FR-011) — every non-`200` is one of the three shapes above, and every `200` passes full schema validation first.
+No response shape ever includes a partial/malformed success body (FR-011) — every non-`200` is one of the shapes above, and every `200` passes full schema validation first.
 
 ### Idempotency & concurrency
 

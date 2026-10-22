@@ -1,11 +1,12 @@
 import { useState } from "react";
 import type { ReportBadTranslationResponse } from "@sprachweise/shared";
 import { sendMessage } from "@/lib/messaging/send";
+import { t } from "@/lib/i18n";
 
 type State = "idle" | "sending" | "sent" | "failed";
 
 /**
- * "Плохой перевод" for the paragraph this panel belongs to. Nothing is sent until the click
+ * "Bad translation" (reportButton) for the paragraph this panel belongs to. Nothing is sent until the click
  * (constitution III); the parent keys this by variant, so a new paragraph starts from idle.
  */
 export default function ReportBadTranslation({
@@ -28,21 +29,19 @@ export default function ReportBadTranslation({
   }
 
   if (state === "sent") {
-    return <div className="sw-report sw-feedback-ok">Спасибо! Отправили на проверку.</div>;
+    return <div className="sw-report sw-feedback-ok">{t("reportSent")}</div>;
   }
   return (
     <div className="sw-report">
       <button
-        className="sw-report-btn"
+        className="sw-report-btn btn btn-secondary"
         disabled={state === "sending"}
-        title="Отправит этот абзац и его немецкий перевод на проверку"
+        title={t("reportTitle")}
         onClick={() => void report()}
       >
-        {state === "failed" ? "Повторить" : "Плохой перевод"}
+        {state === "failed" ? t("reportRetry") : t("reportButton")}
       </button>
-      {state === "failed" && (
-        <span className="sw-feedback">Не удалось отправить, попробуйте ещё раз.</span>
-      )}
+      {state === "failed" && <span className="sw-feedback">{t("reportFailed")}</span>}
     </div>
   );
 }

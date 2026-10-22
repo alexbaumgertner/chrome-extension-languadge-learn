@@ -2,11 +2,14 @@ import { useState } from "react";
 import type { WordPairingExercise } from "@sprachweise/shared";
 import { vocabIdFor } from "@/lib/vocab/upsert";
 import type { OnAnswer } from "./types";
+import { t } from "@/lib/i18n";
 
 export default function WordPairingCard({
+  kicker,
   exercise,
   onAnswer,
 }: {
+  kicker: string;
   exercise: WordPairingExercise;
   onAnswer: OnAnswer;
 }) {
@@ -22,7 +25,7 @@ export default function WordPairingCard({
 
   async function chooseRussian(russian: string): Promise<void> {
     if (!selectedGerman) {
-      setHint("Choose a German word first.");
+      setHint(t("pairingHint"));
       return;
     }
     const german = selectedGerman;
@@ -32,8 +35,9 @@ export default function WordPairingCard({
   }
 
   return (
-    <div className="sw-card">
-      <p>Match each German word to its Russian meaning.</p>
+    <div className="sw-card card elev-sm">
+      <span className="card-kicker">{kicker}</span>
+      <p className="sw-instruction">{t("pairingInstruction")}</p>
       <div className="sw-pairing">
         <div className="sw-pairing-col">
           {exercise.prompt.pairs.map(({ german }) => {
@@ -48,7 +52,7 @@ export default function WordPairingCard({
             return (
               <button
                 key={german}
-                className={className}
+                className={`${className} sw-choice btn btn-secondary`}
                 disabled={matched[german] !== undefined}
                 onClick={() => chooseGerman(german)}
               >
@@ -59,7 +63,11 @@ export default function WordPairingCard({
         </div>
         <div className="sw-pairing-col">
           {exercise.prompt.pairs.map(({ russian }) => (
-            <button key={russian} className="sw-opt" onClick={() => void chooseRussian(russian)}>
+            <button
+              key={russian}
+              className="sw-opt sw-choice btn btn-secondary"
+              onClick={() => void chooseRussian(russian)}
+            >
               {russian}
             </button>
           ))}

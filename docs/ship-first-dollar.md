@@ -9,7 +9,7 @@ Branch: `ship/first-dollar`, one PR per phase. Spec-kit governs from Phase 2 on 
 > policy. **Payments, paywall, license keys and the Pro tier are deferred until the beta review on
 > 16 Nov 2026.** Decision 4 and the original Phase 2 below are on hold, not cancelled.
 
-**The one scenario:** install from Chrome Web Store → set level → click a paragraph on any site →
+**The one scenario:** install from Chrome Web Store → set level → select text on any site → right-click "Translate to German" →
 see it in German → do 3 exercises → hit the free daily limit → pay → enter license key → unlimited.
 
 **Hard cuts:** Turkish/English targets, studio page, grammar topics, progress-dashboard polish,

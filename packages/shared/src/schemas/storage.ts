@@ -12,8 +12,6 @@ export const InstallIdSchema = z
 
 export const TranslationDensitySchema = z.enum(["low", "medium", "max"]);
 
-export const SiteStatusSchema = z.enum(["enabled", "disabled", "undecided"]);
-
 export const VocabStatusSchema = z.enum(["new", "active", "due", "learned"]);
 
 export const ExerciseKindSchema = z.enum([
@@ -27,12 +25,6 @@ export const LearnerSettingsSchema = z.object({
   level: LevelSchema,
   currentTopic: z.string().min(1),
   translationDensity: TranslationDensitySchema,
-});
-
-export const SiteRuleSchema = z.object({
-  hostname: z.string().min(1),
-  status: SiteStatusSchema,
-  grantedPermissionOrigin: z.string().nullable(),
 });
 
 export const VocabularyItemSchema = z.object({

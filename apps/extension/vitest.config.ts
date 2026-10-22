@@ -10,6 +10,8 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
+    // design-tokens.test.ts reads the token sheets as text; Vitest blanks CSS without this.
+    css: true,
     include: ["tests/unit/**/*.test.ts", "tests/unit/**/*.test.tsx"],
     setupFiles: ["./tests/unit/setup.ts"],
   },

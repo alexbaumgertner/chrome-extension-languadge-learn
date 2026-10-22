@@ -4,17 +4,14 @@ import { FIXTURE_ORIGIN } from "./ports";
 const LONG = (label: string): string =>
   `${label} padded well past the eighty character minimum threshold so the parser treats this as real article content.`;
 
-async function dispatchClick(locator: import("@playwright/test").Locator): Promise<void> {
-  await locator.evaluate((el) => el.dispatchEvent(new MouseEvent("click", { bubbles: true })));
-}
-
-test("previously translated content stays usable offline; a never-cached paragraph shows a distinct offline message", async ({
+test("previously translated content stays usable offline; a never-cached paragraph says the device is offline", async ({
   context,
   fixtureServer,
   cmsServer,
-  enableSite,
+  serviceWorker,
+  selectText,
+  clickMenu,
 }) => {
-  await enableSite("127.0.0.1");
   fixtureServer.setHtml(`<!doctype html>
 <html><body>
 <article>
@@ -28,7 +25,8 @@ test("previously translated content stays usable offline; a never-cached paragra
 
   // Online: translate and cache the first paragraph, solve one exercise.
   const cached = page.locator("#cached");
-  await dispatchClick(cached);
+  await selectText(page, "#cached");
+  await clickMenu(page, "translate");
   await expect(cached.locator(".sw-vocab").first()).toBeVisible();
   const translatedHtml = await cached.evaluate((el) => el.outerHTML);
 
@@ -49,7 +47,8 @@ test("previously translated content stays usable offline; a never-cached paragra
 
   // Revisit the previously translated paragraph — cached variant + exercises still work.
   const cachedAfterReload = page.locator("#cached");
-  await dispatchClick(cachedAfterReload);
+  await selectText(page, "#cached");
+  await clickMenu(page, "translate");
   await expect(cachedAfterReload.locator(".sw-vocab").first()).toBeVisible();
   const reTranslatedHtml = await cachedAfterReload.evaluate((el) => el.outerHTML);
   expect(reTranslatedHtml).toBe(translatedHtml);
@@ -74,9 +73,23 @@ test("previously translated content stays usable offline; a never-cached paragra
   await multipleChoice.locator(".sw-opt", { hasText: "Ruhe" }).click();
   await expect(multipleChoice.locator(".sw-opt-correct")).toBeVisible();
 
-  // A never-translated paragraph shows a distinct "unavailable offline" message, not the generic error.
+  // The browser reports no network (Playwright can't take an extension worker offline, so the
+  // worker is told so directly). A never-translated paragraph says "offline", nothing else.
+  await serviceWorker.evaluate(() =>
+    Object.defineProperty(navigator, "onLine", { configurable: true, get: () => false }),
+  );
   const neverCached = page.locator("#never-cached");
-  await dispatchClick(neverCached);
-  await expect(page.locator("text=unavailable offline")).toBeVisible({ timeout: 5000 });
-  await expect(page.locator("text=Couldn't translate")).toHaveCount(0);
+  const neverCachedBefore = await neverCached.evaluate((el) => el.outerHTML);
+  await selectText(page, "#never-cached");
+  await clickMenu(page, "translate");
+  await expect(page.getByText("You're offline.")).toBeVisible({ timeout: 5000 });
+  await expect(page.getByText("unavailable right now")).toHaveCount(0);
+  expect(await neverCached.evaluate((el) => el.outerHTML)).toBe(neverCachedBefore);
+
+  const queued = await serviceWorker.evaluate(
+    async () => (await chrome.storage.local.get("metricsQueue")).metricsQueue as unknown[],
+  );
+  expect(queued).toContainEqual(
+    expect.objectContaining({ name: "client_error", error: "translate-offline", httpStatus: null }),
+  );
 });

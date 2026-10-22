@@ -1,88 +1,56 @@
 import { useEffect, useState } from "react";
-import type {
-  GetProgressSnapshotResponse,
-  GetSiteStatusResponse,
-  SetSiteStatusResponse,
-  SiteStatus,
-} from "@sprachweise/shared";
+import type { GetProgressSnapshotResponse } from "@sprachweise/shared";
 import { sendMessage } from "@/lib/messaging/send";
+import { TRANSLATE_COMMAND } from "@/lib/page-actions";
+import { FlameIcon } from "@/lib/design/icons";
+import { t, tNode } from "@/lib/i18n";
 
 export default function App() {
-  const [hostname, setHostname] = useState<string | null>(null);
-  const [status, setStatus] = useState<SiteStatus | null>(null);
-  const [solvedToday, setSolvedToday] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [snapshot, setSnapshot] = useState<GetProgressSnapshotResponse | null>(null);
+  // undefined while loading, "" when the learner (or a conflict) left the shortcut unassigned.
+  const [shortcut, setShortcut] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    void (async () => {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      const host = tab?.url ? new URL(tab.url).hostname : null;
-      setHostname(host);
-      if (host) {
-        const res = await sendMessage<GetSiteStatusResponse>({
-          type: "GET_SITE_STATUS",
-          hostname: host,
-        });
-        setStatus(res.status);
-      }
-      const snapshot = await sendMessage<GetProgressSnapshotResponse>({
-        type: "GET_PROGRESS_SNAPSHOT",
-      });
-      setSolvedToday(snapshot.profile.solvedTodayCount);
-    })();
+    void sendMessage<GetProgressSnapshotResponse>({ type: "GET_PROGRESS_SNAPSHOT" }).then(
+      setSnapshot,
+    );
+    void chrome.commands
+      .getAll()
+      .then((commands) =>
+        setShortcut(commands.find((c) => c.name === TRANSLATE_COMMAND)?.shortcut ?? ""),
+      );
   }, []);
 
-  async function toggle(): Promise<void> {
-    if (!hostname || busy) return;
-    setBusy(true);
-    setError(null);
-    const nextStatus = status === "enabled" ? "disabled" : "enabled";
-    const res = await sendMessage<SetSiteStatusResponse>({
-      type: "SET_SITE_STATUS",
-      hostname,
-      status: nextStatus,
-    });
-    if (res.ok) {
-      setStatus(nextStatus);
-    } else {
-      setError("Permission was declined — Sprachweise stays off for this site.");
-    }
-    setBusy(false);
-  }
-
-  if (!hostname) {
-    return (
-      <div style={{ padding: 12, minWidth: 220, fontFamily: "system-ui, sans-serif" }}>
-        Sprachweise
-      </div>
-    );
-  }
+  const solvedToday = snapshot?.profile.solvedTodayCount ?? null;
 
   return (
-    <div style={{ padding: 12, minWidth: 220, fontFamily: "system-ui, sans-serif" }}>
-      <h1 style={{ fontSize: 14, margin: "0 0 4px" }}>Sprachweise</h1>
-      <p style={{ fontSize: 12, color: "#52606d", margin: "0 0 10px" }}>{hostname}</p>
-      <button
-        onClick={() => void toggle()}
-        disabled={busy || status === null}
-        style={{
-          width: "100%",
-          padding: "6px 0",
-          borderRadius: 6,
-          border: "1px solid #cbd2d9",
-          background: status === "enabled" ? "#fff" : "#1f2933",
-          color: status === "enabled" ? "#1f2933" : "#fff",
-          cursor: "pointer",
-        }}
-      >
-        {status === "enabled" ? "Disable on this site" : "Enable on this site"}
-      </button>
-      {error && <p style={{ color: "#b71c1c", fontSize: 12, marginTop: 8 }}>{error}</p>}
-      {solvedToday !== null && (
-        <p style={{ fontSize: 12, marginTop: 10 }}>
-          {solvedToday} exercise{solvedToday === 1 ? "" : "s"} solved today
+    <div className="popup">
+      <div className="popup-header">
+        <span className="brand-mark" aria-hidden="true">
+          S
+        </span>
+        <h1 className="popup-title">Sprachweise</h1>
+        {snapshot && (
+          <span className="tag tag-neutral tag-icon" title={t("popupStreak")}>
+            <FlameIcon size={12} /> {snapshot.profile.currentStreak}
+          </span>
+        )}
+      </div>
+      <div className="popup-howto">
+        <p className="popup-howto-text">
+          {tNode("popupHowto", <strong>{t("menuTranslate")}</strong>)}
         </p>
+        {shortcut !== undefined && (
+          <p className="popup-howto-meta">
+            {shortcut ? t("popupShortcut", shortcut) : t("popupNoShortcut")}
+          </p>
+        )}
+      </div>
+      {solvedToday !== null && (
+        <div className="popup-row">
+          <span>{t("popupSolvedToday")}</span>
+          <strong>{solvedToday}</strong>
+        </div>
       )}
     </div>
   );

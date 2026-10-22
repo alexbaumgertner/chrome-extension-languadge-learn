@@ -73,7 +73,7 @@ Primary key: `(provider, period_key)`. A request that would proceed reads-then-c
 
 | Var | Purpose | Example default |
 |---|---|---|
-| `TRANSLATE_MAX_CHARS` | FR-003a request-text length cap | `5000` |
+| `TRANSLATE_MAX_CHARS` | FR-003a request-text length cap (413 when exceeded) | `1500` (shared constant) |
 | `TRANSLATE_MONTHLY_CHAR_ALLOWANCE` | Translation API usage-ledger cap | `500000` |
 | `GEMINI_DAILY_REQUEST_ALLOWANCE` | Gemini usage-ledger cap | `1500` |
 | `GOOGLE_TRANSLATE_API_KEY` | provider auth | — (secret) |
