@@ -8,7 +8,8 @@
 //
 // Dashboard texts come from these files in --store-dir (default: store). A missing one renders as
 // a loud PLACEHOLDER and a warning in the checklist; it does not fail the release.
-//   description.txt                         Store listing → Description
+//   description.txt                         Store listing → Description, Russian (primary)
+//   description.en.txt                      Store listing → Description, English
 //   permissions.json                        {"<permission or host pattern>": "<justification>"}
 //     (or permissions.md, pasted as is)
 //   test-instructions.txt (or .md)          Test instructions → Additional instructions
@@ -96,9 +97,9 @@ function renderSummary() {
     .join("\n\n");
 }
 
-function renderDescription() {
-  const file = readStore("description.txt");
-  if (!file) return placeholder("store/description.txt", "detailed description");
+function renderDescription(name, language) {
+  const file = readStore(name);
+  if (!file) return placeholder(`store/${name}`, `${language} detailed description`);
   const n = length(file.text);
   const verdict = n <= DESCRIPTION_LIMIT ? "within the limit" : "**over the limit**";
   return `${n.toLocaleString("en-US")} / 16,000 characters, ${verdict}\n\n${fenced(file.text)}`;
@@ -163,7 +164,9 @@ function renderChecklist() {
   if (missingFiles.length) {
     lines.push(`warn\tStore texts present in store/\tmissing: ${missingFiles.join(", ")}`);
   } else {
-    lines.push("pass\tStore texts present in store/\tdescription, permissions, test instructions");
+    lines.push(
+      "pass\tStore texts present in store/\tdescriptions (ru, en), permissions, test instructions",
+    );
   }
   const marks = { pass: "- [x]", warn: "- [ ] ⚠️", fail: "- [ ] ❌" };
   return lines
@@ -193,7 +196,8 @@ const values = {
   cms_base_url: opts["cms-base-url"],
   privacy_url: `${opts["cms-base-url"]}/privacy`,
   summary: renderSummary(),
-  description: renderDescription(),
+  description: renderDescription("description.txt", "Russian"),
+  description_en: renderDescription("description.en.txt", "English"),
   permissions: renderPermissions(),
   test_instructions: renderTestInstructions(),
 };

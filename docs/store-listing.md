@@ -13,7 +13,8 @@ Release for the version you're submitting. The workflow renders it from
 | Dashboard field | Source |
 | --- | --- |
 | Store listing → Summary | manifest, `extDescription` in `apps/extension/public/_locales/*/messages.json` |
-| Store listing → Description | `store/description.txt` |
+| Store listing → Description (Russian, primary) | `store/description.txt` |
+| Store listing → Description (English) | `store/description.en.txt` |
 | Privacy practices → Permission justification | `store/permissions.json` (or `store/permissions.md`) |
 | Test instructions → Additional instructions | `store/test-instructions.txt` (or `.md`) |
 | Single purpose, remote code, data usage, privacy policy URL | `store/release-notes.md.tmpl` itself |
@@ -54,10 +55,9 @@ length.
 
 ### Detailed description
 
-From [`store/description.txt`](../store/description.txt) (Russian, the primary listing language).
-The release body shows it with its length against the 16,000-character limit. The English text for
-the second listing language is in [`store/description.en.txt`](../store/description.en.txt); the
-release body doesn't include it, so copy it from the file.
+Russian, the primary listing language: [`store/description.txt`](../store/description.txt).
+English, the second listing language: [`store/description.en.txt`](../store/description.en.txt).
+The release body shows both, each with its length against the 16,000-character limit.
 
 ### Graphics (`docs/store-assets/`, rendered by `pnpm --filter @sprachweise/extension store:assets`)
 
