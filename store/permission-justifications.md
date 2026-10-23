@@ -18,8 +18,8 @@ the extension.
 
 Adds two right-click items: "Translate to German (Sprachweise)", shown only when text is selected,
 and "Restore original text (Sprachweise)", shown only while the current tab displays a translation.
-Choosing the translate item is how the user starts every translation; nothing is read or sent before
-that.
+Choosing the translate item is how the user starts every translation; no page content is read and no
+text is sent before that.
 
 ## `activeTab`
 

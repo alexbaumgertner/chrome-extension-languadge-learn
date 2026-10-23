@@ -14,7 +14,7 @@ Consistent with the published policy, <https://sprachweise.vercel.app/privacy> (
 | `POST /api/report`            | Only when the user clicks "Bad translation" ("Плохой перевод")                   | The source text, the German translation shown, level, density (a vestigial fixed value with no UI, tracked in issue #7), model name, prompt version                                                                                   | Install ID                                        |
 | `GET /api/health` (`no-cors`) | Only after a failed translation request, to tell "server down" from "blocked"    | Nothing (no body, no data)                                                                                                                                                                                                            | Everything                                        |
 
-Nothing is read or sent before the user's menu click or shortcut. The page address is never sent.
+Page content is never read, and no text is sent, before the user's menu click or shortcut. The page address is never sent. The only request made without that action is the `install` usage event (with the random install ID) that the extension sends once when it is installed, and later retries of unsent events at browser start.
 
 ## Data types to declare
 
