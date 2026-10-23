@@ -22,6 +22,9 @@ describe("GET /privacy", () => {
       'only after you\nchoose "Translate to German (Sprachweise)"',
       "1,500 characters",
       "Перевести на немецкий (Sprachweise)",
+      // The exercises request carries derived text, so the policy says so.
+      "Text for exercises",
+      "Текст для упражнений",
     ]) {
       expect(html).toContain(phrase);
     }

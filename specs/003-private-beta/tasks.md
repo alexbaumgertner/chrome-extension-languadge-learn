@@ -3,7 +3,8 @@
 **Input**: [spec.md](./spec.md), [plan.md](./plan.md). Small commits, one concern each.
 
 > **Handoff (2026-10-19, end of Part 1, branch `003-private-beta-part1`)**
-> - **Done:** T9 per-site content scripts (no install warning), install ID, event collection +
+> - **Done:** T9 per-site content scripts (no install warning; superseded on 2026-10-19 by the
+>   context-menu trigger: no content scripts and no host permissions at all), install ID, event collection +
 >   `metrics.sql`, "Плохой перевод" reports, `/privacy`, store package (`pnpm store:zip`,
 >   `docs/store-listing.md`, `docs/store-assets/`).
 > - **Not done:** production deploy of this branch. It was blocked by a permission check in the
@@ -14,7 +15,7 @@
 > - **Contact email:** `alex.baumgertner+sprachweise@gmail.com` (privacy policy).
 > - **Open questions:** confirm the Gemini API key's project is on paid billing (Gemini API terms allow only Paid Services for
 >   users in the EEA, Switzerland or the UK); whether to tick "Location" in the store's data form
->   (see `docs/store-listing.md`).
+>   (resolved: yes, IP address in Vercel's logs; see `store/data-usage.md`).
 
 - [x] T1 Model quality judge pass (pick the launch model) — owner chose `gemini-3.8-flash` / thinking `low` (PR #2)
 - [x] T2 Shared schemas: `installId`, metric events batch, `cache` on translate response; report request; report message (+ tests)

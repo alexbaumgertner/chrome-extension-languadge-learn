@@ -4,8 +4,8 @@
  * stores (src/db.ts) and for how long (RETENTION_DAYS, the write-once translation cache). Gemini's
  * and Vercel's handling is linked, not paraphrased.
  */
-const UPDATED_RU = "19 октября 2026";
-const UPDATED_EN = "19 October 2026";
+const UPDATED_RU = "23 октября 2026";
+const UPDATED_EN = "23 October 2026";
 const CONTACT = "alex.baumgertner+sprachweise@gmail.com";
 
 const GEMINI_TERMS = "https://ai.google.dev/gemini-api/terms";
@@ -29,8 +29,12 @@ const RU = `
 <li><strong>Выделенный вами текст</strong> и выбранный уровень (A1–A2, B1–B2, C1+). Только после
 того, как вы выбрали пункт меню «Перевести на немецкий (Sprachweise)» или нажали сочетание клавиш
 расширения. Отправляется только выделенный текст (если выделен уже переведённый текст — исходный
-текст этого абзаца); за один раз — не больше 1500 знаков. До вашего выбора расширение не видит страницу и ничего не отправляет. Адрес
+текст этого абзаца); за один раз — не больше 1500 знаков. До вашего выбора расширение не видит страницу и не отправляет ни текста, ни адресов (единственное исключение — событие установки, см. «Метрики использования»). Адрес
 страницы и остальной текст страницы не отправляются.</li>
+<li><strong>Текст для упражнений.</strong> После перевода расширение отправляет на наш сервер полученный
+немецкий текст, подсвеченные слова с русскими подсказками и уровень, чтобы собрать упражнения. Это
+вычисление на нашем сервере: Google Gemini для упражнений не вызывается, идентификатор установки не
+отправляется, ничего из этого не хранится.</li>
 <li><strong>Метрики использования</strong> со <strong>случайным идентификатором установки</strong>
 (UUID, который расширение создаёт при установке; он не связан с вашим именем, почтой, устройством
 или аккаунтом). С ним уходят только события: установка; абзац переведён (взят ли перевод из общего
@@ -91,7 +95,7 @@ IP-адреса в свою базу, и журналы нашего прило�
 локально. Постоянного доступа к сайтам у расширения нет.</p>
 
 <h2>Ваш выбор</h2>
-<p>Не выбирайте пункт меню — ничего не будет отправлено. Удалите расширение —
+<p>Не выбирайте пункт меню — ни текст, ни адрес страницы отправлены не будут (останется только событие установки со случайным идентификатором). Удалите расширение —
 локальные данные удалятся, а события на сервере удалятся через 90 дней. Вопросы и просьбы об
 удалении: <a href="mailto:${CONTACT}">${CONTACT}</a>.</p>
 </section>`;
@@ -111,7 +115,11 @@ what leaves your device, where it is stored and for how long.</p>
 choose "Translate to German (Sprachweise)" from the right-click menu or press the extension's
 keyboard shortcut. Only the selected text is sent (for text already shown in German, the original
 text of that paragraph); at most 1,500 characters at a time. Until you make that choice the extension cannot see the page and
-sends nothing. The page address and the rest of the page are not sent.</li>
+sends no text and no addresses (the one exception is the install event, see "Usage metrics"). The page address and the rest of the page are not sent.</li>
+<li><strong>Text for exercises.</strong> After a translation the extension sends our server the German
+text it received, the highlighted words with their Russian glosses and the level, so the server can build
+the exercises. This is computed on our server: Google Gemini is not called for exercises, the install ID
+is not sent and none of it is stored.</li>
 <li><strong>Usage metrics</strong> with a <strong>random install ID</strong> (a UUID the extension
 creates when installed; it is not derived from your name, email, device or any account). Only these
 events are sent with it: install; paragraph translated (whether it came from the shared cache and
@@ -171,7 +179,7 @@ moment you choose one of those items or press the extension's keyboard shortcut;
 your data locally. The extension has no standing access to any website.</p>
 
 <h2>Your choices</h2>
-<p>If you don't choose the menu item, nothing is sent. Uninstall the extension and local data is
+<p>If you don't choose the menu item, no text and no page address is sent (only the install event with the random ID). Uninstall the extension and local data is
 removed; server-side events expire after 90 days. Questions and deletion requests:
 <a href="mailto:${CONTACT}">${CONTACT}</a>.</p>
 </section>`;

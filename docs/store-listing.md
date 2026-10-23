@@ -15,9 +15,16 @@ Release for the version you're submitting. The workflow renders it from
 | Store listing → Summary | manifest, `extDescription` in `apps/extension/public/_locales/*/messages.json` |
 | Store listing → Description (Russian, primary) | `store/description.txt` |
 | Store listing → Description (English) | `store/description.en.txt` |
-| Privacy practices → Permission justification | `store/permissions.json` (or `store/permissions.md`) |
-| Test instructions → Additional instructions | `store/test-instructions.txt` (or `.md`) |
-| Single purpose, remote code, data usage, privacy policy URL | `store/release-notes.md.tmpl` itself |
+| Privacy practices → Single purpose | `store/single-purpose.txt` |
+| Privacy practices → Permission justification | `store/permissions.json` (readable version: `store/permission-justifications.md`) |
+| Privacy practices → Remote code | `store/remote-code.md` |
+| Privacy practices → Data usage | `store/data-usage.md` |
+| Test instructions → Additional instructions | `store/test-instructions.txt` (copy in `store/test-instructions.md`) |
+| Privacy policy URL | `<API base URL>/privacy`, filled in by `store/release-notes.md.tmpl` |
+
+`pnpm check:store` (run in CI) fails when these copies drift apart: the summary against the manifest,
+permission justifications against the built manifest, the `.md` copy against the `.txt`, and the
+character cap against `TRANSLATE_MAX_CHARS`.
 
 If a `store/*` file is missing, the release body shows a PLACEHOLDER warning in its place and the
 pre-release checklist gets a warning; the release itself doesn't fail. The workflow reads the files
@@ -74,9 +81,7 @@ exercise generator, so they never call production.
 
 ## Privacy practices tab
 
-**Single purpose:**
-> Replaces text the user selects and sends to it from the right-click menu with a German version
-> at the user's level, with vocabulary glosses and exercises built from that text.
+**Single purpose:** [`store/single-purpose.txt`](../store/single-purpose.txt).
 
 ### Permission justifications
 
@@ -87,35 +92,14 @@ justification, flags any that have none, and names entries the manifest no longe
 The keyboard shortcut (`commands`, suggested Alt+Shift+G) does the same as the menu item, for
 sites that replace the right-click menu. It needs no permission and shows no warning.
 
-**Remote code:** No. All JavaScript is in the package; the server returns JSON only.
+**Remote code:** No. Answer and the checks behind it: [`store/remote-code.md`](../store/remote-code.md).
 
 ### Data usage
 
-The release body carries the same table (`store/release-notes.md.tmpl`); keep the two in sync.
-
-Tick these data types:
-
-| Data type | Collected? | What and why |
-| --- | --- | --- |
-| Personally identifiable information | No | |
-| Health information | No | |
-| Financial and payment information | No | |
-| Authentication information | No | |
-| Personal communications | No | |
-| Location | **Yes** | IP address only, in Vercel's request logs (see note). |
-| Web history | No | No URLs, titles or visit times. |
-| User activity | **Yes** | Usage events tied to a random install ID: paragraph translated (server cache hit/miss, latency), exercise completed, error codes. Used only for usage metrics. |
-| Website content | **Yes** | The text the user selects and sends with "Translate to German" (at most 1,500 characters at a time), sent to our server and Google Gemini to translate it; on an explicit "Bad translation" ("Плохой перевод") click, that text and its translation for quality review. Nothing is read or sent before the user chooses the menu item. |
-
-Note on Location: our app does not store IP addresses, but Vercel's request logs record them (the
-privacy policy says so). Google's form defines Location as including IP address, and the form must
-match the policy, so Location is ticked.
-
-Certify all three:
-
-- I do not sell or transfer user data to third parties, outside of the approved use cases.
-- I do not use or transfer user data for purposes that are unrelated to my item's single purpose.
-- I do not use or transfer user data to determine creditworthiness or for lending purposes.
+[`store/data-usage.md`](../store/data-usage.md) is the single source: what each request sends, which
+data types to tick (Location, User activity, Website content, with the reasoning for Location),
+purposes, retention and the three certifications. It must match the published privacy policy
+(`apps/cms/src/privacy/policy.ts`); the release body renders it as is.
 
 **Privacy policy URL:** `https://sprachweise.vercel.app/privacy`
 

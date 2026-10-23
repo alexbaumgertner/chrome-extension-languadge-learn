@@ -14,6 +14,7 @@
     "test": "pnpm -r test",
     "test:unit": "pnpm -r test:unit",
     "test:integration": "pnpm -r test:integration",
+    "check:store": "node .github/scripts/check-store-texts.mjs",
     "store:zip": "pnpm --filter @sprachweise/extension store:zip",
     "build:release": "pnpm --filter @sprachweise/extension build:release"
   },
