@@ -129,7 +129,8 @@ commit:
 
 | File                                                 | Dashboard field                              |
 | ---------------------------------------------------- | -------------------------------------------- |
-| `store/description.txt`                              | Store listing → Description                  |
+| `store/description.txt`                              | Store listing → Description (Russian)        |
+| `store/description.en.txt`                           | Store listing → Description (English)        |
 | `store/permissions.json` (or `store/permissions.md`) | Privacy practices → Permission justification |
 | `store/test-instructions.txt` (or `.md`)             | Test instructions → Additional instructions  |
 
