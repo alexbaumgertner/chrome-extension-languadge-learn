@@ -6,8 +6,9 @@
 #     CHECKLIST=checklist.tsv .github/scripts/smoke-backend.sh
 #
 # Each check is appended to CHECKLIST as "pass|warn|fail<TAB>check<TAB>detail" for the release
-# notes. Fails (exit 1) on 401, 403, 5xx, no response, or a missing CORS grant for the extension
-# origin. Other 4xx (404 unknown route, 429 daily allowance used up) are warnings.
+# notes. Fails (exit 1) on no response, 5xx, any 4xx a route doesn't tolerate, a missing CORS grant
+# for the extension origin, or a 2xx body the extension's response schema rejects. Tolerated, as
+# warnings: 429 (daily allowance used up) on /api/translate and /api/exercises, and 404 on /api/tts.
 #
 # /api/translate makes one real, cheap call (a fixed sentence, so a cache hit after the first run).
 # /api/exercises is pure computation on the backend.
@@ -27,6 +28,7 @@ TTS_BODY='{"text":"Heute ist das Wetter schön.","lang":"de-DE"}'
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 failed=0
+repo="$(cd "$(dirname "$0")/../.." && pwd)"
 
 record() { # status check detail
   local detail="${3//[$'\t\r\n']/ }" mark
@@ -77,8 +79,14 @@ else
   record fail "GET /privacy" "status ${status}, content-type ${type:-none} $(cat "$tmp/curl-error")"
 fi
 
-check_api() { # path body
-  local path="$1" body="$2" status verdict allow methods headers
+# Validates $tmp/body with the extension's response schema; prints a summary or the problem.
+check_body() { # route
+  pnpm --silent --filter @sprachweise/cms exec tsx "$repo/.github/scripts/check-api-response.ts" \
+    "$1" "$tmp/body" 2>&1
+}
+
+check_api() { # path body tolerated-4xx schema-route
+  local path="$1" body="$2" tolerated=" $3 " route="$4" status verdict allow methods headers summary
 
   # Preflight, as Chrome sends it before the background worker's JSON POST.
   status="$(request OPTIONS "$path" \
@@ -103,25 +111,32 @@ check_api() { # path body
     --header "Content-Type: application/json" \
     --data-binary "$body")"
   verdict="$(classify "$status")"
+  # A 4xx the route doesn't tolerate means the backend rejects the extension's own request shape.
+  if [[ "$verdict" == warn && "$tolerated" != *" $status "* ]]; then verdict=fail; fi
   allow="$(header "$tmp/headers" access-control-allow-origin)"
-  case "$status" in
-    404) record "$verdict" "POST ${path}" "404: route not found on this backend" ;;
-    429) record "$verdict" "POST ${path}" "429: backend alive, daily allowance used up" ;;
-    *)
-      if [[ "$verdict" == pass ]] && ! allows_origin "$allow"; then
-        record fail "POST ${path}" "${status}, but no allow-origin for ${EXTENSION_ORIGIN}"
-      elif [[ "$verdict" == pass ]]; then
-        record pass "POST ${path}" "${status}, allow-origin ${allow}"
-      else
-        record "$verdict" "POST ${path}" "status ${status} $(head -c 200 "$tmp/body") $(cat "$tmp/curl-error")"
-      fi
-      ;;
-  esac
+  if [[ "$verdict" == pass ]] && ! allows_origin "$allow"; then
+    record fail "POST ${path}" "${status}, but no allow-origin for ${EXTENSION_ORIGIN}"
+  elif [[ "$verdict" == pass && -n "$route" ]]; then
+    if summary="$(check_body "$route")"; then
+      record pass "POST ${path}" "${status}, allow-origin ${allow}, ${summary}"
+    else
+      record fail "POST ${path}" "${status}, ${summary}"
+    fi
+  elif [[ "$verdict" == pass ]]; then
+    record pass "POST ${path}" "${status}, allow-origin ${allow}"
+  elif [[ "$verdict" == warn && "$status" == 404 ]]; then
+    record warn "POST ${path}" "404: route not found on this backend"
+  elif [[ "$verdict" == warn && "$status" == 429 ]]; then
+    record warn "POST ${path}" "429: backend alive, daily allowance used up"
+  else
+    record "$verdict" "POST ${path}" "status ${status} $(head -c 200 "$tmp/body") $(cat "$tmp/curl-error")"
+  fi
 }
 
-check_api /api/translate "$TRANSLATE_BODY"
-check_api /api/exercises "$EXERCISES_BODY"
-check_api /api/tts "$TTS_BODY"
+check_api /api/translate "$TRANSLATE_BODY" "429" translate
+check_api /api/exercises "$EXERCISES_BODY" "429" exercises
+# No response schema in packages/shared for /api/tts yet; only status and CORS are checked.
+check_api /api/tts "$TTS_BODY" "404" ""
 
 if ((failed)); then
   echo "Backend smoke test FAILED against ${CMS_BASE_URL}" >&2

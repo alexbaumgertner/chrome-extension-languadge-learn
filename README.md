@@ -111,8 +111,11 @@ The `build-release` job then:
    permissions and version. Then computes its SHA-256.
 5. Smoke-tests the backend with `.github/scripts/smoke-backend.sh` the way the store extension
    calls it: `/privacy`, `/api/translate`, `/api/exercises`, `/api/tts` and their CORS preflights
-   for `chrome-extension://<CWS_ITEM_ID>`. 401, 403, 5xx, no response or a missing CORS grant
-   fail the release; other 4xx (404, 429) are warnings.
+   for `chrome-extension://<CWS_ITEM_ID>`. The preflights must allow the origin, `POST` and
+   `Content-Type`; translate and exercises bodies are checked against the extension's response
+   schemas (`packages/shared`). No response, 5xx, any other 4xx, a missing CORS grant or a body the
+   extension would reject fail the release. Tolerated as warnings: 429 (daily allowance used up)
+   on translate and exercises, 404 on `/api/tts` (no such route yet).
 6. Creates the GitHub Release `vX.Y.Z` (or updates it on a re-run) with the zip and
    `<zip>.sha256` attached. The body, rendered by `.github/scripts/render-release-notes.mjs` from
    `store/release-notes.md.tmpl`, holds the changelog since the previous tag, the package facts,
