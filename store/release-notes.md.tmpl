@@ -45,9 +45,9 @@ characters.
 
 ### Privacy practices → Single purpose
 
-```text
-Replaces text the user selects and sends to it from the right-click menu with a German version at the user's level, with vocabulary glosses and exercises built from that text.
-```
+From `store/single-purpose.txt`.
+
+{{single_purpose}}
 
 ### Privacy practices → Permission justification
 
@@ -57,27 +57,15 @@ Every permission and host the release manifest requests, with its justification 
 
 ### Privacy practices → Remote code
 
-**No, I am not using remote code.** All JavaScript is in the package; the server returns JSON only.
+From `store/remote-code.md`.
+
+{{remote_code}}
 
 ### Privacy practices → Data usage
 
-| Data type | Collected? | What and why |
-| --- | --- | --- |
-| Personally identifiable information | No | |
-| Health information | No | |
-| Financial and payment information | No | |
-| Authentication information | No | |
-| Personal communications | No | |
-| Location | **Yes** | IP address only: Vercel's request logs record it, as the privacy policy says. The app doesn't store it and asks for no other location data. |
-| Web history | No | No URLs, titles or visit times. |
-| User activity | **Yes** | Usage events tied to a random install ID: paragraph translated (cache hit/miss, latency), exercise completed, error codes. Only for usage metrics. |
-| Website content | **Yes** | The text the user selects and sends with "Translate to German" (at most 1,500 characters at a time), sent to our server and Google Gemini to translate it; on an explicit "Bad translation" ("Плохой перевод") click, that text and its translation for quality review. |
+From `store/data-usage.md`.
 
-Certify all three:
-
-- [ ] I do not sell or transfer user data to third parties, outside of the approved use cases.
-- [ ] I do not use or transfer user data for purposes that are unrelated to my item's single purpose.
-- [ ] I do not use or transfer user data to determine creditworthiness or for lending purposes.
+{{data_usage}}
 
 ### Privacy practices → Privacy policy URL
 

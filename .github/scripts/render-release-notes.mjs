@@ -13,6 +13,9 @@
 //   permissions.json                        {"<permission or host pattern>": "<justification>"}
 //     (or permissions.md, pasted as is)
 //   test-instructions.txt (or .md)          Test instructions → Additional instructions
+//   single-purpose.txt                      Privacy practices → Single purpose
+//   remote-code.md                          Privacy practices → Remote code (answer + justification)
+//   data-usage.md                           Privacy practices → Data usage (table + certifications)
 //
 // The checklist file has one "pass|warn|fail<TAB>check<TAB>detail" line per check.
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -152,6 +155,26 @@ const cell = (text) => text.replace(/\|/g, "\\|").replace(/\s*\n\s*/g, " ");
 const table = (rows) =>
   ["| Permission | Kind | Justification |", "| --- | --- | --- |", ...rows].join("\n");
 
+/** The single purpose, fenced for copying into the dashboard verbatim. */
+function renderSinglePurpose() {
+  const file = readStore("single-purpose.txt");
+  if (!file) return placeholder("store/single-purpose.txt", "single purpose");
+  return fenced(file.text);
+}
+
+/**
+ * A store markdown file pasted into a release-body section: its own "# title" is dropped and the
+ * other headings move down two levels, so they nest under the section's "###" heading.
+ */
+function renderMarkdown(name, what) {
+  const file = readStore(name);
+  if (!file) return placeholder(`store/${name}`, what);
+  return file.text
+    .replace(/^# .*\n+/, "")
+    .replace(/^(#{2,4}) /gm, (_, hashes) => `##${hashes} `)
+    .trim();
+}
+
 function renderTestInstructions() {
   const file = readStore("test-instructions.txt", "test-instructions.md");
   if (!file)
@@ -165,7 +188,7 @@ function renderChecklist() {
     lines.push(`warn\tStore texts present in store/\tmissing: ${missingFiles.join(", ")}`);
   } else {
     lines.push(
-      "pass\tStore texts present in store/\tdescriptions (ru, en), permissions, test instructions",
+      "pass\tStore texts present in store/\tdescriptions (ru, en), permissions, single purpose, remote code, data usage, test instructions",
     );
   }
   const marks = { pass: "- [x]", warn: "- [ ] ⚠️", fail: "- [ ] ❌" };
@@ -199,6 +222,9 @@ const values = {
   description: renderDescription("description.txt", "Russian"),
   description_en: renderDescription("description.en.txt", "English"),
   permissions: renderPermissions(),
+  single_purpose: renderSinglePurpose(),
+  remote_code: renderMarkdown("remote-code.md", "remote code answer"),
+  data_usage: renderMarkdown("data-usage.md", "data usage answers"),
   test_instructions: renderTestInstructions(),
 };
 values.checklist = renderChecklist();

@@ -111,13 +111,14 @@ The `build-release` job then:
    `apps/extension/scripts/verify-release.mjs`: no local hosts or test hooks, the expected
    permissions and version. Then computes its SHA-256.
 5. Smoke-tests the backend with `.github/scripts/smoke-backend.sh` the way the store extension
-   calls it: `/privacy`, `/api/translate`, `/api/exercises`, `/api/tts` and their CORS preflights
+   calls it: `/privacy`, `/api/translate`, `/api/exercises` and their CORS preflights (plus `/api/tts`,
+   expected to answer 404: dictation uses the browser's speech synthesis and the extension never calls it)
    for `chrome-extension://<CWS_ITEM_ID>`. `/api/report` and `/api/events` get a preflight and an
    empty POST that must come back 400 from validation, so nothing is written to production. The preflights must allow the origin, `POST` and
    `Content-Type`; translate and exercises bodies are checked against the extension's response
    schemas (`packages/shared`). No response, 5xx, any other 4xx, a missing CORS grant or a body the
    extension would reject fail the release. Tolerated as warnings: 429 (daily allowance used up)
-   on translate and exercises, 404 on `/api/tts` (no such route yet).
+   on translate and exercises, 404 on `/api/tts` (no such route, by design).
 6. Creates the GitHub Release `vX.Y.Z` (or updates it on a re-run) with the zip and
    `<zip>.sha256` attached. The body, rendered by `.github/scripts/render-release-notes.mjs` from
    `store/release-notes.md.tmpl`, holds the changelog since the previous tag, the package facts,

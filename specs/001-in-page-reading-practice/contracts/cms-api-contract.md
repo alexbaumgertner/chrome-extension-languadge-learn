@@ -40,6 +40,9 @@ Constraints: 0–4 entries; the CMS (or background, post-validation) omits kinds
 
 ## POST /api/tts
 
+> **Superseded (spec 002, `docs/ship-first-dollar.md`).** The backend has no `/api/tts` route and the
+> extension never calls it; dictation uses the browser's `speechSynthesis`. Kept as history.
+
 Request body:
 ```
 { sentence: string, rate: 'normal' | 'slow' }
