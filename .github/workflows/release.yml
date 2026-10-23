@@ -32,6 +32,7 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       zip: ${{ steps.package.outputs.zip }}
       sha256: ${{ steps.package.outputs.sha256 }}
+      item_id: ${{ steps.vars.outputs.item_id }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -87,7 +88,7 @@ jobs:
           printf 'pass\tAPI base URL from vars.WXT_CMS_BASE_URL\t%s\n' "$WXT_CMS_BASE_URL" >>"$RELEASE_DIR/checklist.tsv"
           if [[ -z "$ITEM_ID" ]]; then
             ITEM_ID=ahkgdlbpociadhocjjomkkeliiligebj
-            echo "::notice::Repository variable CWS_ITEM_ID is empty; using the known store item $ITEM_ID for the CORS check and the notes."
+            echo "::notice::Repository variable CWS_ITEM_ID is empty; using the known store item $ITEM_ID for the CORS check, the notes and the store upload."
           fi
           echo "item_id=$ITEM_ID" >>"$GITHUB_OUTPUT"
 
@@ -201,7 +202,8 @@ jobs:
           CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
           CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
           CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
-          CWS_ITEM_ID: ${{ vars.CWS_ITEM_ID }}
+          # Resolved in build-release (vars.CWS_ITEM_ID or the known item), so both jobs use the same one.
+          CWS_ITEM_ID: ${{ needs.build-release.outputs.item_id }}
           EXPECTED_VERSION: ${{ needs.build-release.outputs.version }}
           ZIP: ${{ needs.build-release.outputs.zip }}
         run: node .github/scripts/cws-publish.mjs "$RUNNER_TEMP/$ZIP"
