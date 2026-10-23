@@ -133,15 +133,20 @@ commit:
 | ---------------------------------------------------- | -------------------------------------------- |
 | `store/description.txt`                              | Store listing → Description (Russian)        |
 | `store/description.en.txt`                           | Store listing → Description (English)        |
+| `store/single-purpose.txt`                           | Privacy practices → Single purpose           |
 | `store/permissions.json` (or `store/permissions.md`) | Privacy practices → Permission justification |
+| `store/remote-code.md`                               | Privacy practices → Remote code              |
+| `store/data-usage.md`                                | Privacy practices → Data usage               |
 | `store/test-instructions.txt` (or `.md`)             | Test instructions → Additional instructions  |
 
 `permissions.json` maps each permission or host pattern to its justification:
-`{"storage": "…"}`. `permissions.md` is pasted as is. A missing file shows up as a PLACEHOLDER in
-the body and a warning in the checklist; it doesn't fail the release. The summary comes from the
-manifest (`extDescription` in `_locales/*/messages.json`); single purpose, remote code, data usage
-and the privacy policy URL are in the template. See `docs/store-listing.md` for the rest of the
-listing.
+`{"storage": "…"}`. `permissions.md` is pasted as is. `store/permission-justifications.md`,
+`test-instructions.md` and `summary.txt` are readable copies that the release does not read. A missing
+file shows up as a PLACEHOLDER in the body and a warning in the checklist; it doesn't fail the release.
+The summary comes from the manifest (`extDescription` in `_locales/*/messages.json`); the privacy
+policy URL is in the template. To change any dashboard text, edit its file in `store/`, not the
+template. `pnpm check:store` (also run in CI) fails when the copies, the manifest, the privacy policy
+and the character cap disagree. See `docs/store-listing.md` for the rest of the listing.
 
 ### Upload to the Chrome Web Store
 
