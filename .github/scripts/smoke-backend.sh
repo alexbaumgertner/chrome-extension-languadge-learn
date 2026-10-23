@@ -78,7 +78,7 @@ else
 fi
 
 check_api() { # path body
-  local path="$1" body="$2" status verdict allow methods
+  local path="$1" body="$2" status verdict allow methods headers
 
   # Preflight, as Chrome sends it before the background worker's JSON POST.
   status="$(request OPTIONS "$path" \
@@ -87,11 +87,15 @@ check_api() { # path body
     --header "Access-Control-Request-Headers: content-type")"
   allow="$(header "$tmp/headers" access-control-allow-origin)"
   methods="$(header "$tmp/headers" access-control-allow-methods)"
-  if [[ "$(classify "$status")" == pass ]] && allows_origin "$allow" && [[ "$methods" == *POST* ]]; then
-    record pass "CORS preflight ${path}" "${status}, allow-origin ${allow}, allow-methods ${methods}"
+  headers="$(header "$tmp/headers" access-control-allow-headers)"
+  # The POST sends Content-Type: application/json, so Chrome blocks it unless the preflight allows it.
+  if [[ "$(classify "$status")" == pass ]] && allows_origin "$allow" && [[ "$methods" == *POST* ]] \
+    && [[ "${headers,,}" == *content-type* || "$headers" == "*" ]]; then
+    record pass "CORS preflight ${path}" \
+      "${status}, allow-origin ${allow}, allow-methods ${methods}, allow-headers ${headers}"
   else
     record fail "CORS preflight ${path}" \
-      "status ${status}, allow-origin ${allow:-none}, allow-methods ${methods:-none} $(cat "$tmp/curl-error")"
+      "status ${status}, allow-origin ${allow:-none}, allow-methods ${methods:-none}, allow-headers ${headers:-none} $(cat "$tmp/curl-error")"
   fi
 
   status="$(request POST "$path" \

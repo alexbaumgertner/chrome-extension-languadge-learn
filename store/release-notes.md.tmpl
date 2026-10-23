@@ -60,7 +60,7 @@ Every permission and host the release manifest requests, with its justification 
 | Financial and payment information | No | |
 | Authentication information | No | |
 | Personal communications | No | |
-| Location | No (see `docs/store-listing.md`) | No IP addresses stored by the app; Vercel request logs record them, as the privacy policy says. |
+| Location | **Yes** | IP address only: Vercel's request logs record it, as the privacy policy says. The app doesn't store it and asks for no other location data. |
 | Web history | No | No URLs, titles or visit times. |
 | User activity | **Yes** | Usage events tied to a random install ID: paragraph translated (cache hit/miss, latency), exercise completed, error codes. Only for usage metrics. |
 | Website content | **Yes** | The text the user selects and sends with "Translate to German" (at most 1,500 characters at a time), sent to our server and Google Gemini to translate it; on an explicit "Плохой перевод" click, that text and its translation for quality review. |
