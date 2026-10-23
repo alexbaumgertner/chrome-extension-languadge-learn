@@ -111,7 +111,8 @@ The `build-release` job then:
    permissions and version. Then computes its SHA-256.
 5. Smoke-tests the backend with `.github/scripts/smoke-backend.sh` the way the store extension
    calls it: `/privacy`, `/api/translate`, `/api/exercises`, `/api/tts` and their CORS preflights
-   for `chrome-extension://<CWS_ITEM_ID>`. The preflights must allow the origin, `POST` and
+   for `chrome-extension://<CWS_ITEM_ID>`. `/api/report` and `/api/events` get a preflight and an
+   empty POST that must come back 400 from validation, so nothing is written to production. The preflights must allow the origin, `POST` and
    `Content-Type`; translate and exercises bodies are checked against the extension's response
    schemas (`packages/shared`). No response, 5xx, any other 4xx, a missing CORS grant or a body the
    extension would reject fail the release. Tolerated as warnings: 429 (daily allowance used up)

@@ -11,7 +11,8 @@
 # warnings: 429 (daily allowance used up) on /api/translate and /api/exercises, and 404 on /api/tts.
 #
 # /api/translate makes one real, cheap call (a fixed sentence, so a cache hit after the first run).
-# /api/exercises is pure computation on the backend.
+# /api/exercises is pure computation on the backend. /api/report and /api/events get only an
+# empty body, which their validation refuses before any write.
 set -euo pipefail
 
 : "${CMS_BASE_URL:?CMS_BASE_URL is not set}"
@@ -85,10 +86,9 @@ check_body() { # route
     "$1" "$tmp/body" 2>&1
 }
 
-check_api() { # path body tolerated-4xx schema-route
-  local path="$1" body="$2" tolerated=" $3 " route="$4" status verdict allow methods headers summary
-
-  # Preflight, as Chrome sends it before the background worker's JSON POST.
+# Preflight, as Chrome sends it before the background worker's JSON POST.
+check_preflight() { # path
+  local path="$1" status allow methods headers
   status="$(request OPTIONS "$path" \
     --header "Origin: ${EXTENSION_ORIGIN}" \
     --header "Access-Control-Request-Method: POST" \
@@ -105,6 +105,12 @@ check_api() { # path body tolerated-4xx schema-route
     record fail "CORS preflight ${path}" \
       "status ${status}, allow-origin ${allow:-none}, allow-methods ${methods:-none}, allow-headers ${headers:-none} $(cat "$tmp/curl-error")"
   fi
+}
+
+check_api() { # path body tolerated-4xx schema-route
+  local path="$1" body="$2" tolerated=" $3 " route="$4" status verdict allow summary
+
+  check_preflight "$path"
 
   status="$(request POST "$path" \
     --header "Origin: ${EXTENSION_ORIGIN}" \
@@ -133,10 +139,33 @@ check_api() { # path body tolerated-4xx schema-route
   fi
 }
 
+# Routes that store data (reports, usage events): an empty body must be refused with 400 by the
+# route's validation, before anything is written. That proves the route is deployed and answers
+# the extension's origin without adding a fake report or event to production.
+check_write_route() { # path
+  local path="$1" status allow
+  check_preflight "$path"
+  status="$(request POST "$path" \
+    --header "Origin: ${EXTENSION_ORIGIN}" \
+    --header "Content-Type: application/json" \
+    --data-binary '{}')"
+  allow="$(header "$tmp/headers" access-control-allow-origin)"
+  if [[ "$status" == 400 ]] && allows_origin "$allow"; then
+    record pass "POST ${path} (empty body)" "400 from validation, allow-origin ${allow}; nothing stored"
+  elif [[ "$status" == 400 ]]; then
+    record fail "POST ${path} (empty body)" "400, but no allow-origin for ${EXTENSION_ORIGIN}"
+  else
+    record fail "POST ${path} (empty body)" \
+      "expected 400, got ${status} $(head -c 200 "$tmp/body") $(cat "$tmp/curl-error")"
+  fi
+}
+
 check_api /api/translate "$TRANSLATE_BODY" "429" translate
 check_api /api/exercises "$EXERCISES_BODY" "429" exercises
 # No response schema in packages/shared for /api/tts yet; only status and CORS are checked.
 check_api /api/tts "$TTS_BODY" "404" ""
+check_write_route /api/report
+check_write_route /api/events
 
 if ((failed)); then
   echo "Backend smoke test FAILED against ${CMS_BASE_URL}" >&2
