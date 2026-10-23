@@ -1,0 +1,14 @@
+No sign-in needed. There is nothing to enable per site.
+
+1. Open any German or Russian news article, e.g. https://www.tagesschau.de or https://meduza.io.
+2. Select a paragraph (or a sentence) with the mouse.
+3. Right-click the selection and choose "Translate to German (Sprachweise)"
+   (Russian UI: "Перевести на немецкий (Sprachweise)").
+4. Within a few seconds the selected text is replaced by a German version with underlined
+   vocabulary, and an "Exercises" panel opens on the right. No page reload is needed.
+5. Click an underlined word to see its Russian meaning. Solve an exercise in the panel.
+6. Right-click an empty part of the page and choose "Restore original text (Sprachweise)" to
+   bring the original text back.
+
+If a site replaces the right-click menu, select text and press Alt+Shift+G instead.
+Selections over 1,500 characters are refused with a message, by design.

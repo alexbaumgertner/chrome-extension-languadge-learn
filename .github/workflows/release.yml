@@ -1,0 +1,209 @@
+name: Release
+
+# A vX.Y.Z tag on a commit from main builds the store zip against vars.WXT_CMS_BASE_URL,
+# verifies it, smoke-tests that backend and creates (or updates) the GitHub Release, whose body
+# holds the text for the Chrome Web Store dashboard. Store upload only on a manual run with
+# publish_to_store, after the chrome-web-store environment's approval.
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      publish_to_store:
+        description: "Upload to the Chrome Web Store and submit for review (run this on a tag)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build-release:
+    name: Build, verify and create the GitHub Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      zip: ${{ steps.package.outputs.zip }}
+      sha256: ${{ steps.package.outputs.sha256 }}
+      item_id: ${{ steps.vars.outputs.item_id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check the tag and that its commit is on main
+        id: tag
+        run: |
+          if [[ "$GITHUB_REF_TYPE" != tag ]]; then
+            echo "::error::Run this workflow on a vX.Y.Z tag (Use workflow from → Tags), not on the branch $GITHUB_REF_NAME."
+            exit 1
+          fi
+          commit="$(git rev-parse "${GITHUB_REF}^{commit}")"
+          if ! git merge-base --is-ancestor "$commit" origin/main; then
+            echo "::error::Tag $GITHUB_REF_NAME points at $commit, which is not on origin/main. Tag a commit from main."
+            exit 1
+          fi
+          echo "commit=$commit" >>"$GITHUB_OUTPUT"
+          echo "RELEASE_DIR=$RUNNER_TEMP/release" >>"$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/release"
+          printf 'pass\tTag commit is on origin/main\t%s %s\n' "$GITHUB_REF_NAME" "$commit" >>"$RUNNER_TEMP/release/checklist.tsv"
+
+      - name: Set the manifest version from the tag
+        id: version
+        run: |
+          # Chrome versions: 1–4 dot-separated integers 0–65535 without leading zeros; we use three.
+          if [[ ! "$GITHUB_REF_NAME" =~ ^v(0|[1-9][0-9]{0,4})\.(0|[1-9][0-9]{0,4})\.(0|[1-9][0-9]{0,4})$ ]] \
+            || ((BASH_REMATCH[1] > 65535 || BASH_REMATCH[2] > 65535 || BASH_REMATCH[3] > 65535)); then
+            echo "::error::Tag $GITHUB_REF_NAME is not vX.Y.Z with X, Y, Z in 0–65535 (no pre-release suffixes)."
+            exit 1
+          fi
+          version="${GITHUB_REF_NAME#v}"
+          # Working copy only; nothing is committed.
+          (cd apps/extension && npm pkg set "version=$version")
+          echo "version=$version" >>"$GITHUB_OUTPUT"
+          printf 'pass\tManifest version set from the tag (working copy, not committed)\t%s\n' "$version" >>"$RELEASE_DIR/checklist.tsv"
+
+      - name: Check the repository variables
+        id: vars
+        env:
+          WXT_CMS_BASE_URL: ${{ vars.WXT_CMS_BASE_URL }}
+          ITEM_ID: ${{ vars.CWS_ITEM_ID }}
+        run: |
+          if [[ -z "$WXT_CMS_BASE_URL" ]]; then
+            echo "::error::Repository variable WXT_CMS_BASE_URL is empty. Set it in Settings → Secrets and variables → Actions → Variables, e.g. https://sprachweise.vercel.app (https, no trailing slash)."
+            exit 1
+          fi
+          if [[ ! "$WXT_CMS_BASE_URL" =~ ^https://[^/]+$ ]]; then
+            echo "::error::WXT_CMS_BASE_URL must be https://host without a path or trailing slash, got \"$WXT_CMS_BASE_URL\"."
+            exit 1
+          fi
+          printf 'pass\tAPI base URL from vars.WXT_CMS_BASE_URL\t%s\n' "$WXT_CMS_BASE_URL" >>"$RELEASE_DIR/checklist.tsv"
+          if [[ -z "$ITEM_ID" ]]; then
+            ITEM_ID=ahkgdlbpociadhocjjomkkeliiligebj
+            echo "::notice::Repository variable CWS_ITEM_ID is empty; using the known store item $ITEM_ID for the CORS check, the notes and the store upload."
+          fi
+          echo "item_id=$ITEM_ID" >>"$GITHUB_OUTPUT"
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build the release package
+        env:
+          WXT_CMS_BASE_URL: ${{ vars.WXT_CMS_BASE_URL }}
+          EXPECTED_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          pnpm --filter @sprachweise/extension build:release
+          printf 'pass\tpnpm build:release (production build, bundle checks, version %s)\t\n' "$EXPECTED_VERSION" >>"$RELEASE_DIR/checklist.tsv"
+
+      - name: Name the zip and verify it
+        id: package
+        env:
+          WXT_CMS_BASE_URL: ${{ vars.WXT_CMS_BASE_URL }}
+          EXPECTED_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          zip="sprachweise-v${EXPECTED_VERSION}-chrome.zip"
+          cp "apps/extension/.output/sprachweise-${EXPECTED_VERSION}-chrome.zip" "$RELEASE_DIR/$zip"
+          node apps/extension/scripts/verify-release.mjs "$RELEASE_DIR/$zip" --report "$RELEASE_DIR/verify.json"
+          (cd "$RELEASE_DIR" && sha256sum "$zip" >"$zip.sha256")
+          sha256="$(cut -d' ' -f1 "$RELEASE_DIR/$zip.sha256")"
+          echo "zip=$zip" >>"$GITHUB_OUTPUT"
+          echo "sha256=$sha256" >>"$GITHUB_OUTPUT"
+          printf 'pass\tverify-release.mjs on %s (no local hosts or test hooks, expected permissions, version)\t\n' "$zip" >>"$RELEASE_DIR/checklist.tsv"
+          printf 'pass\tSHA-256 computed\t%s\n' "$sha256" >>"$RELEASE_DIR/checklist.tsv"
+
+      - name: Smoke-test the backend
+        env:
+          CMS_BASE_URL: ${{ vars.WXT_CMS_BASE_URL }}
+          EXTENSION_ORIGIN: chrome-extension://${{ steps.vars.outputs.item_id }}
+        run: CHECKLIST="$RELEASE_DIR/checklist.tsv" .github/scripts/smoke-backend.sh
+
+      - name: Collect the changelog
+        id: changelog
+        run: |
+          previous="$(git describe --tags --abbrev=0 --match 'v*.*.*' "${GITHUB_REF_NAME}^" 2>/dev/null || true)"
+          if [[ -n "$previous" ]]; then
+            git log --no-merges --format='- %s (%h)' "${previous}..${GITHUB_REF_NAME}" >"$RELEASE_DIR/changelog.md"
+          else
+            # First release: the whole history is too long for a release body.
+            git log --no-merges --max-count=30 --format='- %s (%h)' "$GITHUB_REF_NAME" >"$RELEASE_DIR/changelog.md"
+            echo "- … earlier commits omitted (first tagged release)" >>"$RELEASE_DIR/changelog.md"
+          fi
+          echo "previous=$previous" >>"$GITHUB_OUTPUT"
+
+      - name: Render the release notes
+        env:
+          CMS_BASE_URL: ${{ vars.WXT_CMS_BASE_URL }}
+          ITEM_ID: ${{ steps.vars.outputs.item_id }}
+          COMMIT: ${{ steps.tag.outputs.commit }}
+          PREVIOUS_TAG: ${{ steps.changelog.outputs.previous }}
+        run: |
+          node .github/scripts/render-release-notes.mjs \
+            --tag "$GITHUB_REF_NAME" --commit "$COMMIT" --previous-tag "$PREVIOUS_TAG" \
+            --changelog "$RELEASE_DIR/changelog.md" --verify-report "$RELEASE_DIR/verify.json" \
+            --checklist "$RELEASE_DIR/checklist.tsv" --cms-base-url "$CMS_BASE_URL" \
+            --item-id "$ITEM_ID" --out "$RELEASE_DIR/notes.md"
+          cat "$RELEASE_DIR/notes.md" >>"$GITHUB_STEP_SUMMARY"
+
+      - name: Create or update the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ZIP: ${{ steps.package.outputs.zip }}
+        run: |
+          cd "$RELEASE_DIR"
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --notes-file notes.md
+            gh release upload "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --clobber "$ZIP" "$ZIP.sha256"
+          else
+            gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --verify-tag \
+              --title "Sprachweise $GITHUB_REF_NAME" --notes-file notes.md "$ZIP" "$ZIP.sha256"
+          fi
+
+  publish-store:
+    name: Upload to the Chrome Web Store and submit for review
+    needs: build-release
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_to_store
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: chrome-web-store
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Download the released zip and check its SHA-256
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ZIP: ${{ needs.build-release.outputs.zip }}
+          SHA256: ${{ needs.build-release.outputs.sha256 }}
+        run: |
+          gh release download "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --pattern "$ZIP" --dir "$RUNNER_TEMP"
+          echo "$SHA256  $RUNNER_TEMP/$ZIP" | sha256sum --check
+
+      - name: Upload, wait for processing, publish
+        env:
+          CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+          CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+          # Resolved in build-release (vars.CWS_ITEM_ID or the known item), so both jobs use the same one.
+          CWS_ITEM_ID: ${{ needs.build-release.outputs.item_id }}
+          EXPECTED_VERSION: ${{ needs.build-release.outputs.version }}
+          ZIP: ${{ needs.build-release.outputs.zip }}
+        run: node .github/scripts/cws-publish.mjs "$RUNNER_TEMP/$ZIP"

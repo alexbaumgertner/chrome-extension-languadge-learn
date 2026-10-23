@@ -37,7 +37,15 @@ export default tseslint.config(
   {
     // Node build scripts.
     files: ["**/scripts/**/*.mjs"],
-    languageOptions: { globals: { URL: "readonly", process: "readonly", console: "readonly" } },
+    languageOptions: {
+      globals: {
+        URL: "readonly",
+        URLSearchParams: "readonly",
+        fetch: "readonly",
+        process: "readonly",
+        console: "readonly",
+      },
+    },
   },
   {
     // Playwright fixtures use a `use` callback parameter (its own convention,

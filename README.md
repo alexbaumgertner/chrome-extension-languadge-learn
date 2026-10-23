@@ -82,3 +82,102 @@ native context menu or press an extension shortcut, so test builds expose the
 same handlers on the service worker (`sprachweiseTest`) and get the fixture
 host as a host permission in place of the activeTab grant. Neither exists in
 production builds (`pnpm store:zip` checks).
+
+## Releasing
+
+Releases are built by `.github/workflows/release.yml`. Nothing is committed: the version lives
+only in the tag.
+
+### Tag → GitHub Release
+
+Push a `vX.Y.Z` tag on a commit that is on `main` (X, Y, Z in 0–65535, no pre-release suffix).
+The version must be higher than the one in the Chrome Web Store, or the store refuses the upload.
+
+```sh
+git switch main && git pull
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+The `build-release` job then:
+
+1. Checks that the tag's commit is on `origin/main` and that the tag is `vX.Y.Z`.
+2. Sets `version` in `apps/extension/package.json` to `X.Y.Z` (working copy only), which becomes
+   the manifest version.
+3. Checks `vars.WXT_CMS_BASE_URL` (must be `https://host`, no path or trailing slash) and runs
+   `pnpm build:release` against it.
+4. Renames the zip to `sprachweise-vX.Y.Z-chrome.zip` and re-checks that file with
+   `apps/extension/scripts/verify-release.mjs`: no local hosts or test hooks, the expected
+   permissions and version. Then computes its SHA-256.
+5. Smoke-tests the backend with `.github/scripts/smoke-backend.sh` the way the store extension
+   calls it: `/privacy`, `/api/translate`, `/api/exercises`, `/api/tts` and their CORS preflights
+   for `chrome-extension://<CWS_ITEM_ID>`. `/api/report` and `/api/events` get a preflight and an
+   empty POST that must come back 400 from validation, so nothing is written to production. The preflights must allow the origin, `POST` and
+   `Content-Type`; translate and exercises bodies are checked against the extension's response
+   schemas (`packages/shared`). No response, 5xx, any other 4xx, a missing CORS grant or a body the
+   extension would reject fail the release. Tolerated as warnings: 429 (daily allowance used up)
+   on translate and exercises, 404 on `/api/tts` (no such route yet).
+6. Creates the GitHub Release `vX.Y.Z` (or updates it on a re-run) with the zip and
+   `<zip>.sha256` attached. The body, rendered by `.github/scripts/render-release-notes.mjs` from
+   `store/release-notes.md.tmpl`, holds the changelog since the previous tag, the package facts,
+   every Chrome Web Store dashboard field ready to copy, and a pre-release checklist filled in by
+   the steps that ran. The same body is in the run's summary.
+
+The Chrome Web Store API v2 only uploads, publishes and reports status; it can't edit the listing.
+Copy the dashboard fields from the release body by hand. They come from these files at the tagged
+commit:
+
+| File                                                 | Dashboard field                              |
+| ---------------------------------------------------- | -------------------------------------------- |
+| `store/description.txt`                              | Store listing → Description                  |
+| `store/permissions.json` (or `store/permissions.md`) | Privacy practices → Permission justification |
+| `store/test-instructions.txt` (or `.md`)             | Test instructions → Additional instructions  |
+
+`permissions.json` maps each permission or host pattern to its justification:
+`{"storage": "…"}`. `permissions.md` is pasted as is. A missing file shows up as a PLACEHOLDER in
+the body and a warning in the checklist; it doesn't fail the release. The summary comes from the
+manifest (`extDescription` in `_locales/*/messages.json`); single purpose, remote code, data usage
+and the privacy policy URL are in the template. See `docs/store-listing.md` for the rest of the
+listing.
+
+### Upload to the Chrome Web Store
+
+Actions → Release → Run workflow, pick the tag under **Use workflow from → Tags** (a run on a
+branch fails), and tick **publish_to_store**. `build-release` runs again, then the
+`publish-store` job waits for approval in the `chrome-web-store` environment. Once approved, it
+downloads the zip from the GitHub Release, checks its SHA-256 and runs
+`.github/scripts/cws-publish.mjs`:
+
+1. Fetches the item's status; stops if the store already has this version or a higher one, or if
+   another submission is pending review.
+2. Uploads the zip and waits (up to 10 minutes) until the store has processed it, then checks the
+   version the store read from it.
+3. Submits it for review (`DEFAULT_PUBLISH`). Visibility (unlisted) and rollout stay as set in the
+   dashboard.
+
+The submission takes the listing as it is in the dashboard at that moment. Paste the fields from
+the release body and save the draft before you approve the `publish-store` job, or the old texts go
+to review with the new package.
+
+### Setup
+
+Repository variables (Settings → Secrets and variables → Actions → Variables):
+
+| Variable           | Value                                                                                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WXT_CMS_BASE_URL` | The production API, `https://host` without a trailing slash. Required.                                                                      |
+| `CWS_ITEM_ID`      | The store item ID. Optional: when unset, the workflow uses `ahkgdlbpociadhocjjomkkeliiligebj` for the CORS check, the notes and the upload. |
+
+Secrets of the `chrome-web-store` environment (Settings → Environments → `chrome-web-store`; add
+required reviewers so every upload needs an approval; repository secrets with the same names also
+work, but then any workflow can read them):
+
+| Secret              | Value                                                                      |
+| ------------------- | -------------------------------------------------------------------------- |
+| `CWS_CLIENT_ID`     | OAuth client ID of the Google Cloud project with the Chrome Web Store API. |
+| `CWS_CLIENT_SECRET` | That client's secret.                                                      |
+| `CWS_REFRESH_TOKEN` | Refresh token for the publisher account, scope `chromewebstore`.           |
+| `CWS_PUBLISHER_ID`  | The publisher ID from the developer dashboard.                             |
+
+The secrets are only passed to the upload step. `cws-publish.mjs` masks the access token in the
+log and prints only HTTP status and the API's error message, never a credential.
