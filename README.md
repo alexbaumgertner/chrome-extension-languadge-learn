@@ -20,8 +20,9 @@ words and exercises built from that text. Progress is tracked locally.
 - **Level control** — A1–A2, B1–B2 or C1+, in Settings.
 - **Exercises generated from what you read**: match German words to their
   Russian meanings, fill in the missing word, multiple choice and dictation
-  (normal or slow speed). Click an underlined word to see its meaning.
-- **"Плохой перевод"** — report a bad translation for review in one click.
+  (normal or slow speed). Click a highlighted word to see its meaning.
+- **"Bad translation"** ("Плохой перевод" in the Russian UI) — report a bad
+  translation for review in one click.
 - **Progress tracking** — Settings → Progress shows your day streak, exercises
   solved today, active vocabulary, review queue and per-topic accuracy.
 
@@ -45,7 +46,7 @@ were open keep working: the next menu click injects the new script.
 1. Select a sentence or paragraphs on any page.
 2. Right-click → **Translate to German (Sprachweise)** (or press
    `Alt+Shift+G`).
-3. Use the exercise panel on the right; click underlined words for their
+3. Use the exercise panel on the right; click highlighted words for their
    meaning.
 4. Right-click the page → **Restore original text (Sprachweise)** to undo.
 5. Open **Settings** (right-click the toolbar icon → Options) to change your

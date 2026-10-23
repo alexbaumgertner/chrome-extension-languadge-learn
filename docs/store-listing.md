@@ -105,7 +105,7 @@ Tick these data types:
 | Location | **Yes** | IP address only, in Vercel's request logs (see note). |
 | Web history | No | No URLs, titles or visit times. |
 | User activity | **Yes** | Usage events tied to a random install ID: paragraph translated (server cache hit/miss, latency), exercise completed, error codes. Used only for usage metrics. |
-| Website content | **Yes** | The text the user selects and sends with "Translate to German" (at most 1,500 characters at a time), sent to our server and Google Gemini to translate it; on an explicit "Плохой перевод" click, that text and its translation for quality review. Nothing is read or sent before the user chooses the menu item. |
+| Website content | **Yes** | The text the user selects and sends with "Translate to German" (at most 1,500 characters at a time), sent to our server and Google Gemini to translate it; on an explicit "Bad translation" ("Плохой перевод") click, that text and its translation for quality review. Nothing is read or sent before the user chooses the menu item. |
 
 Note on Location: our app does not store IP addresses, but Vercel's request logs record them (the
 privacy policy says so). Google's form defines Location as including IP address, and the form must
