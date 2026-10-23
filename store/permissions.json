@@ -1,6 +1,6 @@
 {
   "storage": "Keeps the learner's settings, vocabulary, exercise progress, saved translations, the random install ID and unsent usage events in the browser, so learning works offline.",
   "contextMenus": "Adds \"Translate to German (Sprachweise)\" to the right-click menu when text is selected, and \"Restore original text (Sprachweise)\" while the current tab shows a translation. This menu item is how the user starts every translation.",
-  "activeTab": "Gives temporary access to the current tab only when the user picks one of those menu items or presses the extension's keyboard shortcut, so the extension can read the selected text and replace it with German. No other tab and no other moment.",
-  "scripting": "Injects the extension's script into that tab (chrome.scripting.executeScript) at that moment, under the activeTab grant. The extension declares no content scripts and no host permissions, so it never runs on a page the user didn't act on."
+  "activeTab": "Gives temporary access to the current tab only when the user picks a Sprachweise item in the right-click menu or presses the extension's keyboard shortcut, so the extension can read the selected text and replace it with German. No other tab and no other moment.",
+  "scripting": "Injects the extension's script into the current tab (chrome.scripting.executeScript) right after the user's menu click or shortcut, under the activeTab grant. The extension declares no content scripts and no host permissions, so it never runs on a page the user didn't act on."
 }

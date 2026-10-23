@@ -3,18 +3,18 @@ Sprachweise turns the articles you already read into German practice.
 How it works
 • Select a phrase or a paragraph on any page, right-click and choose "Translate to German (Sprachweise)". If a site replaces the right-click menu, press Alt+Shift+G.
 • The selected text is swapped for a German version at your level: A1–A2, B1–B2 or C1+. Exactly the selected text is translated, even across several paragraphs.
-• Underlined words are new vocabulary. Click one to see its meaning.
+• Highlighted words are new vocabulary. Click one to see its meaning.
 • Exercises built from that text appear on the right: fill in the blank, multiple choice, word pairs and dictation.
 • "Restore original text (Sprachweise)" in the right-click menu brings back the original. Nothing on the page changes except the text you selected.
 
 There is nothing to enable per site, and the extension asks for no website access at install: it sees a page only after you choose the menu item.
 
-Progress, vocabulary and reviews stay in your browser and work offline.
+Progress, vocabulary and reviews stay in your browser.
 
 Privacy
 • Only the text you selected is sent to our server, only after you choose the menu item, and never the page address. At most 1,500 characters at a time.
 • To count usage, the extension sends a random install ID with events ("paragraph translated", "exercise completed", errors), never with text.
-• The "Плохой перевод" (bad translation) button sends the paragraph and its translation for review, only when you click it.
+• The "Bad translation" button ("Плохой перевод" in the Russian interface) sends the paragraph and its translation for review, only when you click it.
 Details: https://sprachweise.vercel.app/privacy
 
-This is a private beta. Translations can contain mistakes; please flag them with the "Плохой перевод" button.
+This is a private beta. Translations can contain mistakes; please flag them with the "Bad translation" button.
