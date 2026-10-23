@@ -162,10 +162,10 @@ to review with the new package.
 
 Repository variables (Settings → Secrets and variables → Actions → Variables):
 
-| Variable           | Value                                                                                                                                                 |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `WXT_CMS_BASE_URL` | The production API, `https://host` without a trailing slash. Required.                                                                                |
-| `CWS_ITEM_ID`      | The store item ID, `ahkgdlbpociadhocjjomkkeliiligebj`. Required for the upload; the build job falls back to this ID for the CORS check and the notes. |
+| Variable           | Value                                                                                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WXT_CMS_BASE_URL` | The production API, `https://host` without a trailing slash. Required.                                                                      |
+| `CWS_ITEM_ID`      | The store item ID. Optional: when unset, the workflow uses `ahkgdlbpociadhocjjomkkeliiligebj` for the CORS check, the notes and the upload. |
 
 Secrets of the `chrome-web-store` environment (Settings → Environments → `chrome-web-store`; add
 required reviewers so every upload needs an approval; repository secrets with the same names also
