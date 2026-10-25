@@ -1,5 +1,11 @@
 import { z } from "zod";
-import { InstallIdSchema, LevelSchema, TranslationDensitySchema } from "./storage";
+import {
+  ArticleSchema,
+  InstallIdSchema,
+  LevelSchema,
+  MAX_EXERCISES_PER_PARAGRAPH,
+  TranslationDensitySchema,
+} from "./storage";
 
 /**
  * Longest text one translation may send, in `string.length` units. The extension checks a whole
@@ -109,15 +115,24 @@ const CmsAudioDictationExerciseSchema = z.object({
   answer: z.string().min(1),
 });
 
+const CmsArticleChoiceExerciseSchema = z.object({
+  kind: z.literal("article-choice"),
+  /** The noun without its article, e.g. "Riesenrad". */
+  noun: z.string().min(1),
+  article: ArticleSchema,
+  russian: z.string().min(1),
+});
+
 export const CmsExerciseSchema = z.discriminatedUnion("kind", [
   CmsFillBlankExerciseSchema,
   CmsMultipleChoiceExerciseSchema,
   CmsWordPairingExerciseSchema,
   CmsAudioDictationExerciseSchema,
+  CmsArticleChoiceExerciseSchema,
 ]);
 
 export const ExercisesResponseSchema = z.object({
-  exercises: z.array(CmsExerciseSchema).min(0).max(4),
+  exercises: z.array(CmsExerciseSchema).min(0).max(MAX_EXERCISES_PER_PARAGRAPH),
 });
 
 /**

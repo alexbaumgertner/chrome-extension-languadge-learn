@@ -14,11 +14,20 @@ export const TranslationDensitySchema = z.enum(["low", "medium", "max"]);
 
 export const VocabStatusSchema = z.enum(["new", "active", "due", "learned"]);
 
+export const ArticleSchema = z.enum(["der", "die", "das"]);
+
+/**
+ * Upper bound on exercises per paragraph. Only ever raise it: a persisted set that was valid
+ * under an older, lower bound must keep parsing, or the cache silently turns empty.
+ */
+export const MAX_EXERCISES_PER_PARAGRAPH = 6;
+
 export const ExerciseKindSchema = z.enum([
   "fill-blank",
   "multiple-choice",
   "word-pairing",
   "audio-dictation",
+  "article-choice",
 ]);
 
 export const LearnerSettingsSchema = z.object({
@@ -144,11 +153,19 @@ export const AudioDictationExerciseSchema = ExerciseBaseSchema.extend({
   correctAnswer: z.string().min(1),
 });
 
+export const ArticleChoiceExerciseSchema = ExerciseBaseSchema.extend({
+  kind: z.literal("article-choice"),
+  sourceSentence: z.string(),
+  prompt: z.object({ noun: z.string().min(1), russian: z.string().min(1) }),
+  correctAnswer: ArticleSchema,
+});
+
 export const ExerciseSchema = z.discriminatedUnion("kind", [
   FillBlankExerciseSchema,
   MultipleChoiceExerciseSchema,
   WordPairingExerciseSchema,
   AudioDictationExerciseSchema,
+  ArticleChoiceExerciseSchema,
 ]);
 
-export const ExerciseSetSchema = z.array(ExerciseSchema).min(0).max(4);
+export const ExerciseSetSchema = z.array(ExerciseSchema).min(0).max(MAX_EXERCISES_PER_PARAGRAPH);
