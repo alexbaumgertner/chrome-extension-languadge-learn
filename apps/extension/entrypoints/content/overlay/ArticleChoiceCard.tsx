@@ -24,7 +24,7 @@ export default function ArticleChoiceCard({
     if (selected !== null) return;
     setSelected(article);
     // The vocabulary item is the dictionary form with its article, e.g. "das riesenrad".
-    const vocabId = vocabIdFor(`${exercise.correctAnswer} ${noun}`);
+    const vocabId = vocabIdFor([exercise.correctAnswer, noun].join(" "));
     setCorrect(await onAnswer(exercise, article, [vocabId]));
   }
 

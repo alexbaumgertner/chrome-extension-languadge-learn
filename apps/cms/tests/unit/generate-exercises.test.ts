@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { ExercisesResponseSchema } from "@sprachweise/shared";
-import { generateExercises } from "../../src/exercises/generate";
+import {
+  MAX_SHOWN,
+  generateExercises,
+  parseArticleLemma,
+  selectExercises,
+} from "../../src/exercises/generate";
 
 const text =
   "Ich möchte einen <strong>Kaffee</strong> bestellen. Danach lese ich in Ruhe die Zeitung. " +
@@ -74,5 +79,111 @@ describe("generateExercises", () => {
       ],
     });
     expect(exercises.find((e) => e.kind === "fill-blank")).toMatchObject({ answer: "rufe" });
+  });
+});
+
+describe("article-choice", () => {
+  const nounText =
+    "Ich fahre mit dem Riesenrad. Danach kaufe ich einen Kaffee. Die Leute warten in der Stadt.";
+  const nouns = [
+    { german: "Riesenrad", lemma: "das Riesenrad", russian: "колесо обозрения" },
+    { german: "Kaffee", lemma: "der Kaffee", russian: "кофе" },
+    { german: "Stadt", lemma: "die Stadt", russian: "город" },
+    { german: "Leute", lemma: "die Leute", russian: "люди" },
+  ];
+
+  it("parses the article and the bare noun from a lemma", () => {
+    expect(parseArticleLemma("das Riesenrad")).toEqual({ article: "das", noun: "Riesenrad" });
+    expect(parseArticleLemma("Die Stadt")).toEqual({ article: "die", noun: "Stadt" });
+  });
+
+  it("skips plural-only, ambiguous, article-less and multi-word lemmas", () => {
+    expect(parseArticleLemma("die Leute")).toBeNull();
+    expect(parseArticleLemma("der/das Teil")).toBeNull();
+    expect(parseArticleLemma("anrufen")).toBeNull();
+    expect(parseArticleLemma("das große Haus")).toBeNull();
+    expect(parseArticleLemma("die")).toBeNull();
+    expect(parseArticleLemma(undefined)).toBeNull();
+  });
+
+  it("emits a schema-valid article-choice with the article split off", () => {
+    const exercises = generateExercises(nounText, nouns);
+    const article = exercises.filter((e) => e.kind === "article-choice");
+    expect(article).toHaveLength(1);
+    expect(ExercisesResponseSchema.safeParse({ exercises }).success).toBe(true);
+    const only = article[0];
+    if (only?.kind !== "article-choice") throw new Error("expected article-choice");
+    expect(["Riesenrad", "Kaffee", "Stadt"]).toContain(only.noun);
+    expect(only.noun).not.toBe("Leute");
+    const source = nouns.find((n) => n.lemma.endsWith(` ${only.noun}`));
+    expect(source?.lemma).toBe(`${only.article} ${only.noun}`);
+  });
+
+  it("makes no article-choice for plural-only nouns or paragraphs without nouns", () => {
+    const onlyPlural = [{ german: "Leute", lemma: "die Leute", russian: "люди" }];
+    expect(generateExercises("Die Leute warten.", onlyPlural).map((e) => e.kind)).not.toContain(
+      "article-choice",
+    );
+    expect(generateExercises(text, vocab).map((e) => e.kind)).not.toContain("article-choice");
+  });
+});
+
+describe("selection policy", () => {
+  const nounText =
+    "Ich fahre mit dem Riesenrad. Danach kaufe ich einen Kaffee. Wir besuchen die Stadt.";
+  const nouns = [
+    { german: "Riesenrad", lemma: "das Riesenrad", russian: "колесо обозрения" },
+    { german: "Kaffee", lemma: "der Kaffee", russian: "кофе" },
+    { german: "Stadt", lemma: "die Stadt", russian: "город" },
+  ];
+
+  it("never exceeds MAX_SHOWN and is deterministic", () => {
+    const a = generateExercises(nounText, nouns);
+    expect(a.length).toBeLessThanOrEqual(MAX_SHOWN);
+    expect(a).toEqual(generateExercises(nounText, nouns));
+  });
+
+  it("shows at most one exercise per kind", () => {
+    const kinds = generateExercises(nounText, nouns).map((e) => e.kind);
+    expect(new Set(kinds).size).toBe(kinds.length);
+  });
+
+  it("selectExercises caps kinds, words per word and the total", () => {
+    const fill = (word: string) => ({
+      word,
+      exercise: {
+        kind: "fill-blank" as const,
+        sourceSentence: word,
+        blankedSentence: "___",
+        answer: word,
+      },
+    });
+    expect(selectExercises([fill("a"), fill("b")])).toHaveLength(1);
+
+    const article = (word: string) => ({
+      word,
+      exercise: {
+        kind: "article-choice" as const,
+        noun: word,
+        article: "das" as const,
+        russian: "x",
+      },
+    });
+    const mc = (word: string) => ({
+      word,
+      exercise: {
+        kind: "multiple-choice" as const,
+        sourceSentence: word,
+        blankedSentence: "___",
+        options: ["a", "b"],
+        correctIndex: 0,
+      },
+    });
+    const dictation = {
+      exercise: { kind: "audio-dictation" as const, sourceSentence: "s", answer: "s" },
+    };
+    // Same word three times: the third (dictation has no word) is fine, the word cap stops a 3rd.
+    const picked = selectExercises([fill("w"), mc("w"), article("w"), dictation]);
+    expect(picked.map((e) => e.kind)).toEqual(["fill-blank", "multiple-choice", "audio-dictation"]);
   });
 });

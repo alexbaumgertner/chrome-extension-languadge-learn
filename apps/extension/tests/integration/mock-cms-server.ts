@@ -65,6 +65,7 @@ function buildExercisesResponse(variantText: string) {
         ],
       },
       { kind: "audio-dictation", sourceSentence: variantText, answer: variantText },
+      { kind: "article-choice", noun: "Zeitung", article: "die", russian: "газета" },
     ],
   };
 }
