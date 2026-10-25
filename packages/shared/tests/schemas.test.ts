@@ -4,6 +4,7 @@ import {
   ExercisesRequestSchema,
   ExercisesResponseSchema,
   ExerciseSchema,
+  ExerciseSetSchema,
   GermanVariantSchema,
   GetProgressSnapshotResponseSchema,
   InstallIdSchema,
@@ -191,7 +192,17 @@ describe("storage schemas", () => {
       answered: false,
       lastAttempt: null,
     };
-    for (const fixture of [fillBlank, multipleChoice, wordPairing, audioDictation]) {
+    const articleChoice = {
+      id: "ex5",
+      kind: "article-choice",
+      sourceParagraphHash: "abc123",
+      sourceSentence: "",
+      prompt: { noun: "Riesenrad", russian: "колесо обозрения" },
+      correctAnswer: "das",
+      answered: false,
+      lastAttempt: null,
+    };
+    for (const fixture of [fillBlank, multipleChoice, wordPairing, audioDictation, articleChoice]) {
       expect(ExerciseSchema.parse(fixture)).toEqual(fixture);
     }
   });
@@ -326,12 +337,56 @@ describe("cms schemas", () => {
     expect(ExercisesRequestSchema.parse(fixture)).toEqual(fixture);
   });
 
-  it("ExercisesResponse rejects more than 4 exercises", () => {
+  it("ExercisesResponse rejects more than 6 exercises", () => {
     const entry = { kind: "word-pairing", pairs: [{ german: "Kaffee", russian: "кофе" }] };
-    const result = ExercisesResponseSchema.safeParse({
-      exercises: [entry, entry, entry, entry, entry],
-    });
+    const result = ExercisesResponseSchema.safeParse({ exercises: Array(7).fill(entry) });
     expect(result.success).toBe(false);
+  });
+
+  it("ExercisesResponse accepts an article-choice and rejects an unknown article", () => {
+    const ok = { kind: "article-choice", noun: "Riesenrad", article: "das", russian: "колесо" };
+    expect(ExercisesResponseSchema.safeParse({ exercises: [ok] }).success).toBe(true);
+    const bad = { ...ok, article: "dem" };
+    expect(ExercisesResponseSchema.safeParse({ exercises: [bad] }).success).toBe(false);
+  });
+
+  it("a set of four exercises persisted under the old max(4) still parses", () => {
+    const base = { sourceParagraphHash: "h", answered: false, lastAttempt: null };
+    const legacy = [
+      {
+        ...base,
+        id: "a",
+        kind: "fill-blank",
+        sourceSentence: "Ich moechte.",
+        prompt: { blankedSentence: "Ich ___." },
+        correctAnswer: "moechte",
+      },
+      {
+        ...base,
+        id: "b",
+        kind: "multiple-choice",
+        sourceSentence: "Ich moechte.",
+        prompt: { blankedSentence: "Ich ___.", options: ["moechte", "will"] },
+        correctAnswer: 0,
+      },
+      {
+        ...base,
+        id: "c",
+        kind: "word-pairing",
+        sourceSentence: "",
+        prompt: { pairs: [{ german: "Kaffee", russian: "кофе" }] },
+        correctAnswer: { Kaffee: "кофе" },
+      },
+      {
+        ...base,
+        id: "d",
+        kind: "audio-dictation",
+        sourceSentence: "Ich moechte.",
+        prompt: { audioSentence: "Ich moechte." },
+        correctAnswer: "Ich moechte.",
+      },
+    ];
+    expect(ExerciseSetSchema.safeParse(legacy).success).toBe(true);
   });
 
   it("ExercisesResponse accepts zero exercises", () => {
