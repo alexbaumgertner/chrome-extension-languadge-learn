@@ -33,13 +33,25 @@ type Fixtures = {
     selector: string,
     opts?: { part?: string; to?: string },
   ) => Promise<void>;
-  /** Picks one of the extension's context-menu items on `page`, as a right-click would. */
-  clickMenu: (page: Page, item: "translate" | "restore") => Promise<void>;
+  /**
+   * Picks one of the extension's context-menu items on `page`, as a right-click would. The side-panel
+   * items ("translate-level", "speak") take `selectionText` from the caller, like Chrome's click data.
+   */
+  clickMenu: (
+    page: Page,
+    item: "translate" | "restore" | "translate-level" | "speak",
+    selectionText?: string,
+  ) => Promise<void>;
   /** Presses the extension's "translate selection" keyboard shortcut on `page`. */
   pressShortcut: (page: Page) => Promise<void>;
 };
 
-const MENU_IDS = { translate: "sprachweise-translate", restore: "sprachweise-restore" } as const;
+const MENU_IDS = {
+  translate: "sprachweise-translate",
+  restore: "sprachweise-restore",
+  "translate-level": "sprachweise-translate-level",
+  speak: "sprachweise-speak",
+} as const;
 
 /** The tab showing the fixture origin (each test opens one page on it). */
 async function fixtureTab(serviceWorker: Worker): Promise<chrome.tabs.Tab> {
@@ -147,17 +159,17 @@ export const test = base.extend<Fixtures>({
   },
 
   clickMenu: async ({ serviceWorker }, use) => {
-    await use(async (_page, item) => {
+    await use(async (_page, item, selectionText) => {
       const tab = await fixtureTab(serviceWorker);
       await serviceWorker.evaluate(
-        ({ tab, menuItemId }) => {
+        ({ tab, menuItemId, selectionText }) => {
           const hooks = (globalThis as unknown as { sprachweiseTest: TestHooks }).sprachweiseTest;
           hooks.onMenuClicked(
-            { menuItemId, frameId: 0, editable: false, pageUrl: tab.url ?? "" },
+            { menuItemId, frameId: 0, editable: false, pageUrl: tab.url ?? "", selectionText },
             tab,
           );
         },
-        { tab, menuItemId: MENU_IDS[item] },
+        { tab, menuItemId: MENU_IDS[item], selectionText },
       );
     });
   },
