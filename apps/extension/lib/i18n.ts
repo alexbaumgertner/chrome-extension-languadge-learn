@@ -46,5 +46,6 @@ export function tNode(key: MessageKey, node: ReactNode): ReactNode {
 /** A topic slug as the learner reads it; slugs without a translation are shown de-slugged. */
 export function topicLabel(topic: string): string {
   if (topic === "general") return t("topicGeneral");
+  if (topic === "review") return t("topicReview");
   return topic.replace(/[-_]+/g, " ");
 }

@@ -1,17 +1,20 @@
 import { useState } from "react";
 import ProgressView from "./ProgressView";
+import ReviewView from "./ReviewView";
 import SettingsView from "./SettingsView";
 import { t, type MessageKey } from "@/lib/i18n";
 
-type Tab = "progress" | "settings";
+type Tab = "progress" | "review" | "settings";
 
 const TABS: Array<{ id: Tab; label: MessageKey }> = [
   { id: "progress", label: "optionsTabProgress" },
+  { id: "review", label: "optionsTabReview" },
   { id: "settings", label: "optionsTabSettings" },
 ];
 
 export default function App() {
-  const [tab, setTab] = useState<Tab>("progress");
+  // The popup's "Review N words" button opens options.html#review.
+  const [tab, setTab] = useState<Tab>(location.hash === "#review" ? "review" : "progress");
 
   return (
     <div>
@@ -30,6 +33,7 @@ export default function App() {
       </nav>
       <main className="options-main">
         {tab === "progress" && <ProgressView />}
+        {tab === "review" && <ReviewView />}
         {tab === "settings" && <SettingsView />}
       </main>
     </div>

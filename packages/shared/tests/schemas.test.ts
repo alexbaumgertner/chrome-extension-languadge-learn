@@ -59,6 +59,33 @@ describe("storage schemas", () => {
     expect(VocabularyItemSchema.parse(fixture)).toEqual(fixture);
   });
 
+  it("VocabularyItem parses records stored without a context sentence and accepts one with it", () => {
+    const old = {
+      id: "termin",
+      german: "Termin",
+      russian: "встреча",
+      encounterCount: 1,
+      status: "active",
+      firstEncounteredAt: 1,
+    };
+    expect(VocabularyItemSchema.parse(old)).toEqual(old);
+    const withContext = {
+      ...old,
+      contextSentence: "Ich habe einen Termin.",
+      contextForm: "Termin",
+    };
+    expect(VocabularyItemSchema.parse(withContext)).toEqual(withContext);
+    expect(
+      VocabularyItemSchema.safeParse({ ...old, contextSentence: "x".repeat(201) }).success,
+    ).toBe(false);
+  });
+
+  it("SUBMIT_REVIEW_ATTEMPT is a valid request message and needs a boolean result", () => {
+    const message = { type: "SUBMIT_REVIEW_ATTEMPT", vocabId: "termin", correct: true };
+    expect(RequestMessageSchema.safeParse(message).success).toBe(true);
+    expect(RequestMessageSchema.safeParse({ ...message, correct: "yes" }).success).toBe(false);
+  });
+
   it("VocabularyItem rejects a wrong-type field", () => {
     const result = VocabularyItemSchema.safeParse({
       id: "moechten",
