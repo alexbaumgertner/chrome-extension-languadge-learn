@@ -18,14 +18,12 @@ const vocab = [
 ];
 
 describe("generateExercises", () => {
-  it("builds all four kinds from a paragraph with enough vocabulary", () => {
+  it("builds every kind from a paragraph with enough vocabulary", () => {
     const exercises = generateExercises(text, vocab);
-    expect(exercises.map((e) => e.kind)).toEqual([
-      "word-pairing",
-      "fill-blank",
-      "multiple-choice",
-      "audio-dictation",
-    ]);
+    const kinds = exercises.map((e) => e.kind);
+    // The three core kinds come first; dictation and word order follow in a hash-ranked order.
+    expect(kinds.slice(0, 3)).toEqual(["word-pairing", "fill-blank", "multiple-choice"]);
+    expect(kinds.slice(3).sort()).toEqual(["audio-dictation", "word-order"]);
     expect(ExercisesResponseSchema.safeParse({ exercises }).success).toBe(true);
   });
 

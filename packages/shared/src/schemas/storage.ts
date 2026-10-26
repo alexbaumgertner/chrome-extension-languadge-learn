@@ -28,6 +28,7 @@ export const ExerciseKindSchema = z.enum([
   "word-pairing",
   "audio-dictation",
   "article-choice",
+  "word-order",
 ]);
 
 export const LearnerSettingsSchema = z.object({
@@ -160,12 +161,21 @@ export const ArticleChoiceExerciseSchema = ExerciseBaseSchema.extend({
   correctAnswer: ArticleSchema,
 });
 
+export const WordOrderExerciseSchema = ExerciseBaseSchema.extend({
+  kind: z.literal("word-order"),
+  sourceSentence: z.string().min(1),
+  prompt: z.object({ tokens: z.array(z.string().min(1)).min(2), ending: z.string() }),
+  /** The tokens in the right order, joined by single spaces, without the final punctuation. */
+  correctAnswer: z.string().min(1),
+});
+
 export const ExerciseSchema = z.discriminatedUnion("kind", [
   FillBlankExerciseSchema,
   MultipleChoiceExerciseSchema,
   WordPairingExerciseSchema,
   AudioDictationExerciseSchema,
   ArticleChoiceExerciseSchema,
+  WordOrderExerciseSchema,
 ]);
 
 export const ExerciseSetSchema = z.array(ExerciseSchema).min(0).max(MAX_EXERCISES_PER_PARAGRAPH);

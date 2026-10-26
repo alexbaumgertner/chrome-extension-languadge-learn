@@ -123,12 +123,22 @@ const CmsArticleChoiceExerciseSchema = z.object({
   russian: z.string().min(1),
 });
 
+const CmsWordOrderExerciseSchema = z.object({
+  kind: z.literal("word-order"),
+  sourceSentence: z.string().min(1),
+  /** The sentence's words in shuffled order, without the final punctuation. */
+  tokens: z.array(z.string().min(1)).min(2),
+  /** The fixed final punctuation, shown after the answer line ("." / "!" / "?"). */
+  ending: z.string(),
+});
+
 export const CmsExerciseSchema = z.discriminatedUnion("kind", [
   CmsFillBlankExerciseSchema,
   CmsMultipleChoiceExerciseSchema,
   CmsWordPairingExerciseSchema,
   CmsAudioDictationExerciseSchema,
   CmsArticleChoiceExerciseSchema,
+  CmsWordOrderExerciseSchema,
 ]);
 
 export const ExercisesResponseSchema = z.object({
