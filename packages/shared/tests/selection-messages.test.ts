@@ -32,7 +32,8 @@ describe("selection tool messages", () => {
         selection: { ...selection, ...patch },
       }).success;
     expect(parse({ tool: "speak" })).toBe(true);
-    expect(parse({ tool: "explain" })).toBe(false);
+    expect(parse({ tool: "explain" })).toBe(true);
+    expect(parse({ tool: "chat" })).toBe(false);
     expect(parse({ text: "" })).toBe(false);
     expect(parse({ text: "x".repeat(SELECTION_MAX_CHARS) })).toBe(true);
     expect(parse({ text: "x".repeat(SELECTION_MAX_CHARS + 1) })).toBe(false);

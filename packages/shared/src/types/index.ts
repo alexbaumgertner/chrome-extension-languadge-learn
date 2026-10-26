@@ -122,3 +122,28 @@ export type GetPendingSelectionRequest = z.infer<typeof GetPendingSelectionReque
 export type GetPendingSelectionResponse = z.infer<typeof GetPendingSelectionResponseSchema>;
 export type TranslateSelectionRequest = z.infer<typeof TranslateSelectionRequestSchema>;
 export type TranslateSelectionResponse = z.infer<typeof TranslateSelectionResponseSchema>;
+
+// explain (P6)
+import type {
+  ExplainGrammarSchema,
+  ExplainRequestSchema,
+  ExplainResponseSchema,
+  ExplainTokenSchema,
+  GrammarIdSchema,
+  PosSchema,
+} from "../schemas/explain";
+import type {
+  AddToVocabularyRequestSchema,
+  ExplainSelectionRequestSchema,
+  ExplainSelectionResponseSchema,
+} from "../schemas/messages";
+
+export type ExplainRequest = z.infer<typeof ExplainRequestSchema>;
+export type ExplainResponse = z.infer<typeof ExplainResponseSchema>;
+export type ExplainToken = z.infer<typeof ExplainTokenSchema>;
+export type ExplainGrammar = z.infer<typeof ExplainGrammarSchema>;
+export type GrammarId = z.infer<typeof GrammarIdSchema>;
+export type Pos = z.infer<typeof PosSchema>;
+export type ExplainSelectionRequest = z.infer<typeof ExplainSelectionRequestSchema>;
+export type ExplainSelectionResponse = z.infer<typeof ExplainSelectionResponseSchema>;
+export type AddToVocabularyRequest = z.infer<typeof AddToVocabularyRequestSchema>;
