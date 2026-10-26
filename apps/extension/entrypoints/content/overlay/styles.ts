@@ -97,6 +97,18 @@ export const PANEL_CSS = `${DESIGN_CSS}
 .sw-pairing-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .sw-pairing .sw-choice { justify-content: center; text-align: center; font-size: 13px; }
 
+/* Word order: the answer line and the token bank are rows of wrapping buttons. */
+.sw-order-line, .sw-order-bank { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.sw-order-line {
+  min-height: 48px; padding: 8px; border-radius: 10px;
+  border: 1px dashed var(--color-neutral-300); background: var(--color-surface);
+}
+.sw-order-ending { font-size: 15px; font-weight: 700; }
+.sw-order-token { font-family: var(--font-body); font-size: 14px; }
+.sw-order-token:disabled { opacity: 1; cursor: default; }
+.sw-order-line.sw-order-ok { border-style: solid; border-color: var(--color-accent-2-500); }
+.sw-order-line.sw-order-bad { border-style: solid; border-color: var(--color-accent-500); }
+
 .sw-audio-controls { display: flex; align-items: center; gap: 8px; }
 .sw-audio-controls .btn-ghost { font-size: 13px; }
 

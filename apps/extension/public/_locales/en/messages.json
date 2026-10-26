@@ -32,6 +32,7 @@
   "kickerWordPairing": { "message": "Match the pairs" },
   "kickerAudioDictation": { "message": "Audio dictation" },
   "kickerArticleChoice": { "message": "Choose the article" },
+  "kickerWordOrder": { "message": "Build the sentence" },
 
   "exerciseCheck": { "message": "Check" },
   "exerciseCorrect": { "message": "Correct!" },
@@ -40,6 +41,10 @@
   "multipleChoiceWrong": { "message": "Correct answer: $1 — \"$2\"" },
   "articleChoiceInstruction": { "message": "Which article goes with \"$1\"?" },
   "articleChoiceWrong": { "message": "Correct answer: $1 $2" },
+  "wordOrderInstruction": { "message": "Put the words in order. Click a word to move it; click it again to take it back." },
+  "wordOrderAnswerLabel": { "message": "Your sentence" },
+  "wordOrderBankLabel": { "message": "Words" },
+  "wordOrderWrong": { "message": "Correct order: \"$1\"" },
   "pairingInstruction": { "message": "Match each German word to its Russian meaning." },
   "pairingHint": { "message": "Choose a German word on the left first." },
   "dictationInstruction": { "message": "Listen and type the whole sentence." },

@@ -30,6 +30,16 @@ export function isLenientMatch(submitted: string, expected: string): boolean {
   return canonicalize(submitted) === canonicalize(expected);
 }
 
+/**
+ * Word-order comparison: whitespace collapsed, and the first letter case-folded (the shown tokens
+ * drop the sentence-initial capital). Everything else is exact: the user can only arrange the
+ * given tokens, so case, umlauts and commas cannot differ by accident.
+ */
+function wordOrderKey(value: string): string {
+  const collapsed = value.replace(WHITESPACE_RE, " ").trim();
+  return collapsed.charAt(0).toLowerCase() + collapsed.slice(1);
+}
+
 /** Grades a submitted answer against an Exercise's correctAnswer, kind-appropriately. */
 export function checkExerciseAnswer(exercise: Exercise, submitted: AnswerPayload): boolean {
   switch (exercise.kind) {
@@ -39,6 +49,11 @@ export function checkExerciseAnswer(exercise: Exercise, submitted: AnswerPayload
     case "article-choice":
       // Exact: the three buttons are the only input, so there is nothing to be lenient about.
       return submitted === exercise.correctAnswer;
+    case "word-order":
+      return (
+        typeof submitted === "string" &&
+        wordOrderKey(submitted) === wordOrderKey(exercise.correctAnswer)
+      );
     case "multiple-choice":
       return typeof submitted === "number" && submitted === exercise.correctAnswer;
     case "word-pairing": {

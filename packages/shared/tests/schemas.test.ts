@@ -202,9 +202,38 @@ describe("storage schemas", () => {
       answered: false,
       lastAttempt: null,
     };
-    for (const fixture of [fillBlank, multipleChoice, wordPairing, audioDictation, articleChoice]) {
+    const wordOrder = {
+      id: "ex6",
+      kind: "word-order",
+      sourceParagraphHash: "abc123",
+      sourceSentence: "Ich trinke jeden Morgen Kaffee.",
+      prompt: { tokens: ["Kaffee", "ich", "jeden", "trinke", "Morgen"], ending: "." },
+      correctAnswer: "Ich trinke jeden Morgen Kaffee",
+      answered: false,
+      lastAttempt: null,
+    };
+    for (const fixture of [
+      fillBlank,
+      multipleChoice,
+      wordPairing,
+      audioDictation,
+      articleChoice,
+      wordOrder,
+    ]) {
       expect(ExerciseSchema.parse(fixture)).toEqual(fixture);
     }
+  });
+
+  it("ExercisesResponse accepts a word-order and rejects one with a single token", () => {
+    const ok = {
+      kind: "word-order",
+      sourceSentence: "Ich trinke jeden Morgen Kaffee.",
+      tokens: ["Kaffee", "ich", "jeden", "trinke", "Morgen"],
+      ending: ".",
+    };
+    expect(ExercisesResponseSchema.safeParse({ exercises: [ok] }).success).toBe(true);
+    const bad = { ...ok, tokens: ["Kaffee"] };
+    expect(ExercisesResponseSchema.safeParse({ exercises: [bad] }).success).toBe(false);
   });
 
   it("Exercise rejects a malformed/empty options list for multiple-choice", () => {
