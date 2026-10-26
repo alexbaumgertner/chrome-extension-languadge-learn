@@ -32,6 +32,8 @@
   "kickerWordPairing": { "message": "Match the pairs" },
   "kickerAudioDictation": { "message": "Audio dictation" },
   "kickerArticleChoice": { "message": "Choose the article" },
+  "kickerTranslateToGerman": { "message": "Write in German" },
+  "kickerListenChoose": { "message": "Listen and choose" },
 
   "exerciseCheck": { "message": "Check" },
   "exerciseCorrect": { "message": "Correct!" },
@@ -49,6 +51,11 @@
   "dictationSlowLabel": { "message": "Play slowly" },
   "dictationPlaceholder": { "message": "Type what you heard" },
   "dictationWrong": { "message": "Correct: \"$1\"" },
+  "translateInstruction": { "message": "How do you say \"$1\" in German?" },
+  "translatePlaceholder": { "message": "German word" },
+  "translateWrong": { "message": "Correct answer: \"$1\"" },
+  "translateIWasRight": { "message": "I answered correctly" },
+  "listenChooseInstruction": { "message": "Listen and pick the sentence you heard." },
 
   "reportButton": { "message": "Bad translation" },
   "reportRetry": { "message": "Retry" },

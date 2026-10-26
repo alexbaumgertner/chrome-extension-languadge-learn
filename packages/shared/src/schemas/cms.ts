@@ -123,12 +123,29 @@ const CmsArticleChoiceExerciseSchema = z.object({
   russian: z.string().min(1),
 });
 
+const CmsTranslateToGermanExerciseSchema = z.object({
+  kind: z.literal("translate-to-german"),
+  russian: z.string().min(1),
+  /** The dictionary form, with its article for a noun, e.g. "das Riesenrad". */
+  german: z.string().min(1),
+});
+
+const CmsListenChooseExerciseSchema = z.object({
+  kind: z.literal("listen-choose"),
+  /** The sentence that is spoken; it is also `options[correctIndex]`. */
+  sourceSentence: z.string().min(1),
+  options: z.array(z.string().min(1)).length(3),
+  correctIndex: z.number().int().min(0).max(2),
+});
+
 export const CmsExerciseSchema = z.discriminatedUnion("kind", [
   CmsFillBlankExerciseSchema,
   CmsMultipleChoiceExerciseSchema,
   CmsWordPairingExerciseSchema,
   CmsAudioDictationExerciseSchema,
   CmsArticleChoiceExerciseSchema,
+  CmsTranslateToGermanExerciseSchema,
+  CmsListenChooseExerciseSchema,
 ]);
 
 export const ExercisesResponseSchema = z.object({

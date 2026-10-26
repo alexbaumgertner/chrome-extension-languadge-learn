@@ -34,6 +34,8 @@
   "kickerWordPairing": { "message": "Найдите пары" },
   "kickerAudioDictation": { "message": "Диктант" },
   "kickerArticleChoice": { "message": "Выберите артикль" },
+  "kickerTranslateToGerman": { "message": "Напишите по-немецки" },
+  "kickerListenChoose": { "message": "Прослушайте и выберите" },
 
   "exerciseCheck": { "message": "Проверить" },
   "exerciseCorrect": { "message": "Верно!" },
@@ -51,6 +53,11 @@
   "dictationSlowLabel": { "message": "Слушать медленно" },
   "dictationPlaceholder": { "message": "Напишите, что услышали" },
   "dictationWrong": { "message": "Правильно: «$1»" },
+  "translateInstruction": { "message": "Как по-немецки «$1»?" },
+  "translatePlaceholder": { "message": "Немецкое слово" },
+  "translateWrong": { "message": "Правильный ответ: «$1»" },
+  "translateIWasRight": { "message": "Я ответил верно" },
+  "listenChooseInstruction": { "message": "Послушайте и выберите предложение, которое услышали." },
 
   "reportButton": { "message": "Плохой перевод" },
   "reportRetry": { "message": "Повторить" },

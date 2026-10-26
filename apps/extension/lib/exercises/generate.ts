@@ -68,6 +68,22 @@ export function mapCmsExercisesToEntities(
           prompt: { noun: cms.noun, russian: cms.russian },
           correctAnswer: cms.article,
         };
+      case "translate-to-german":
+        return {
+          ...base,
+          kind: "translate-to-german",
+          sourceSentence: "",
+          prompt: { russian: cms.russian },
+          correctAnswer: cms.german,
+        };
+      case "listen-choose":
+        return {
+          ...base,
+          kind: "listen-choose",
+          sourceSentence: cms.sourceSentence,
+          prompt: { audioSentence: cms.sourceSentence, options: cms.options },
+          correctAnswer: cms.correctIndex,
+        };
     }
   });
 }

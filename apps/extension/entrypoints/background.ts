@@ -35,7 +35,7 @@ import {
   translateParagraph,
 } from "@/lib/cms/client";
 import { mapCmsExercisesToEntities } from "@/lib/exercises/generate";
-import { checkExerciseAnswer } from "@/lib/exercises/match";
+import { canOverrideGrade, checkExerciseAnswer } from "@/lib/exercises/match";
 import { recordVocabEncounters, vocabIdFor } from "@/lib/vocab/upsert";
 import { flushEvents, recordEvent, recordInstallIfNew } from "@/lib/metrics/events";
 import {
@@ -159,7 +159,14 @@ async function handleSubmitExerciseAttempt(
   message: Extract<RequestMessage, { type: "SUBMIT_EXERCISE_ATTEMPT" }>,
 ): Promise<{ ok: true; correct: boolean; updatedProgress: ProgressProfile }> {
   const found = await findExerciseById(message.exerciseId);
-  const correct = found ? checkExerciseAnswer(found.exercise, message.submittedAnswer) : false;
+  // "I answered correctly" on a wrong translate-to-german answer: grade it correct, once.
+  const overridden =
+    found !== undefined && message.overrideCorrect === true && canOverrideGrade(found.exercise);
+  const correct = overridden
+    ? true
+    : found
+      ? checkExerciseAnswer(found.exercise, message.submittedAnswer)
+      : false;
   const timestamp = Date.now();
 
   if (found) {
@@ -174,7 +181,8 @@ async function handleSubmitExerciseAttempt(
     await markExerciseAnswered(found.cacheKey, message.exerciseId, lastAttempt);
   }
 
-  void recordEvent({ name: "exercise_completed" });
+  // An override corrects an attempt that was already counted as completed.
+  if (!overridden) void recordEvent({ name: "exercise_completed" });
   const updatedProgress = await recordAttempt({
     correct,
     affectedVocabIds: message.affectedVocabIds,

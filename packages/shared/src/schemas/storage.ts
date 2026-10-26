@@ -28,6 +28,8 @@ export const ExerciseKindSchema = z.enum([
   "word-pairing",
   "audio-dictation",
   "article-choice",
+  "translate-to-german",
+  "listen-choose",
 ]);
 
 export const LearnerSettingsSchema = z.object({
@@ -160,12 +162,32 @@ export const ArticleChoiceExerciseSchema = ExerciseBaseSchema.extend({
   correctAnswer: ArticleSchema,
 });
 
+export const TranslateToGermanExerciseSchema = ExerciseBaseSchema.extend({
+  kind: z.literal("translate-to-german"),
+  sourceSentence: z.string(),
+  prompt: z.object({ russian: z.string().min(1) }),
+  /** The dictionary form, with its article for a noun ("das Riesenrad"). */
+  correctAnswer: z.string().min(1),
+});
+
+export const ListenChooseExerciseSchema = ExerciseBaseSchema.extend({
+  kind: z.literal("listen-choose"),
+  sourceSentence: z.string().min(1),
+  prompt: z.object({
+    audioSentence: z.string().min(1),
+    options: z.array(z.string().min(1)).min(3),
+  }),
+  correctAnswer: z.number().int().nonnegative(),
+});
+
 export const ExerciseSchema = z.discriminatedUnion("kind", [
   FillBlankExerciseSchema,
   MultipleChoiceExerciseSchema,
   WordPairingExerciseSchema,
   AudioDictationExerciseSchema,
   ArticleChoiceExerciseSchema,
+  TranslateToGermanExerciseSchema,
+  ListenChooseExerciseSchema,
 ]);
 
 export const ExerciseSetSchema = z.array(ExerciseSchema).min(0).max(MAX_EXERCISES_PER_PARAGRAPH);

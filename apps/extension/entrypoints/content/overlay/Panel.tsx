@@ -16,6 +16,9 @@ import MultipleChoiceCard from "./MultipleChoiceCard";
 import WordPairingCard from "./WordPairingCard";
 import AudioDictationCard from "./AudioDictationCard";
 import ArticleChoiceCard from "./ArticleChoiceCard";
+import TranslateToGermanCard from "./TranslateToGermanCard";
+import ListenChooseCard from "./ListenChooseCard";
+import { hasGermanVoice } from "@/lib/audio/play-dictation";
 import ReportBadTranslation from "./ReportBadTranslation";
 import { PANEL_CSS } from "./styles";
 import { ChevronRightIcon } from "@/lib/design/icons";
@@ -28,6 +31,8 @@ const KICKERS: Record<Exercise["kind"], MessageKey> = {
   "word-pairing": "kickerWordPairing",
   "audio-dictation": "kickerAudioDictation",
   "article-choice": "kickerArticleChoice",
+  "translate-to-german": "kickerTranslateToGerman",
+  "listen-choose": "kickerListenChoose",
 };
 
 function kicker(index: number, kind: Exercise["kind"]): string {
@@ -39,6 +44,12 @@ export default function Panel() {
   const [exercises, setExercises] = useState<Exercise[]>(session?.exercises ?? []);
   const [collapsed, setCollapsed] = useState(true);
   const [settings, setSettings] = useState<LearnerSettings | null>(null);
+  // null until the browser has reported its voices; listen-choose stays hidden until then.
+  const [germanVoice, setGermanVoice] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    void hasGermanVoice().then(setGermanVoice, () => setGermanVoice(false));
+  }, []);
 
   useEffect(
     () =>
@@ -61,16 +72,19 @@ export default function Panel() {
 
   const activeSession = session;
   const activeSettings = settings;
-  const pendingCount = exercises.filter((ex) => !ex.answered).length;
-  const answeredCount = exercises.length - pendingCount;
+  // Without a German voice a listening exercise cannot be done: it is not shown, not even counted.
+  const shown = exercises.filter((ex) => ex.kind !== "listen-choose" || germanVoice === true);
+  const pendingCount = shown.filter((ex) => !ex.answered).length;
+  const answeredCount = shown.length - pendingCount;
   const tabLabel =
-    exercises.length === 0 ? t("panelTabNoExercises") : tPlural(pendingCount, "panelTabExercises");
+    shown.length === 0 ? t("panelTabNoExercises") : tPlural(pendingCount, "panelTabExercises");
   const lang = uiLanguage();
 
   async function handleAnswer(
     exercise: Exercise,
     submittedAnswer: AnswerPayload,
     affectedVocabIds: string[],
+    overrideCorrect?: true,
   ): Promise<boolean> {
     const response = await sendMessage<SubmitExerciseAttemptResponse>({
       type: "SUBMIT_EXERCISE_ATTEMPT",
@@ -79,6 +93,7 @@ export default function Panel() {
       sourceParagraphHash: activeSession.sourceParagraphHash,
       affectedVocabIds,
       topic: activeSettings.currentTopic,
+      ...(overrideCorrect ? { overrideCorrect } : {}),
     });
     setExercises((prev) =>
       prev.map((ex) =>
@@ -143,23 +158,23 @@ export default function Panel() {
               </span>
               <span className="tag tag-accent-2">{t("panelLevel", activeSettings.level)}</span>
             </div>
-            {exercises.length > 0 && (
+            {shown.length > 0 && (
               <div className="sw-progress">
                 <div className="sw-progress-track">
                   <div
                     className="sw-progress-fill"
-                    style={{ width: `${(answeredCount / exercises.length) * 100}%` }}
+                    style={{ width: `${(answeredCount / shown.length) * 100}%` }}
                   />
                 </div>
                 <span className="sw-progress-label">
-                  {t("panelProgress", [String(answeredCount), String(exercises.length)])}
+                  {t("panelProgress", [String(answeredCount), String(shown.length)])}
                 </span>
               </div>
             )}
           </div>
           <div className="sw-list">
-            {exercises.length === 0 && <p className="sw-empty">{t("panelEmpty")}</p>}
-            {exercises.map((exercise, index) => {
+            {shown.length === 0 && <p className="sw-empty">{t("panelEmpty")}</p>}
+            {shown.map((exercise, index) => {
               const label = kicker(index, exercise.kind);
               switch (exercise.kind) {
                 case "fill-blank":
@@ -201,6 +216,24 @@ export default function Panel() {
                 case "article-choice":
                   return (
                     <ArticleChoiceCard
+                      key={exercise.id}
+                      kicker={label}
+                      exercise={exercise}
+                      onAnswer={handleAnswer}
+                    />
+                  );
+                case "translate-to-german":
+                  return (
+                    <TranslateToGermanCard
+                      key={exercise.id}
+                      kicker={label}
+                      exercise={exercise}
+                      onAnswer={handleAnswer}
+                    />
+                  );
+                case "listen-choose":
+                  return (
+                    <ListenChooseCard
                       key={exercise.id}
                       kicker={label}
                       exercise={exercise}

@@ -36,6 +36,8 @@ import type {
   AudioDictationExerciseSchema,
   ArticleChoiceExerciseSchema,
   ArticleSchema,
+  ListenChooseExerciseSchema,
+  TranslateToGermanExerciseSchema,
   ExerciseAttemptSchema,
   ExerciseKindSchema,
   ExerciseSchema,
@@ -71,6 +73,8 @@ export type MultipleChoiceExercise = z.infer<typeof MultipleChoiceExerciseSchema
 export type WordPairingExercise = z.infer<typeof WordPairingExerciseSchema>;
 export type AudioDictationExercise = z.infer<typeof AudioDictationExerciseSchema>;
 export type ArticleChoiceExercise = z.infer<typeof ArticleChoiceExerciseSchema>;
+export type TranslateToGermanExercise = z.infer<typeof TranslateToGermanExerciseSchema>;
+export type ListenChooseExercise = z.infer<typeof ListenChooseExerciseSchema>;
 export type Article = z.infer<typeof ArticleSchema>;
 export type Exercise = z.infer<typeof ExerciseSchema>;
 export type ExerciseSet = z.infer<typeof ExerciseSetSchema>;

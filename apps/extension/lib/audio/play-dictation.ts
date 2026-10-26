@@ -29,6 +29,16 @@ export function pickGermanVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesis
 }
 
 /**
+ * Whether this browser can speak German. listen-choose is useless without it, so the panel hides
+ * that card when this is false; the server generates it regardless.
+ */
+export async function hasGermanVoice(): Promise<boolean> {
+  const synth = window.speechSynthesis;
+  if (!synth) return false;
+  return pickGermanVoice(await loadVoices(synth)) !== undefined;
+}
+
+/**
  * Speaks a dictation sentence with the browser's own speech synthesis — no server TTS. Resolves
  * when speech ends (or fails), so callers can disable the play buttons meanwhile. Degrades
  * silently on devices without synthesis.

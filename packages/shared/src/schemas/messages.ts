@@ -48,6 +48,12 @@ export const SubmitExerciseAttemptRequestSchema = z.object({
   sourceParagraphHash: z.string().min(1),
   affectedVocabIds: z.array(z.string()),
   topic: z.string().min(1),
+  /**
+   * Set by the "I answered correctly" button of translate-to-german: a Russian gloss can fit
+   * several German words, so the learner may overrule a wrong grade. The background honours it only
+   * for a translate-to-german exercise whose last attempt was wrong, and grades it correct.
+   */
+  overrideCorrect: z.literal(true).optional(),
 });
 
 export const SubmitExerciseAttemptResponseSchema = z.object({

@@ -30,12 +30,36 @@ export function isLenientMatch(submitted: string, expected: string): boolean {
   return canonicalize(submitted) === canonicalize(expected);
 }
 
+const ARTICLE_RE = /^(der|die|das)\s+(.+)$/iu;
+
+/**
+ * translate-to-german: `expected` is the dictionary form. For a noun ("das Riesenrad") the answer
+ * counts with or without the article, but an article that is typed must be the right one. A
+ * different leading article is wrong even when the rest matches ("die Riesenrad").
+ */
+export function matchTranslation(submitted: string, expected: string): boolean {
+  if (isLenientMatch(submitted, expected)) return true;
+  const expectedNoun = ARTICLE_RE.exec(expected.trim());
+  if (!expectedNoun) return false;
+  // Without the article only; "der Riesenrad" already failed the full match above.
+  return !ARTICLE_RE.test(submitted.trim()) && isLenientMatch(submitted, expectedNoun[2] ?? "");
+}
+
+/** Only a wrong translate-to-german answer can be overruled, and only once (it is correct after). */
+export function canOverrideGrade(exercise: Exercise): boolean {
+  return exercise.kind === "translate-to-german" && exercise.lastAttempt?.correct === false;
+}
+
 /** Grades a submitted answer against an Exercise's correctAnswer, kind-appropriately. */
 export function checkExerciseAnswer(exercise: Exercise, submitted: AnswerPayload): boolean {
   switch (exercise.kind) {
     case "fill-blank":
     case "audio-dictation":
       return typeof submitted === "string" && isLenientMatch(submitted, exercise.correctAnswer);
+    case "translate-to-german":
+      return typeof submitted === "string" && matchTranslation(submitted, exercise.correctAnswer);
+    case "listen-choose":
+      return typeof submitted === "number" && submitted === exercise.correctAnswer;
     case "article-choice":
       // Exact: the three buttons are the only input, so there is nothing to be lenient about.
       return submitted === exercise.correctAnswer;
