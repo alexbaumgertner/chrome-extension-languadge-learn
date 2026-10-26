@@ -55,7 +55,7 @@ test("the panel, its exercises and the report footer are in Russian", async ({
   await clickMenu(tab, "translate");
 
   const panel = tab.locator(".sw-panel");
-  await expect(panel.locator(".sw-card")).toHaveCount(4);
+  await expect(panel.locator(".sw-card")).toHaveCount(5);
   await expect(panel).toHaveAttribute("lang", "ru");
   await expect(panel.getByRole("button", { name: msg("ru", "panelCollapse") })).toBeVisible();
   await expect(panel).toContainText(msg("ru", "kickerWordPairing"));

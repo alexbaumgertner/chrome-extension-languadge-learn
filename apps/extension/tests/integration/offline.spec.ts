@@ -55,7 +55,7 @@ test("previously translated content stays usable offline; a never-cached paragra
 
   const panelAfterReload = page.locator(".sw-panel");
   await expect(panelAfterReload).toBeVisible();
-  await expect(panelAfterReload.locator(".sw-card")).toHaveCount(4);
+  await expect(panelAfterReload.locator(".sw-card")).toHaveCount(5);
 
   // The fill-blank exercise was already answered before reload — that state
   // (answered=true, lastAttempt) must load straight from the cache, not reset.
