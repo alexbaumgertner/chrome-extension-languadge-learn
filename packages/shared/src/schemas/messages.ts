@@ -9,6 +9,7 @@ import {
   ReviewQueueEntrySchema,
   VocabularyItemSchema,
 } from "./storage";
+import { RewriteModeSchema } from "./rewrite";
 
 export const TranslateParagraphRequestSchema = z.object({
   type: z.literal("TRANSLATE_PARAGRAPH"),
@@ -125,7 +126,7 @@ export const PageActionResponseSchema = z.object({
 /** Longest fragment a side-panel tool takes from a selection; longer ones are cut. */
 export const SELECTION_MAX_CHARS = 600;
 
-export const SelectionToolSchema = z.enum(["translate", "speak"]);
+export const SelectionToolSchema = z.enum(["translate", "speak", "rewrite"]);
 
 /**
  * The selected fragment as the side panel receives it. `id` is new for every menu choice, so the
@@ -193,6 +194,26 @@ export const TranslateSelectionResponseSchema = z.union([
   }),
 ]);
 
+/** Side panel -> background: put this fragment into German in the given way ("Rewrite"). */
+export const RewriteSelectionRequestSchema = z.object({
+  type: z.literal("REWRITE_SELECTION"),
+  text: z.string().min(1).max(SELECTION_MAX_CHARS),
+  mode: RewriteModeSchema,
+});
+
+/** Same shape as a translation: safe-subset text plus glossed words. */
+export const RewriteSelectionResponseSchema = TranslateSelectionResponseSchema;
+
+/**
+ * Side panel -> background on the "Bad translation" click for a side-panel result. The only way
+ * such a result leaves the device for review; the background adds level and density.
+ */
+export const ReportSelectionResultRequestSchema = z.object({
+  type: z.literal("REPORT_SELECTION_RESULT"),
+  source: z.string().min(1).max(SELECTION_MAX_CHARS),
+  output: z.string().min(1).max(20_000),
+});
+
 /** Every message sent from content/popup/options/side panel to the background router. */
 export const RequestMessageSchema = z.discriminatedUnion("type", [
   TranslateParagraphRequestSchema,
@@ -205,6 +226,8 @@ export const RequestMessageSchema = z.discriminatedUnion("type", [
   RecordClientErrorRequestSchema,
   GetPendingSelectionRequestSchema,
   TranslateSelectionRequestSchema,
+  RewriteSelectionRequestSchema,
+  ReportSelectionResultRequestSchema,
 ]);
 
 /** Every message crossing a chrome.runtime boundary, including the background-originated broadcast. */
@@ -219,6 +242,8 @@ export const AnyMessageSchema = z.discriminatedUnion("type", [
   RecordClientErrorRequestSchema,
   GetPendingSelectionRequestSchema,
   TranslateSelectionRequestSchema,
+  RewriteSelectionRequestSchema,
+  ReportSelectionResultRequestSchema,
   StorageChangedMessageSchema,
   PageActionMessageSchema,
   SelectionToolMessageSchema,
