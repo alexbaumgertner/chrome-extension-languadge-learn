@@ -121,7 +121,10 @@ describe("buildReviewExercise", () => {
         contextForm: "Rat",
       }),
     );
-    expect(exercise).toMatchObject({ kind: "cloze", blankedSentence: "Der Ratgeber gibt einen ___." });
+    expect(exercise).toMatchObject({
+      kind: "cloze",
+      blankedSentence: "Der Ratgeber gibt einen ___.",
+    });
   });
 
   it("falls back to recall without a sentence (old records) or when the form is not in it", () => {
@@ -132,7 +135,9 @@ describe("buildReviewExercise", () => {
       russian: "дом",
     });
     expect(
-      buildReviewExercise(word("haus", { contextSentence: "Das Auto fährt.", contextForm: "Haus" })),
+      buildReviewExercise(
+        word("haus", { contextSentence: "Das Auto fährt.", contextForm: "Haus" }),
+      ),
     ).toMatchObject({ kind: "recall" });
   });
 
