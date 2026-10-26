@@ -31,7 +31,7 @@ test("a failed exercises call keeps the translation, and translating again retri
   await selectText(page, "#para");
   await clickMenu(page, "translate");
 
-  await expect(page.locator(".sw-panel .sw-card")).toHaveCount(4);
+  await expect(page.locator(".sw-panel .sw-card")).toHaveCount(5);
   expect(cmsServer.callCounts.translate).toBe(1);
   expect(cmsServer.callCounts.exercises).toBe(2);
 });
