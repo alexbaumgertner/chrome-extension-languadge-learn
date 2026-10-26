@@ -83,3 +83,19 @@ export function reserveUsage(
     },
   ]);
 }
+
+/**
+ * A rewrite request counts against the global Gemini budget and its own daily allowance; both are
+ * reserved or neither (a refusal by one releases the other).
+ */
+export function reserveRewriteUsage(
+  db: Db,
+  cfg: UsageLedgerConfig & { REWRITE_DAILY_REQUEST_ALLOWANCE: number },
+  now: Date = new Date(),
+): Promise<boolean> {
+  const periodKey = dailyPeriodKey(now);
+  return reserveCounters(db, [
+    { counter: "gemini", periodKey, amount: 1, allowance: cfg.GEMINI_DAILY_REQUEST_ALLOWANCE },
+    { counter: "rewrite", periodKey, amount: 1, allowance: cfg.REWRITE_DAILY_REQUEST_ALLOWANCE },
+  ]);
+}

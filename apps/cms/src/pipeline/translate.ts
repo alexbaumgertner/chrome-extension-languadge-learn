@@ -55,6 +55,20 @@ const LEVEL_GUIDANCE: Record<string, string> = {
 /** Bump whenever the prompt changes meaningfully, so cached output from the old prompt isn't served. */
 export const PROMPT_VERSION = "2";
 
+/** Which vocabulary to pick and how to write it down; shared by every tool that glosses its German output. */
+export const VOCAB_INSTRUCTIONS =
+  "Then pick 3 to 8 vocabulary items from YOUR German text that are most worth learning at this " +
+  "level. Skip names, numbers and words that are the same in both languages. For each item:\n" +
+  '- "german": copied exactly as it appears in the text, one contiguous piece of one to three ' +
+  "words (same inflection, same capitalization). For a separable verb, copy only the conjugated " +
+  'part that is in the text (e.g. "rufe" from "rufe ... an").\n' +
+  '- "lemma": the dictionary form. Nouns with their definite article in the nominative singular ' +
+  '("das Riesenrad", "die Wohnung"; plural-only nouns as "die Leute"). Verbs in the infinitive, ' +
+  'separable verbs with the prefix attached ("anrufen", "einkaufen"; reflexive as "sich ' +
+  'beschweren"). Adjectives and adverbs in the base form.\n' +
+  '- "russian": a short Russian gloss of the lemma in its dictionary form (nominative, ' +
+  "infinitive), with the meaning it has in this text.\n\n";
+
 /**
  * The prompt's trailing `Level:` / `Source paragraph:` lines are a stable format —
  * `apps/cms/tests/integration/mock-providers.ts` parses them back out for deterministic fixtures.
@@ -66,27 +80,13 @@ export function buildPrompt(sourceText: string, level: string): string {
     `learner. ${LEVEL_GUIDANCE[level] ?? ""}\n` +
     "Output plain text. You may use bare <strong> or <em> only where the source emphasizes " +
     "something; no other HTML, no attributes.\n" +
-    "Then pick 3 to 8 vocabulary items from YOUR German text that are most worth learning at this " +
-    "level. Skip names, numbers and words that are the same in both languages. For each item:\n" +
-    '- "german": copied exactly as it appears in the text, one contiguous piece of one to three ' +
-    "words (same inflection, same capitalization). For a separable verb, copy only the conjugated " +
-    'part that is in the text (e.g. "rufe" from "rufe ... an").\n' +
-    '- "lemma": the dictionary form. Nouns with their definite article in the nominative singular ' +
-    '("das Riesenrad", "die Wohnung"; plural-only nouns as "die Leute"). Verbs in the infinitive, ' +
-    'separable verbs with the prefix attached ("anrufen", "einkaufen"; reflexive as "sich ' +
-    'beschweren"). Adjectives and adverbs in the base form.\n' +
-    '- "russian": a short Russian gloss of the lemma in its dictionary form (nominative, ' +
-    "infinitive), with the meaning it has in this text.\n\n" +
+    VOCAB_INSTRUCTIONS +
     `Level: ${level}\n` +
     `Source paragraph:\n${sourceText}`
   );
 }
 
-async function doTranslate(
-  sourceText: string,
-  level: string,
-  cfg: GeminiConfig,
-): Promise<TranslationResult> {
+async function doTranslate(prompt: string, cfg: GeminiConfig): Promise<TranslationResult> {
   const generationConfig: Record<string, unknown> = {
     responseMimeType: "application/json",
     responseSchema: {
@@ -122,7 +122,7 @@ async function doTranslate(
         // Header, not ?key=, so the secret never appears in a URL or access log.
         headers: { "Content-Type": "application/json", "x-goog-api-key": cfg.GEMINI_API_KEY },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: buildPrompt(sourceText, level) }] }],
+          contents: [{ parts: [{ text: prompt }] }],
           generationConfig,
         }),
         signal: AbortSignal.timeout(cfg.GEMINI_TIMEOUT_MS),
@@ -199,10 +199,18 @@ export function translateParagraph(
   level: string,
   cfg: GeminiConfig,
 ): Promise<TranslationResult> {
+  return generateGerman(buildPrompt(sourceText, level), cfg);
+}
+
+/**
+ * The shared Gemini call behind every tool that returns German text plus glossed vocabulary
+ * ({text, vocab[]} structured output): retries, remembered configuration failures, usage.
+ */
+export function generateGerman(prompt: string, cfg: GeminiConfig): Promise<TranslationResult> {
   const known = configFailures.get(configKey(cfg));
   if (known) return Promise.reject(known);
   return withRetry(
-    () => doTranslate(sourceText, level, cfg),
+    () => doTranslate(prompt, cfg),
     200,
     (err) => !(err instanceof ProviderConfigError),
   ).catch((err: unknown) => {

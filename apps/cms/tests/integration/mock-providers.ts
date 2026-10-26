@@ -18,6 +18,8 @@ export interface TranslatedResult {
 
 export interface MockProvidersOptions {
   translate?: (source: string, level: string) => TranslatedResult;
+  /** Used for prompts with a `Mode:` line (apps/cms/src/pipeline/rewrite.ts). */
+  rewrite?: (source: string, level: string, mode: string) => TranslatedResult;
 }
 
 export interface MockProvidersController {
@@ -27,12 +29,15 @@ export interface MockProvidersController {
   callCounts: { gemini: number };
   /** The `x-goog-api-key` header of every Gemini call made, in order. */
   apiKeys: string[];
+  /** The prompt text of every Gemini call that got as far as being answered, in order. */
+  prompts: string[];
   /** Every Gemini request URL, in order. */
   urls: string[];
   install(): void;
   restore(): void;
 }
 
+const MODE_REGEX = /\nMode: (\S+)\n/;
 const LEVEL_REGEX = /\nLevel: (\S+)\n/;
 const SOURCE_REGEX = /\nSource paragraph:\n([\s\S]*)$/;
 
@@ -42,7 +47,15 @@ export function createMockProviders(options: MockProvidersOptions = {}): MockPro
   const callCounts = { gemini: 0 };
   const apiKeys: string[] = [];
   const urls: string[] = [];
+  const prompts: string[] = [];
   const originalFetch = globalThis.fetch;
+
+  const rewrite =
+    options.rewrite ??
+    ((source: string, level: string, mode: string) => ({
+      text: `[${mode}/${level}] DE: ${source}`,
+      vocab: [],
+    }));
 
   const translate =
     options.translate ??
@@ -77,14 +90,15 @@ export function createMockProviders(options: MockProvidersOptions = {}): MockPro
         contents: Array<{ parts: Array<{ text: string }> }>;
       };
       const prompt = body.contents[0]?.parts[0]?.text ?? "";
+      prompts.push(prompt);
       const level = LEVEL_REGEX.exec(prompt)?.[1] ?? "unknown";
       const source = SOURCE_REGEX.exec(prompt)?.[1] ?? "";
+      const rewriteMode = MODE_REGEX.exec(prompt)?.[1];
+      const result = rewriteMode ? rewrite(source, level, rewriteMode) : translate(source, level);
 
       return new Response(
         JSON.stringify({
-          candidates: [
-            { content: { parts: [{ text: JSON.stringify(translate(source, level)) }] } },
-          ],
+          candidates: [{ content: { parts: [{ text: JSON.stringify(result) }] } }],
           usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 20 },
         }),
         { status: 200 },
@@ -103,6 +117,7 @@ export function createMockProviders(options: MockProvidersOptions = {}): MockPro
     },
     callCounts,
     apiKeys,
+    prompts,
     urls,
     install() {
       globalThis.fetch = mockFetch as typeof fetch;
