@@ -5,7 +5,8 @@ import { createLoopbackServer, withCors } from "./loopback-server";
  * "limit": translate answers 429 like an exhausted daily allowance. "cors-fail": every response
  * lacks the CORS grant, so the browser blocks it although the server is up.
  */
-export type MockCmsMode = "ok" | "fail" | "exercises-fail" | "report-fail" | "limit" | "cors-fail";
+export type MockCmsMode =
+  "ok" | "fail" | "exercises-fail" | "report-fail" | "limit" | "cors-fail" | "word-order";
 
 /** A request paragraph text containing this marker gets a short, low-vocabulary German variant back. */
 export const SHORT_PARAGRAPH_MARKER = "SHORT_PARA_MARKER";
@@ -34,6 +35,18 @@ function buildTranslateResponse(requestText: string, text: string) {
   ];
   return { text, markedVocab: markVocab(text, words) };
 }
+
+/** "word-order" mode: exactly one word-order exercise (tokens already shuffled). */
+const WORD_ORDER_ONLY_RESPONSE = {
+  exercises: [
+    {
+      kind: "word-order",
+      sourceSentence: "Ich trinke jeden Morgen Kaffee.",
+      tokens: ["Kaffee", "trinke", "jeden", "ich", "Morgen"],
+      ending: ".",
+    },
+  ],
+};
 
 function buildExercisesResponse(variantText: string) {
   if (variantText === SHORT_VARIANT_TEXT) {
@@ -150,7 +163,13 @@ export function createMockCmsServer() {
             }
             const parsed = JSON.parse(body || "{}") as { variantText?: string };
             res.setHeader("Content-Type", "application/json");
-            res.end(JSON.stringify(buildExercisesResponse(parsed.variantText ?? "")));
+            res.end(
+              JSON.stringify(
+                mode === "word-order"
+                  ? WORD_ORDER_ONLY_RESPONSE
+                  : buildExercisesResponse(parsed.variantText ?? ""),
+              ),
+            );
             return;
           }
 
