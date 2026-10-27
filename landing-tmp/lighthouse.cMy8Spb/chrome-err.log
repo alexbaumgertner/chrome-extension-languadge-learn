@@ -1,0 +1,6 @@
+[50:50:1027/203443.742798:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:208] open /home/agent/.config/google-chrome/Crash Reports/settings.dat: Read-only file system (30)
+[50:50:1027/203443.744032:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:208] open /home/agent/.config/google-chrome/Crash Reports/settings.dat: Read-only file system (30)
+[50:50:1027/203443.753927:FATAL:chrome/browser/process_singleton_posix.cc:313] Socket path too long: /home/agent/apps/operator-data/worktrees/oTbd4Phfw4AoTNJFEQdp-/landing-work/../landing-tmp/com.google.Chrome.LGMF4r/SingletonSocket.
+[1027/203443.787735:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:208] open /home/agent/.config/google-chrome/Crash Reports/settings.dat: Read-only file system (30)
+[1027/203443.788396:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:153] open /home/agent/.config/google-chrome/Crash Reports/new/c455cf09-47da-4740-b279-ca9915d8d3eb.dmp: Read-only file system (30)
+[1027/203443.788480:ERROR:third_party/crashpad/crashpad/handler/linux/crash_report_exception_handler.cc:209] PrepareNewCrashReport failed

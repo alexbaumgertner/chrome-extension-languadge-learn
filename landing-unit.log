@@ -1,0 +1,50 @@
+
+> sprachweise@ test:unit /home/agent/apps/operator-data/worktrees/oTbd4Phfw4AoTNJFEQdp-/landing-work
+> pnpm -r test:unit
+
+Scope: 3 of 4 workspace projects
+packages/shared test:unit$ vitest run
+packages/shared test:unit:  RUN  v2.1.9 /home/agent/apps/operator-data/worktrees/oTbd4Phfw4AoTNJFEQdp-/landing-work/packages/shared
+packages/shared test:unit:  ✓ tests/schemas.test.ts (42 tests) 46ms
+packages/shared test:unit:  Test Files  1 passed (1)
+packages/shared test:unit:       Tests  42 passed (42)
+packages/shared test:unit:    Start at  20:34:05
+packages/shared test:unit:    Duration  959ms (transform 227ms, setup 0ms, collect 265ms, tests 46ms, environment 1ms, prepare 179ms)
+packages/shared test:unit: Done
+apps/cms test:unit$ vitest run tests/unit
+apps/extension test:unit$ vitest run
+apps/cms test:unit:  RUN  v2.1.9 /home/agent/apps/operator-data/worktrees/oTbd4Phfw4AoTNJFEQdp-/landing-work/apps/cms
+apps/extension test:unit:  RUN  v2.1.9 /home/agent/apps/operator-data/worktrees/oTbd4Phfw4AoTNJFEQdp-/landing-work/apps/extension
+apps/cms test:unit:  ✓ tests/unit/mark-vocab.test.ts (4 tests) 63ms
+apps/cms test:unit:  ✓ tests/unit/generate-exercises.test.ts (7 tests) 95ms
+apps/cms test:unit:  ✓ tests/unit/cache-key.test.ts (6 tests) 16ms
+apps/cms test:unit:  ✓ tests/unit/coalesce.test.ts (3 tests) 74ms
+apps/extension test:unit:  ✓ tests/unit/substitution.test.ts (8 tests) 226ms
+apps/cms test:unit:  ✓ tests/unit/html-safe-subset.test.ts (2 tests) 17ms
+apps/extension test:unit:  ✓ tests/unit/selection.test.ts (16 tests) 602ms
+apps/extension test:unit:  ✓ tests/unit/i18n-literals.test.ts (18 tests) 381ms
+apps/extension test:unit:  ✓ tests/unit/progress.test.ts (7 tests) 14ms
+apps/extension test:unit:  ✓ tests/unit/metric-events.test.ts (6 tests) 123ms
+apps/extension test:unit:  ✓ tests/unit/i18n-messages.test.ts (86 tests) 70ms
+apps/extension test:unit:  ✓ tests/unit/design-tokens.test.ts (4 tests) 46ms
+apps/extension test:unit:  ✓ tests/unit/scheduler.test.ts (4 tests) 12ms
+apps/extension test:unit:  ✓ tests/unit/install-id.test.ts (3 tests) 59ms
+apps/extension test:unit:  ✓ tests/unit/play-dictation.test.ts (3 tests) 12ms
+apps/extension test:unit:  ✓ tests/unit/match.test.ts (14 tests) 32ms
+apps/extension test:unit:  ✓ tests/unit/verify-bundle.test.ts (4 tests) 39ms
+apps/extension test:unit:  Test Files  12 passed (12)
+apps/extension test:unit:       Tests  173 passed (173)
+apps/extension test:unit:    Start at  20:34:07
+apps/extension test:unit:    Duration  14.65s (transform 1.58s, setup 181ms, collect 4.23s, tests 1.62s, environment 23.03s, prepare 4.65s)
+apps/extension test:unit: Done
+apps/cms test:unit:  ✓ tests/unit/usage-ledger.test.ts (5 tests) 30386ms
+apps/cms test:unit:    ✓ usage-ledger threshold math > allows requests within the allowance, then refuses past it 10751ms
+apps/cms test:unit:    ✓ usage-ledger threshold math > a new period_key starts a fresh row at usage = 0 with no explicit reset 3631ms
+apps/cms test:unit:    ✓ usage-ledger threshold math > an amount larger than the allowance is refused even on a fresh period 3453ms
+apps/cms test:unit:    ✓ usage-ledger threshold math > a refusal never leaves a partial increment on an earlier counter 3875ms
+apps/cms test:unit:    ✓ usage-ledger threshold math > concurrent reservations never overshoot the allowance 8661ms
+apps/cms test:unit:  Test Files  6 passed (6)
+apps/cms test:unit:       Tests  27 passed (27)
+apps/cms test:unit:    Start at  20:34:07
+apps/cms test:unit:    Duration  33.89s (transform 1.48s, setup 0ms, collect 3.31s, tests 30.65s, environment 6ms, prepare 2.44s)
+apps/cms test:unit: Done

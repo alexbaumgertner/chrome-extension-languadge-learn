@@ -1,0 +1,218 @@
+
+> @sprachweise/cms@0.0.0 test:integration /home/agent/apps/operator-data/worktrees/oTbd4Phfw4AoTNJFEQdp-/landing-work/apps/cms
+> vitest run tests/integration
+
+
+ RUN  v2.1.9 /home/agent/apps/operator-data/worktrees/oTbd4Phfw4AoTNJFEQdp-/landing-work/apps/cms
+
+{"level":30,"time":1793122485795,"pid":958,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122485799,"pid":957,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/events"},"msg":"incoming request"}
+ ✓ tests/integration/metrics-sql.test.ts (5 tests) 12648ms
+{"level":30,"time":1793122498326,"pid":957,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":204},"responseTime":12525.318307000001,"msg":"request completed"}
+{"level":30,"time":1793122498415,"pid":957,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/events"},"msg":"incoming request"}
+{"level":30,"time":1793122498804,"pid":958,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":13006.563159,"msg":"request completed"}
+{"level":30,"time":1793122498929,"pid":958,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122498940,"pid":958,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":400},"responseTime":10.693902999999409,"msg":"request completed"}
+{"level":30,"time":1793122498942,"pid":958,"hostname":"home-ubuntu","reqId":"req-2","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122498945,"pid":958,"hostname":"home-ubuntu","reqId":"req-2","res":{"statusCode":400},"responseTime":3.1302809999997407,"msg":"request completed"}
+{"level":30,"time":1793122498946,"pid":958,"hostname":"home-ubuntu","reqId":"req-3","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122498948,"pid":958,"hostname":"home-ubuntu","reqId":"req-3","res":{"statusCode":400},"responseTime":1.7661200000002282,"msg":"request completed"}
+{"level":30,"time":1793122498949,"pid":958,"hostname":"home-ubuntu","reqId":"req-4","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122498950,"pid":958,"hostname":"home-ubuntu","reqId":"req-4","res":{"statusCode":400},"responseTime":1.3462770000005548,"msg":"request completed"}
+{"level":30,"time":1793122498951,"pid":958,"hostname":"home-ubuntu","reqId":"req-5","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122498952,"pid":958,"hostname":"home-ubuntu","reqId":"req-5","res":{"statusCode":400},"responseTime":1.192267999998876,"msg":"request completed"}
+{"level":30,"time":1793122498953,"pid":958,"hostname":"home-ubuntu","reqId":"req-6","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122498966,"pid":958,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122498954,"pid":958,"hostname":"home-ubuntu","reqId":"req-6","res":{"statusCode":400},"responseTime":1.058258000000933,"msg":"request completed"}
+{"level":30,"time":1793122500518,"pid":1060,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122504996,"pid":957,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":204},"responseTime":6580.233042,"msg":"request completed"}
+{"level":30,"time":1793122505692,"pid":957,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/events"},"msg":"incoming request"}
+{"level":30,"time":1793122506338,"pid":958,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":7371.090673999999,"msg":"request completed"}
+{"level":30,"time":1793122506438,"pid":958,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122506350,"pid":958,"hostname":"home-ubuntu","reqId":"req-2","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122506371,"pid":958,"hostname":"home-ubuntu","reqId":"req-2","res":{"statusCode":200},"responseTime":20.168923000001087,"msg":"request completed"}
+{"level":50,"time":1793122507996,"pid":1060,"hostname":"home-ubuntu","reqId":"req-1","msg":"Gemini rejected the configuration (GEMINI_MODEL=gemini-3.8-flash, GEMINI_THINKING_LEVEL=low): 400 Thinking level MINIMAL is not supported for this model."}
+{"level":30,"time":1793122508134,"pid":1060,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122508017,"pid":1060,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":503},"responseTime":7497.322696000001,"msg":"request completed"}
+{"level":30,"time":1793122508037,"pid":1060,"hostname":"home-ubuntu","reqId":"req-2","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":50,"time":1793122508058,"pid":1060,"hostname":"home-ubuntu","reqId":"req-2","msg":"Gemini rejected the configuration (GEMINI_MODEL=gemini-3.8-flash, GEMINI_THINKING_LEVEL=low): 400 Thinking level MINIMAL is not supported for this model."}
+{"level":30,"time":1793122508059,"pid":1060,"hostname":"home-ubuntu","reqId":"req-2","res":{"statusCode":503},"responseTime":21.79037900000003,"msg":"request completed"}
+{"level":30,"time":1793122513342,"pid":958,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":6903.661698,"msg":"request completed"}
+{"level":30,"time":1793122513424,"pid":958,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122516314,"pid":957,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":204},"responseTime":10616.984645,"msg":"request completed"}
+{"level":30,"time":1793122516432,"pid":957,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/events"},"msg":"incoming request"}
+{"level":30,"time":1793122516337,"pid":957,"hostname":"home-ubuntu","reqId":"req-2","req":{"method":"POST","url":"/api/events"},"msg":"incoming request"}
+{"level":30,"time":1793122516366,"pid":957,"hostname":"home-ubuntu","reqId":"req-2","res":{"statusCode":204},"responseTime":29.29479700000229,"msg":"request completed"}
+{"level":30,"time":1793122516472,"pid":957,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":400},"responseTime":39.71226799999931,"msg":"request completed"}
+{"level":30,"time":1793122516473,"pid":957,"hostname":"home-ubuntu","reqId":"req-2","req":{"method":"POST","url":"/api/events"},"msg":"incoming request"}
+{"level":30,"time":1793122516487,"pid":957,"hostname":"home-ubuntu","reqId":"req-2","res":{"statusCode":400},"responseTime":13.85713499999838,"msg":"request completed"}
+{"level":30,"time":1793122521909,"pid":1060,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":13537.046466999998,"msg":"request completed"}
+{"level":30,"time":1793122522579,"pid":1060,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122522197,"pid":1060,"hostname":"home-ubuntu","reqId":"req-2","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122522233,"pid":1060,"hostname":"home-ubuntu","reqId":"req-2","res":{"statusCode":200},"responseTime":32.887847000001784,"msg":"request completed"}
+{"level":30,"time":1793122525630,"pid":958,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":12205.016557000003,"msg":"request completed"}
+{"level":30,"time":1793122525723,"pid":958,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122525641,"pid":958,"hostname":"home-ubuntu","reqId":"req-2","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122525650,"pid":958,"hostname":"home-ubuntu","reqId":"req-2","res":{"statusCode":413},"responseTime":7.933087999997952,"msg":"request completed"}
+{"level":30,"time":1793122531627,"pid":1060,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122531946,"pid":1060,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":502},"responseTime":9366.302746000001,"msg":"request completed"}
+ ❯ tests/integration/translate-basic.test.ts (6 tests | 1 failed) 49477ms
+   ✓ POST /api/translate — User Story 1 (leveled, glossed translation) > Scenario 1: returns a German rewrite plus marked vocabulary spans with Russian meanings 13484ms
+   ✓ POST /api/translate — User Story 1 (leveled, glossed translation) > Scenario 3: the same text at two different levels produces different rewrites 7419ms
+   ✓ POST /api/translate — User Story 1 (leveled, glossed translation) > Scenario 4: a short/generic paragraph still returns a valid rewrite with an empty vocab list, never an error 6974ms
+   ✓ POST /api/translate — User Story 1 (leveled, glossed translation) > answers text over the length cap with 413 text-too-long, without calling the provider 12303ms
+   × POST /api/translate — User Story 1 (leveled, glossed translation) > sends the API key in a header, never in the URL, to the configured model 9150ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+{"level":30,"time":1793122537112,"pid":1060,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":5482.855180999999,"msg":"request completed"}
+{"level":30,"time":1793122537214,"pid":1060,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122537893,"pid":1094,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/report"},"msg":"incoming request"}
+ ✓ tests/integration/events.test.ts (8 tests) 58466ms
+   ✓ POST /api/events > stores each event with its day and only the metric fields 13058ms
+   ✓ POST /api/events > has no column that could hold text, a URL or an IP 7130ms
+   ✓ POST /api/events > stores a batch sent twice (lost response, retried) only once 10919ms
+   ✓ POST /api/events > rejects a batch without a valid install ID and stores nothing 13108ms
+   ✓ POST /api/events > does not let the translate request carry the install ID into the response or cache 7057ms
+   ✓ deleteExpiredEvents > deletes events older than 90 days and keeps the rest 7183ms
+{"level":30,"time":1793122544909,"pid":1060,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122545476,"pid":1060,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":502},"responseTime":8257.962542000001,"msg":"request completed"}
+{"level":30,"time":1793122545943,"pid":1128,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122546655,"pid":1094,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":204},"responseTime":8759.249717,"msg":"request completed"}
+{"level":30,"time":1793122546843,"pid":1094,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/report"},"msg":"incoming request"}
+{"level":30,"time":1793122552214,"pid":1060,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":502},"responseTime":7302.208712,"msg":"request completed"}
+ ❯ tests/integration/translate-resilience.test.ts (6 tests | 2 failed) 52065ms
+   ✓ POST /api/translate — User Story 4 (resilience) > a rejected configuration fails fast with 503 misconfigured, without retries or repeat calls 7903ms
+   ✓ POST /api/translate — User Story 4 (resilience) > Scenario 1: an already-cached combination still succeeds once providers become unreachable 14174ms
+   × POST /api/translate — User Story 4 (resilience) > Scenario 2: a new combination returns a clear 502 upstream-failure, not a hang or partial body 9284ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   ✓ POST /api/translate — User Story 4 (resilience) > retries a transient failure once and still succeeds 5591ms
+   × POST /api/translate — User Story 4 (resilience) > Scenario 3: a malformed/unsafe provider response is discarded, returns 502, and caches nothing 7716ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   ✓ POST /api/translate — User Story 4 (resilience) > a provider response with unsafe HTML is discarded with 502 7387ms
+{"level":30,"time":1793122553297,"pid":1094,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":204},"responseTime":6452.796942000001,"msg":"request completed"}
+{"level":30,"time":1793122553402,"pid":1094,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/report"},"msg":"incoming request"}
+{"level":30,"time":1793122553984,"pid":1128,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":8036.735301,"msg":"request completed"}
+{"level":30,"time":1793122554097,"pid":1128,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122554001,"pid":1128,"hostname":"home-ubuntu","reqId":"req-2","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122554015,"pid":1128,"hostname":"home-ubuntu","reqId":"req-2","res":{"statusCode":200},"responseTime":12.891041999999288,"msg":"request completed"}
+{"level":30,"time":1793122554399,"pid":1162,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122560850,"pid":1128,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":6752.100834000001,"msg":"request completed"}
+{"level":30,"time":1793122560910,"pid":1128,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122560862,"pid":1128,"hostname":"home-ubuntu","reqId":"req-2","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122560870,"pid":1128,"hostname":"home-ubuntu","reqId":"req-2","res":{"statusCode":200},"responseTime":7.980471999999281,"msg":"request completed"}
+{"level":30,"time":1793122562832,"pid":1162,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":8430.508608,"msg":"request completed"}
+{"level":30,"time":1793122562922,"pid":1162,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122562844,"pid":1162,"hostname":"home-ubuntu","reqId":"req-2","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122562866,"pid":1162,"hostname":"home-ubuntu","reqId":"req-2","res":{"statusCode":200},"responseTime":21.418259000000035,"msg":"request completed"}
+{"level":30,"time":1793122562869,"pid":1162,"hostname":"home-ubuntu","reqId":"req-3","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122562936,"pid":1162,"hostname":"home-ubuntu","reqId":"req-3","res":{"statusCode":429},"responseTime":67.32058199999847,"msg":"request completed"}
+{"level":30,"time":1793122564890,"pid":1094,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":204},"responseTime":11485.735954,"msg":"request completed"}
+{"level":30,"time":1793122565403,"pid":1094,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/report"},"msg":"incoming request"}
+{"level":30,"time":1793122565474,"pid":1094,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":400},"responseTime":70.51572400000077,"msg":"request completed"}
+{"level":30,"time":1793122565486,"pid":1094,"hostname":"home-ubuntu","reqId":"req-2","req":{"method":"POST","url":"/api/report"},"msg":"incoming request"}
+{"level":30,"time":1793122565516,"pid":1094,"hostname":"home-ubuntu","reqId":"req-2","res":{"statusCode":400},"responseTime":27.20305300000109,"msg":"request completed"}
+{"level":30,"time":1793122565524,"pid":1094,"hostname":"home-ubuntu","reqId":"req-3","req":{"method":"POST","url":"/api/report"},"msg":"incoming request"}
+{"level":30,"time":1793122565533,"pid":1094,"hostname":"home-ubuntu","reqId":"req-3","res":{"statusCode":400},"responseTime":9.346271999998862,"msg":"request completed"}
+{"level":30,"time":1793122567856,"pid":1128,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":6944.958001000003,"msg":"request completed"}
+{"level":30,"time":1793122568048,"pid":1128,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122567869,"pid":1128,"hostname":"home-ubuntu","reqId":"req-2","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122567917,"pid":1128,"hostname":"home-ubuntu","reqId":"req-2","res":{"statusCode":200},"responseTime":47.58121700000265,"msg":"request completed"}
+{"level":30,"time":1793122567917,"pid":1128,"hostname":"home-ubuntu","reqId":"req-3","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122568052,"pid":1128,"hostname":"home-ubuntu","reqId":"req-2","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122568076,"pid":1128,"hostname":"home-ubuntu","reqId":"req-3","res":{"statusCode":200},"responseTime":158.15590000000157,"msg":"request completed"}
+{"level":30,"time":1793122569130,"pid":1162,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":6207.032187000001,"msg":"request completed"}
+{"level":30,"time":1793122569154,"pid":1162,"hostname":"home-ubuntu","reqId":"req-2","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122569177,"pid":1162,"hostname":"home-ubuntu","reqId":"req-2","res":{"statusCode":429},"responseTime":19.236405999999988,"msg":"request completed"}
+{"level":30,"time":1793122569178,"pid":1162,"hostname":"home-ubuntu","reqId":"req-3","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122569191,"pid":1162,"hostname":"home-ubuntu","reqId":"req-3","res":{"statusCode":200},"responseTime":13.279427000001306,"msg":"request completed"}
+ ❯ tests/integration/translate-allowance.test.ts (2 tests | 2 failed) 15182ms
+   × POST /api/translate — User Story 3 (allowance enforcement) > Scenario 1 & 2: usage increases per distinct request, then a request past the cap is refused with no provider call 8872ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   × POST /api/translate — User Story 3 (allowance enforcement) > Scenario 3: a request for an already-cached combination still succeeds once the allowance is exhausted 6307ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+{"level":30,"time":1793122571229,"pid":1196,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/exercises"},"msg":"incoming request"}
+{"level":30,"time":1793122571285,"pid":1196,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/exercises"},"msg":"incoming request"}
+{"level":30,"time":1793122571257,"pid":1196,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":25.889923999999837,"msg":"request completed"}
+{"level":30,"time":1793122571297,"pid":1196,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":11.122551000000158,"msg":"request completed"}
+{"level":30,"time":1793122571298,"pid":1196,"hostname":"home-ubuntu","reqId":"req-2","req":{"method":"POST","url":"/api/exercises"},"msg":"incoming request"}
+{"level":30,"time":1793122571343,"pid":1196,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/exercises"},"msg":"incoming request"}
+{"level":30,"time":1793122571309,"pid":1196,"hostname":"home-ubuntu","reqId":"req-2","res":{"statusCode":400},"responseTime":10.992115000000013,"msg":"request completed"}
+{"level":30,"time":1793122571354,"pid":1196,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":400},"responseTime":5.886952999999949,"msg":"request completed"}
+ ✓ tests/integration/exercises.test.ts (3 tests) 515ms
+   ✓ POST /api/exercises > returns schema-valid exercises built from the translated paragraph 416ms
+{"level":30,"time":1793122572692,"pid":1230,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+ ❯ tests/integration/report.test.ts (5 tests | 1 failed) 36559ms
+   ✓ POST /api/report > stores the fragment, its output, level, density, model and prompt version 9321ms
+   ✓ POST /api/report > accepts an unknown model for variants cached before it was recorded 6624ms
+   ✓ POST /api/report > never stores an install ID, even if one is sent 11868ms
+   ✓ POST /api/report > rejects an incomplete or oversized report 369ms
+   × POST /api/translate > names the model and prompt version that produced the text, so reports can carry them 8339ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+{"level":30,"time":1793122574742,"pid":1128,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":6693.056348000002,"msg":"request completed"}
+ ❯ tests/integration/translate-cache.test.ts (4 tests | 1 failed) 29179ms
+   ✓ POST /api/translate — User Story 2 (cache reuse) > Scenario 1: a repeat request is served from cache with no new provider call and an identical body 8445ms
+   ✓ POST /api/translate — User Story 2 (cache reuse) > Scenario 2: a second simulated learner's matching request also hits the cache 6851ms
+   × POST /api/translate — User Story 2 (cache reuse) > Scenario 3: a different level is a separate entry; topic no longer splits the cache 7069ms
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   ✓ POST /api/translate — User Story 2 (cache reuse) > Scenario 4: two concurrent never-before-seen identical requests result in at most one provider call 6809ms
+{"level":30,"time":1793122574746,"pid":1128,"hostname":"home-ubuntu","reqId":"req-2","res":{"statusCode":200},"responseTime":6693.821774,"msg":"request completed"}
+{"level":30,"time":1793122575983,"pid":1264,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"GET","url":"/ru"},"msg":"incoming request"}
+{"level":30,"time":1793122576040,"pid":1264,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"GET","url":"/uk"},"msg":"incoming request"}
+{"level":30,"time":1793122576116,"pid":1264,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"GET","url":"/"},"msg":"incoming request"}
+{"level":30,"time":1793122576185,"pid":1264,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"GET","url":"/assets/screenshot-2.png"},"msg":"incoming request"}
+ ✓ tests/integration/landing.test.ts (4 tests) 565ms
+   ✓ landing page > serves /ru with install button and screenshots 352ms
+{"level":30,"time":1793122575997,"pid":1264,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":12.018019999999979,"msg":"request completed"}
+{"level":30,"time":1793122576045,"pid":1264,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":1.3901319999999942,"msg":"request completed"}
+{"level":30,"time":1793122576117,"pid":1264,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":1.2143260000000282,"msg":"request completed"}
+{"level":30,"time":1793122576118,"pid":1264,"hostname":"home-ubuntu","reqId":"req-2","req":{"method":"GET","url":"/"},"msg":"incoming request"}
+{"level":30,"time":1793122576125,"pid":1264,"hostname":"home-ubuntu","reqId":"req-2","res":{"statusCode":200},"responseTime":6.889075000000048,"msg":"request completed"}
+{"level":30,"time":1793122576208,"pid":1264,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":22.6891999999998,"msg":"request completed"}
+{"level":30,"time":1793122576209,"pid":1264,"hostname":"home-ubuntu","reqId":"req-2","req":{"method":"GET","url":"/assets/constructor"},"msg":"incoming request"}
+{"level":30,"time":1793122576211,"pid":1264,"hostname":"home-ubuntu","reqId":"req-2","res":{"statusCode":404},"responseTime":1.7119920000000093,"msg":"request completed"}
+{"level":30,"time":1793122576797,"pid":1294,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"GET","url":"/privacy"},"msg":"incoming request"}
+ ✓ tests/integration/privacy.test.ts (1 test) 554ms
+   ✓ GET /privacy > serves the RU + EN policy as HTML 551ms
+{"level":30,"time":1793122576810,"pid":1294,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":11.363800000000083,"msg":"request completed"}
+{"level":30,"time":1793122578068,"pid":1328,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"OPTIONS","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122578093,"pid":1328,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"OPTIONS","url":"/api/translate"},"msg":"incoming request"}
+ ✓ tests/integration/cors.test.ts (2 tests) 226ms
+{"level":30,"time":1793122578074,"pid":1328,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":204},"responseTime":5.452252999999928,"msg":"request completed"}
+{"level":30,"time":1793122578095,"pid":1328,"hostname":"home-ubuntu","reqId":"req-1","msg":"Route OPTIONS:/api/translate not found"}
+{"level":30,"time":1793122578098,"pid":1328,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":404},"responseTime":4.356906999999865,"msg":"request completed"}
+{"level":30,"time":1793122579296,"pid":1230,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":200},"responseTime":6601.874543,"msg":"request completed"}
+{"level":30,"time":1793122579351,"pid":1230,"hostname":"home-ubuntu","reqId":"req-1","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122579305,"pid":1230,"hostname":"home-ubuntu","reqId":"req-2","req":{"method":"POST","url":"/api/translate"},"msg":"incoming request"}
+{"level":30,"time":1793122579314,"pid":1230,"hostname":"home-ubuntu","reqId":"req-2","res":{"statusCode":200},"responseTime":8.758793999999398,"msg":"request completed"}
+{"level":30,"time":1793122582764,"pid":1230,"hostname":"home-ubuntu","reqId":"req-1","res":{"statusCode":502},"responseTime":3412.4122750000006,"msg":"request completed"}
+ ✓ tests/integration/provider-calls.test.ts (2 tests) 10378ms
+   ✓ provider call recording > records model, tokens and cost for a paid call, and nothing for a cache hit 6928ms
+   ✓ provider call recording > records a failed call with status error 3448ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/report.test.ts > POST /api/translate > names the model and prompt version that produced the text, so reports can carry them
+ FAIL  tests/integration/translate-allowance.test.ts > POST /api/translate — User Story 3 (allowance enforcement) > Scenario 1 & 2: usage increases per distinct request, then a request past the cap is refused with no provider call
+ FAIL  tests/integration/translate-allowance.test.ts > POST /api/translate — User Story 3 (allowance enforcement) > Scenario 3: a request for an already-cached combination still succeeds once the allowance is exhausted
+ FAIL  tests/integration/translate-basic.test.ts > POST /api/translate — User Story 1 (leveled, glossed translation) > sends the API key in a header, never in the URL, to the configured model
+ FAIL  tests/integration/translate-cache.test.ts > POST /api/translate — User Story 2 (cache reuse) > Scenario 3: a different level is a separate entry; topic no longer splits the cache
+ FAIL  tests/integration/translate-resilience.test.ts > POST /api/translate — User Story 4 (resilience) > Scenario 2: a new combination returns a clear 502 upstream-failure, not a hang or partial body
+ FAIL  tests/integration/translate-resilience.test.ts > POST /api/translate — User Story 4 (resilience) > Scenario 3: a malformed/unsafe provider response is discarded, returns 502, and caches nothing
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ Test Files  5 failed | 7 passed (12)
+      Tests  7 failed | 41 passed (48)
+   Start at  20:34:43
+   Duration  99.27s (transform 1.70s, setup 0ms, collect 9.73s, tests 265.82s, environment 7ms, prepare 2.57s)
+
+/home/agent/apps/operator-data/worktrees/oTbd4Phfw4AoTNJFEQdp-/landing-work/apps/cms:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @sprachweise/cms@0.0.0 test:integration: `vitest run tests/integration`
+Exit status 1

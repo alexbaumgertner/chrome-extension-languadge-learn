@@ -1,0 +1,16 @@
+// f9aa7ba09d2db93cd41684c35d475cedcbf5664c
+import { defineConfig } from "@playwright/test";
+export default defineConfig({
+  testDir: "./tests/integration",
+  testMatch: /.*\.spec\.ts/,
+  fullyParallel: false,
+  workers: 1,
+  retries: 0,
+  reporter: "list",
+  timeout: 30000,
+  // Full Chromium (new headless) — the default headless shell can't load extensions.
+  use: {
+    channel: "chromium"
+  }
+});
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJkZWZpbmVDb25maWciLCJ0ZXN0RGlyIiwidGVzdE1hdGNoIiwiZnVsbHlQYXJhbGxlbCIsIndvcmtlcnMiLCJyZXRyaWVzIiwicmVwb3J0ZXIiLCJ0aW1lb3V0IiwidXNlIiwiY2hhbm5lbCJdLCJzb3VyY2VzIjpbInBsYXl3cmlnaHQuY29uZmlnLnRzIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IGRlZmluZUNvbmZpZyB9IGZyb20gXCJAcGxheXdyaWdodC90ZXN0XCI7XG5cbmV4cG9ydCBkZWZhdWx0IGRlZmluZUNvbmZpZyh7XG4gIHRlc3REaXI6IFwiLi90ZXN0cy9pbnRlZ3JhdGlvblwiLFxuICB0ZXN0TWF0Y2g6IC8uKlxcLnNwZWNcXC50cy8sXG4gIGZ1bGx5UGFyYWxsZWw6IGZhbHNlLFxuICB3b3JrZXJzOiAxLFxuICByZXRyaWVzOiAwLFxuICByZXBvcnRlcjogXCJsaXN0XCIsXG4gIHRpbWVvdXQ6IDMwXzAwMCxcbiAgLy8gRnVsbCBDaHJvbWl1bSAobmV3IGhlYWRsZXNzKSDigJQgdGhlIGRlZmF1bHQgaGVhZGxlc3Mgc2hlbGwgY2FuJ3QgbG9hZCBleHRlbnNpb25zLlxuICB1c2U6IHsgY2hhbm5lbDogXCJjaHJvbWl1bVwiIH0sXG59KTtcbiJdLCJtYXBwaW5ncyI6IkFBQUEsU0FBU0EsWUFBWSxRQUFRLGtCQUFrQjtBQUUvQyxlQUFlQSxZQUFZLENBQUM7RUFDMUJDLE9BQU8sRUFBRSxxQkFBcUI7RUFDOUJDLFNBQVMsRUFBRSxjQUFjO0VBQ3pCQyxhQUFhLEVBQUUsS0FBSztFQUNwQkMsT0FBTyxFQUFFLENBQUM7RUFDVkMsT0FBTyxFQUFFLENBQUM7RUFDVkMsUUFBUSxFQUFFLE1BQU07RUFDaEJDLE9BQU8sRUFBRSxLQUFNO0VBQ2Y7RUFDQUMsR0FBRyxFQUFFO0lBQUVDLE9BQU8sRUFBRTtFQUFXO0FBQzdCLENBQUMsQ0FBQyIsImlnbm9yZUxpc3QiOltdfQ==

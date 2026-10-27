@@ -1,0 +1,529 @@
+0 verbose cli /home/agent/.local/share/fnm/node-versions/v24.22.0/installation/bin/node /home/agent/.local/share/fnm/node-versions/v24.22.0/installation/lib/node_modules/npm/bin/npm-cli.js
+1 info using npm@11.19.1
+2 info using node@v24.22.0
+3 silly config load:file:/home/agent/.local/share/fnm/node-versions/v24.22.0/installation/lib/node_modules/npm/npmrc
+4 silly config load:file:/tmp/sprachweise-landing/.npmrc
+5 silly config load:file:/home/agent/.npmrc
+6 silly config load:file:/home/agent/.npm-global/etc/npmrc
+7 verbose title npm exec lighthouse@12.8.2 http://localhost:4302/privacy --chrome-flags=--headless=new --no-sandbox --only-categories=performance,accessibility,best-practices,seo --output=json --output=html --output-path=/tmp/landing-lighthouse-privacy
+8 verbose argv "exec" "--yes" "--" "lighthouse@12.8.2" "http://localhost:4302/privacy" "--chrome-flags=--headless=new --no-sandbox" "--only-categories=performance,accessibility,best-practices,seo" "--output=json" "--output=html" "--output-path=/tmp/landing-lighthouse-privacy"
+9 verbose logfile logs-max:10 dir:/tmp/sprachweise-npm-cache/_logs/2026-10-27T17_33_23_772Z-
+10 verbose logfile /tmp/sprachweise-npm-cache/_logs/2026-10-27T17_33_23_772Z-debug-0.log
+11 warn Unknown env config "store-dir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+12 silly logfile done cleaning log files
+13 silly packumentCache heap:2348810240 maxSize:587202560 maxEntrySize:293601280
+14 http fetch GET 200 https://registry.npmjs.org/npm 661ms
+15 http fetch GET 200 https://registry.npmjs.org/lighthouse 618ms (cache miss)
+16 silly packumentCache heap:2348810240 maxSize:587202560 maxEntrySize:293601280
+17 silly packumentCache heap:2348810240 maxSize:587202560 maxEntrySize:293601280
+18 silly idealTree buildDeps
+19 silly fetch manifest lighthouse@12.8.2
+20 silly packumentCache full:https://registry.npmjs.org/lighthouse cache-miss
+21 http fetch GET 200 https://registry.npmjs.org/lighthouse 695ms (cache miss)
+22 silly packumentCache full:https://registry.npmjs.org/lighthouse set size:undefined disposed:false
+23 silly placeDep ROOT lighthouse@12.8.2 OK for:  want: 12.8.2
+24 silly fetch manifest ws@^7.0.0
+25 silly packumentCache full:https://registry.npmjs.org/ws cache-miss
+26 silly fetch manifest open@^8.4.0
+27 silly packumentCache full:https://registry.npmjs.org/open cache-miss
+28 silly fetch manifest yargs@^17.3.1
+29 silly packumentCache full:https://registry.npmjs.org/yargs cache-miss
+30 http fetch GET 200 https://registry.npmjs.org/ws 150ms (cache miss)
+31 silly packumentCache full:https://registry.npmjs.org/ws set size:undefined disposed:false
+32 silly fetch manifest jpeg-js@^0.4.4
+33 silly packumentCache full:https://registry.npmjs.org/jpeg-js cache-miss
+34 http fetch GET 200 https://registry.npmjs.org/jpeg-js 134ms (cache miss)
+35 silly packumentCache full:https://registry.npmjs.org/jpeg-js set size:undefined disposed:false
+36 silly fetch manifest axe-core@^4.10.3
+37 silly packumentCache full:https://registry.npmjs.org/axe-core cache-miss
+38 http fetch GET 200 https://registry.npmjs.org/open 428ms (cache miss)
+39 silly packumentCache full:https://registry.npmjs.org/open set size:undefined disposed:false
+40 silly fetch manifest enquirer@^2.3.6
+41 silly packumentCache full:https://registry.npmjs.org/enquirer cache-miss
+42 http fetch GET 200 https://registry.npmjs.org/enquirer 411ms (cache miss)
+43 silly packumentCache full:https://registry.npmjs.org/enquirer set size:undefined disposed:false
+44 silly fetch manifest lodash-es@^4.17.21
+45 silly packumentCache full:https://registry.npmjs.org/lodash-es cache-miss
+46 http fetch GET 200 https://registry.npmjs.org/lodash-es 283ms (cache miss)
+47 silly packumentCache full:https://registry.npmjs.org/lodash-es set size:undefined disposed:false
+48 silly fetch manifest configstore@^7.0.0
+49 silly packumentCache full:https://registry.npmjs.org/configstore cache-miss
+50 http fetch GET 200 https://registry.npmjs.org/yargs 1160ms (cache miss)
+51 silly packumentCache full:https://registry.npmjs.org/yargs set size:undefined disposed:false
+52 silly fetch manifest tldts-icann@^7.0.12
+53 silly packumentCache full:https://registry.npmjs.org/tldts-icann cache-miss
+54 http fetch GET 200 https://registry.npmjs.org/configstore 183ms (cache miss)
+55 silly packumentCache full:https://registry.npmjs.org/configstore set size:undefined disposed:false
+56 silly fetch manifest @sentry/node@^9.28.1
+57 silly packumentCache full:https://registry.npmjs.org/@sentry%2fnode cache-miss
+58 http fetch GET 200 https://registry.npmjs.org/tldts-icann 216ms (cache miss)
+59 silly packumentCache full:https://registry.npmjs.org/tldts-icann set size:undefined disposed:false
+60 silly fetch manifest yargs-parser@^21.0.0
+61 silly packumentCache full:https://registry.npmjs.org/yargs-parser cache-miss
+62 http fetch GET 200 https://registry.npmjs.org/yargs-parser 232ms (cache miss)
+63 silly packumentCache full:https://registry.npmjs.org/yargs-parser set size:undefined disposed:false
+64 silly fetch manifest csp_evaluator@1.1.5
+65 silly packumentCache full:https://registry.npmjs.org/csp_evaluator cache-miss
+66 silly fetch manifest robots-parser@^3.0.1
+67 silly packumentCache full:https://registry.npmjs.org/robots-parser cache-miss
+68 http fetch GET 200 https://registry.npmjs.org/csp_evaluator 149ms (cache miss)
+69 silly packumentCache full:https://registry.npmjs.org/csp_evaluator set size:undefined disposed:false
+70 silly fetch manifest puppeteer-core@^24.17.1
+71 silly packumentCache full:https://registry.npmjs.org/puppeteer-core cache-miss
+72 http fetch GET 200 https://registry.npmjs.org/robots-parser 116ms (cache miss)
+73 silly packumentCache full:https://registry.npmjs.org/robots-parser set size:undefined disposed:false
+74 silly fetch manifest speedline-core@^1.4.3
+75 silly packumentCache full:https://registry.npmjs.org/speedline-core cache-miss
+76 http fetch GET 200 https://registry.npmjs.org/speedline-core 106ms (cache miss)
+77 silly packumentCache full:https://registry.npmjs.org/speedline-core set size:undefined disposed:false
+78 silly fetch manifest chrome-launcher@^1.2.0
+79 silly packumentCache full:https://registry.npmjs.org/chrome-launcher cache-miss
+80 http fetch GET 200 https://registry.npmjs.org/puppeteer-core 250ms (cache miss)
+81 silly packumentCache full:https://registry.npmjs.org/puppeteer-core set size:undefined disposed:false
+82 silly fetch manifest third-party-web@^0.27.0
+83 silly packumentCache full:https://registry.npmjs.org/third-party-web cache-miss
+84 http fetch GET 200 https://registry.npmjs.org/chrome-launcher 172ms (cache miss)
+85 silly packumentCache full:https://registry.npmjs.org/chrome-launcher set size:undefined disposed:false
+86 silly fetch manifest http-link-header@^1.1.1
+87 silly packumentCache full:https://registry.npmjs.org/http-link-header cache-miss
+88 http fetch GET 200 https://registry.npmjs.org/third-party-web 159ms (cache miss)
+89 silly packumentCache full:https://registry.npmjs.org/third-party-web set size:undefined disposed:false
+90 silly fetch manifest devtools-protocol@0.0.1507524
+91 silly packumentCache full:https://registry.npmjs.org/devtools-protocol cache-miss
+92 http fetch GET 200 https://registry.npmjs.org/http-link-header 104ms (cache miss)
+93 silly packumentCache full:https://registry.npmjs.org/http-link-header set size:undefined disposed:false
+94 silly fetch manifest lighthouse-logger@^2.0.2
+95 silly packumentCache full:https://registry.npmjs.org/lighthouse-logger cache-miss
+96 http fetch GET 200 https://registry.npmjs.org/@sentry%2fnode 1045ms (cache miss)
+97 silly packumentCache full:https://registry.npmjs.org/@sentry%2fnode set size:undefined disposed:false
+98 silly fetch manifest intl-messageformat@^10.5.3
+99 silly packumentCache full:https://registry.npmjs.org/intl-messageformat cache-miss
+100 http fetch GET 200 https://registry.npmjs.org/lighthouse-logger 162ms (cache miss)
+101 silly packumentCache full:https://registry.npmjs.org/lighthouse-logger set size:undefined disposed:false
+102 silly fetch manifest js-library-detector@^6.7.0
+103 silly packumentCache full:https://registry.npmjs.org/js-library-detector cache-miss
+104 http fetch GET 200 https://registry.npmjs.org/js-library-detector 140ms (cache miss)
+105 silly packumentCache full:https://registry.npmjs.org/js-library-detector set size:undefined disposed:false
+106 silly fetch manifest metaviewport-parser@0.3.0
+107 silly packumentCache full:https://registry.npmjs.org/metaviewport-parser cache-miss
+108 http fetch GET 200 https://registry.npmjs.org/metaviewport-parser 100ms (cache miss)
+109 silly packumentCache full:https://registry.npmjs.org/metaviewport-parser set size:undefined disposed:false
+110 silly fetch manifest parse-cache-control@1.0.1
+111 silly packumentCache full:https://registry.npmjs.org/parse-cache-control cache-miss
+112 silly fetch manifest lookup-closest-locale@6.2.0
+113 silly packumentCache full:https://registry.npmjs.org/lookup-closest-locale cache-miss
+114 http fetch GET 200 https://registry.npmjs.org/parse-cache-control 87ms (cache miss)
+115 silly packumentCache full:https://registry.npmjs.org/parse-cache-control set size:undefined disposed:false
+116 silly fetch manifest lighthouse-stack-packs@1.12.2
+117 silly packumentCache full:https://registry.npmjs.org/lighthouse-stack-packs cache-miss
+118 http fetch GET 200 https://registry.npmjs.org/intl-messageformat 377ms (cache miss)
+119 silly packumentCache full:https://registry.npmjs.org/intl-messageformat set size:undefined disposed:false
+120 silly fetch manifest @paulirish/trace_engine@0.0.59
+121 silly packumentCache full:https://registry.npmjs.org/@paulirish%2ftrace_engine cache-miss
+122 http fetch GET 200 https://registry.npmjs.org/lighthouse-stack-packs 125ms (cache miss)
+123 silly packumentCache full:https://registry.npmjs.org/lighthouse-stack-packs set size:undefined disposed:false
+124 http fetch GET 200 https://registry.npmjs.org/@paulirish%2ftrace_engine 125ms (cache miss)
+125 silly packumentCache full:https://registry.npmjs.org/@paulirish%2ftrace_engine set size:undefined disposed:false
+126 http fetch GET 200 https://registry.npmjs.org/lookup-closest-locale 284ms (cache miss)
+127 silly packumentCache full:https://registry.npmjs.org/lookup-closest-locale set size:undefined disposed:false
+128 silly fetch manifest axe-core@^4.10.3
+129 silly packumentCache full:https://registry.npmjs.org/axe-core cache-miss
+130 silly fetch manifest devtools-protocol@0.0.1507524
+131 silly packumentCache full:https://registry.npmjs.org/devtools-protocol cache-miss
+132 http fetch GET 200 https://registry.npmjs.org/devtools-protocol 793ms (cache miss)
+133 silly packumentCache full:https://registry.npmjs.org/devtools-protocol set size:undefined disposed:false
+134 silly placeDep ROOT @paulirish/trace_engine@0.0.59 OK for: lighthouse@12.8.2 want: 0.0.59
+135 silly placeDep ROOT @sentry/node@9.47.2 OK for: lighthouse@12.8.2 want: ^9.28.1
+136 silly placeDep node_modules/lighthouse axe-core@ OK for: lighthouse@12.8.2 want: ^4.10.3
+137 silly placeDep ROOT chrome-launcher@1.2.2 OK for: lighthouse@12.8.2 want: ^1.2.0
+138 silly placeDep ROOT configstore@7.1.0 OK for: lighthouse@12.8.2 want: ^7.0.0
+139 silly placeDep ROOT csp_evaluator@1.1.5 OK for: lighthouse@12.8.2 want: 1.1.5
+140 silly placeDep ROOT devtools-protocol@0.0.1507524 OK for: lighthouse@12.8.2 want: 0.0.1507524
+141 silly placeDep ROOT enquirer@2.4.1 OK for: lighthouse@12.8.2 want: ^2.3.6
+142 silly placeDep ROOT http-link-header@1.1.4 OK for: lighthouse@12.8.2 want: ^1.1.1
+143 silly placeDep ROOT intl-messageformat@10.7.18 OK for: lighthouse@12.8.2 want: ^10.5.3
+144 silly placeDep ROOT jpeg-js@0.4.4 OK for: lighthouse@12.8.2 want: ^0.4.4
+145 silly placeDep ROOT js-library-detector@6.7.0 OK for: lighthouse@12.8.2 want: ^6.7.0
+146 silly placeDep ROOT lighthouse-logger@2.0.2 OK for: lighthouse@12.8.2 want: ^2.0.2
+147 silly placeDep ROOT lighthouse-stack-packs@1.12.2 OK for: lighthouse@12.8.2 want: 1.12.2
+148 silly placeDep ROOT lodash-es@4.18.1 OK for: lighthouse@12.8.2 want: ^4.17.21
+149 silly placeDep ROOT lookup-closest-locale@6.2.0 OK for: lighthouse@12.8.2 want: 6.2.0
+150 silly placeDep ROOT metaviewport-parser@0.3.0 OK for: lighthouse@12.8.2 want: 0.3.0
+151 silly placeDep ROOT open@8.4.2 OK for: lighthouse@12.8.2 want: ^8.4.0
+152 silly placeDep ROOT parse-cache-control@1.0.1 OK for: lighthouse@12.8.2 want: 1.0.1
+153 silly placeDep ROOT puppeteer-core@24.43.1 OK for: lighthouse@12.8.2 want: ^24.17.1
+154 silly placeDep ROOT robots-parser@3.0.1 OK for: lighthouse@12.8.2 want: ^3.0.1
+155 silly placeDep ROOT speedline-core@1.4.3 OK for: lighthouse@12.8.2 want: ^1.4.3
+156 silly placeDep ROOT third-party-web@0.27.0 OK for: lighthouse@12.8.2 want: ^0.27.0
+157 silly placeDep ROOT tldts-icann@7.4.19 OK for: lighthouse@12.8.2 want: ^7.0.12
+158 silly placeDep ROOT ws@7.5.13 OK for: lighthouse@12.8.2 want: ^7.0.0
+159 silly placeDep ROOT yargs@17.7.3 OK for: lighthouse@12.8.2 want: ^17.3.1
+160 silly placeDep ROOT yargs-parser@21.1.1 OK for: lighthouse@12.8.2 want: ^21.0.0
+161 silly fetch manifest third-party-web@latest
+162 silly packumentCache full:https://registry.npmjs.org/third-party-web cache-miss
+163 silly fetch manifest legacy-javascript@latest
+164 silly packumentCache full:https://registry.npmjs.org/legacy-javascript cache-miss
+165 silly fetch manifest minimatch@^9.0.0
+166 silly packumentCache full:https://registry.npmjs.org/minimatch cache-miss
+167 http cache https://registry.npmjs.org/third-party-web 31ms (cache hit)
+168 silly packumentCache full:https://registry.npmjs.org/third-party-web set size:256492 disposed:false
+169 silly fetch manifest @sentry/core@9.47.2
+170 silly packumentCache full:https://registry.npmjs.org/@sentry%2fcore cache-miss
+171 http fetch GET 200 https://registry.npmjs.org/legacy-javascript 91ms (cache miss)
+172 silly packumentCache full:https://registry.npmjs.org/legacy-javascript set size:undefined disposed:false
+173 silly fetch manifest @sentry/node-core@9.47.2
+174 silly packumentCache full:https://registry.npmjs.org/@sentry%2fnode-core cache-miss
+175 http fetch GET 200 https://registry.npmjs.org/minimatch 142ms (cache miss)
+176 silly packumentCache full:https://registry.npmjs.org/minimatch set size:undefined disposed:false
+177 silly fetch manifest @opentelemetry/api@^1.9.0
+178 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fapi cache-miss
+179 http fetch GET 200 https://registry.npmjs.org/@sentry%2fnode-core 132ms (cache miss)
+180 silly packumentCache full:https://registry.npmjs.org/@sentry%2fnode-core set size:undefined disposed:false
+181 silly fetch manifest @opentelemetry/core@^1.30.1
+182 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fcore cache-miss
+183 http fetch GET 200 https://registry.npmjs.org/@sentry%2fcore 259ms (cache miss)
+184 silly packumentCache full:https://registry.npmjs.org/@sentry%2fcore set size:undefined disposed:false
+185 silly fetch manifest import-in-the-middle@^1.14.2
+186 silly packumentCache full:https://registry.npmjs.org/import-in-the-middle cache-miss
+187 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2fapi 168ms (cache miss)
+188 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fapi set size:undefined disposed:false
+189 silly fetch manifest @sentry/opentelemetry@9.47.2
+190 silly packumentCache full:https://registry.npmjs.org/@sentry%2fopentelemetry cache-miss
+191 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2fcore 170ms (cache miss)
+192 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fcore set size:undefined disposed:false
+193 silly fetch manifest @prisma/instrumentation@6.11.1
+194 silly packumentCache full:https://registry.npmjs.org/@prisma%2finstrumentation cache-miss
+195 http fetch GET 200 https://registry.npmjs.org/import-in-the-middle 104ms (cache miss)
+196 silly packumentCache full:https://registry.npmjs.org/import-in-the-middle set size:undefined disposed:false
+197 silly fetch manifest @opentelemetry/resources@^1.30.1
+198 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fresources cache-miss
+199 http fetch GET 200 https://registry.npmjs.org/@sentry%2fopentelemetry 137ms (cache miss)
+200 silly packumentCache full:https://registry.npmjs.org/@sentry%2fopentelemetry set size:undefined disposed:false
+201 silly fetch manifest @opentelemetry/sdk-trace-base@^1.30.1
+202 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fsdk-trace-base cache-miss
+203 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2fresources 130ms (cache miss)
+204 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fresources set size:undefined disposed:false
+205 silly fetch manifest @opentelemetry/instrumentation@^0.57.2
+206 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation cache-miss
+207 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2fsdk-trace-base 132ms (cache miss)
+208 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fsdk-trace-base set size:undefined disposed:false
+209 silly fetch manifest @opentelemetry/instrumentation-fs@0.19.1
+210 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-fs cache-miss
+211 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation 139ms (cache miss)
+212 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation set size:undefined disposed:false
+213 silly fetch manifest @opentelemetry/instrumentation-pg@0.51.1
+214 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-pg cache-miss
+215 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-fs 114ms (cache miss)
+216 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-fs set size:undefined disposed:false
+217 silly fetch manifest @opentelemetry/context-async-hooks@^1.30.1
+218 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fcontext-async-hooks cache-miss
+219 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-pg 148ms (cache miss)
+220 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-pg set size:undefined disposed:false
+221 silly fetch manifest @opentelemetry/instrumentation-koa@0.47.1
+222 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-koa cache-miss
+223 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2fcontext-async-hooks 140ms (cache miss)
+224 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fcontext-async-hooks set size:undefined disposed:false
+225 silly fetch manifest @opentelemetry/instrumentation-hapi@0.45.2
+226 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-hapi cache-miss
+227 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-koa 107ms (cache miss)
+228 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-koa set size:undefined disposed:false
+229 silly fetch manifest @opentelemetry/instrumentation-http@0.57.2
+230 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-http cache-miss
+231 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-hapi 130ms (cache miss)
+232 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-hapi set size:undefined disposed:false
+233 silly fetch manifest @opentelemetry/instrumentation-knex@0.44.1
+234 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-knex cache-miss
+235 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-knex 112ms (cache miss)
+236 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-knex set size:undefined disposed:false
+237 silly fetch manifest @opentelemetry/semantic-conventions@^1.34.0
+238 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fsemantic-conventions cache-miss
+239 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-http 164ms (cache miss)
+240 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-http set size:undefined disposed:false
+241 silly fetch manifest @opentelemetry/instrumentation-mysql@0.45.1
+242 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-mysql cache-miss
+243 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-mysql 128ms (cache miss)
+244 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-mysql set size:undefined disposed:false
+245 silly fetch manifest @opentelemetry/instrumentation-mysql2@0.45.2
+246 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-mysql2 cache-miss
+247 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2fsemantic-conventions 176ms (cache miss)
+248 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fsemantic-conventions set size:undefined disposed:false
+249 silly fetch manifest @opentelemetry/instrumentation-undici@0.10.1
+250 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-undici cache-miss
+251 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-mysql2 114ms (cache miss)
+252 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-mysql2 set size:undefined disposed:false
+253 silly fetch manifest @opentelemetry/instrumentation-amqplib@^0.46.1
+254 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-amqplib cache-miss
+255 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-undici 103ms (cache miss)
+256 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-undici set size:undefined disposed:false
+257 silly fetch manifest @opentelemetry/instrumentation-connect@0.43.1
+258 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-connect cache-miss
+259 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-connect 140ms (cache miss)
+260 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-connect set size:undefined disposed:false
+261 silly fetch manifest @opentelemetry/instrumentation-express@0.47.1
+262 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-express cache-miss
+263 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-amqplib 168ms (cache miss)
+264 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-amqplib set size:undefined disposed:false
+265 silly fetch manifest @opentelemetry/instrumentation-graphql@0.47.1
+266 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-graphql cache-miss
+267 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-express 122ms (cache miss)
+268 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-express set size:undefined disposed:false
+269 silly fetch manifest @opentelemetry/instrumentation-ioredis@0.47.1
+270 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-ioredis cache-miss
+271 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-graphql 123ms (cache miss)
+272 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-graphql set size:undefined disposed:false
+273 silly fetch manifest @opentelemetry/instrumentation-kafkajs@0.7.1
+274 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-kafkajs cache-miss
+275 http fetch GET 200 https://registry.npmjs.org/@prisma%2finstrumentation 1378ms (cache miss)
+276 silly packumentCache full:https://registry.npmjs.org/@prisma%2finstrumentation set size:undefined disposed:false
+277 silly fetch manifest @opentelemetry/instrumentation-mongodb@0.52.0
+278 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-mongodb cache-miss
+279 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-kafkajs 261ms (cache miss)
+280 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-kafkajs set size:undefined disposed:false
+281 silly fetch manifest @opentelemetry/instrumentation-redis-4@0.46.1
+282 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-redis-4 cache-miss
+283 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-ioredis 290ms (cache miss)
+284 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-ioredis set size:undefined disposed:false
+285 silly fetch manifest @opentelemetry/instrumentation-tedious@0.18.1
+286 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-tedious cache-miss
+287 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-mongodb 118ms (cache miss)
+288 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-mongodb set size:undefined disposed:false
+289 silly fetch manifest @opentelemetry/instrumentation-mongoose@0.46.1
+290 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-mongoose cache-miss
+291 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-redis-4 149ms (cache miss)
+292 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-redis-4 set size:undefined disposed:false
+293 silly fetch manifest @opentelemetry/instrumentation-dataloader@0.16.1
+294 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-dataloader cache-miss
+295 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-tedious 147ms (cache miss)
+296 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-tedious set size:undefined disposed:false
+297 silly fetch manifest @opentelemetry/instrumentation-generic-pool@0.43.1
+298 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-generic-pool cache-miss
+299 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-mongoose 136ms (cache miss)
+300 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-mongoose set size:undefined disposed:false
+301 silly fetch manifest @opentelemetry/instrumentation-lru-memoizer@0.44.1
+302 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-lru-memoizer cache-miss
+303 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-dataloader 105ms (cache miss)
+304 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-dataloader set size:undefined disposed:false
+305 silly fetch manifest is-wsl@^2.2.0
+306 silly packumentCache full:https://registry.npmjs.org/is-wsl cache-miss
+307 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-generic-pool 110ms (cache miss)
+308 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-generic-pool set size:undefined disposed:false
+309 silly fetch manifest @types/node@*
+310 silly packumentCache full:https://registry.npmjs.org/@types%2fnode cache-miss
+311 http fetch GET 200 https://registry.npmjs.org/is-wsl 83ms (cache miss)
+312 silly packumentCache full:https://registry.npmjs.org/is-wsl set size:undefined disposed:false
+313 silly fetch manifest lighthouse-logger@^2.0.1
+314 silly packumentCache full:https://registry.npmjs.org/lighthouse-logger cache-miss
+315 http cache https://registry.npmjs.org/lighthouse-logger 5ms (cache hit)
+316 silly packumentCache full:https://registry.npmjs.org/lighthouse-logger set size:19412 disposed:false
+317 silly fetch manifest escape-string-regexp@^4.0.0
+318 silly packumentCache full:https://registry.npmjs.org/escape-string-regexp cache-miss
+319 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2finstrumentation-lru-memoizer 148ms (cache miss)
+320 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2finstrumentation-lru-memoizer set size:undefined disposed:false
+321 silly fetch manifest dot-prop@^9.0.0
+322 silly packumentCache full:https://registry.npmjs.org/dot-prop cache-miss
+323 http fetch GET 200 https://registry.npmjs.org/escape-string-regexp 90ms (cache miss)
+324 silly packumentCache full:https://registry.npmjs.org/escape-string-regexp set size:undefined disposed:false
+325 silly fetch manifest atomically@^2.0.3
+326 silly packumentCache full:https://registry.npmjs.org/atomically cache-miss
+327 silly fetch manifest graceful-fs@^4.2.11
+328 silly packumentCache full:https://registry.npmjs.org/graceful-fs cache-miss
+329 silly fetch manifest xdg-basedir@^5.1.0
+330 silly packumentCache full:https://registry.npmjs.org/xdg-basedir cache-miss
+331 http fetch GET 200 https://registry.npmjs.org/atomically 98ms (cache miss)
+332 silly packumentCache full:https://registry.npmjs.org/atomically set size:undefined disposed:false
+333 silly fetch manifest ansi-colors@^4.1.1
+334 silly packumentCache full:https://registry.npmjs.org/ansi-colors cache-miss
+335 http fetch GET 200 https://registry.npmjs.org/xdg-basedir 99ms (cache miss)
+336 silly packumentCache full:https://registry.npmjs.org/xdg-basedir set size:undefined disposed:false
+337 silly fetch manifest strip-ansi@^6.0.1
+338 silly packumentCache full:https://registry.npmjs.org/strip-ansi cache-miss
+339 http fetch GET 200 https://registry.npmjs.org/graceful-fs 108ms (cache miss)
+340 silly packumentCache full:https://registry.npmjs.org/graceful-fs set size:undefined disposed:false
+341 silly fetch manifest tslib@^2.8.0
+342 silly packumentCache full:https://registry.npmjs.org/tslib cache-miss
+343 http fetch GET 200 https://registry.npmjs.org/ansi-colors 114ms (cache miss)
+344 silly packumentCache full:https://registry.npmjs.org/ansi-colors set size:undefined disposed:false
+345 silly fetch manifest @formatjs/fast-memoize@2.2.7
+346 silly packumentCache full:https://registry.npmjs.org/@formatjs%2ffast-memoize cache-miss
+347 http fetch GET 200 https://registry.npmjs.org/strip-ansi 111ms (cache miss)
+348 silly packumentCache full:https://registry.npmjs.org/strip-ansi set size:undefined disposed:false
+349 silly fetch manifest @formatjs/ecma402-abstract@2.3.6
+350 silly packumentCache full:https://registry.npmjs.org/@formatjs%2fecma402-abstract cache-miss
+351 http fetch GET 200 https://registry.npmjs.org/tslib 108ms (cache miss)
+352 silly packumentCache full:https://registry.npmjs.org/tslib set size:undefined disposed:false
+353 silly fetch manifest @formatjs/icu-messageformat-parser@2.11.4
+354 silly packumentCache full:https://registry.npmjs.org/@formatjs%2ficu-messageformat-parser cache-miss
+355 http fetch GET 200 https://registry.npmjs.org/@formatjs%2fecma402-abstract 108ms (cache miss)
+356 silly packumentCache full:https://registry.npmjs.org/@formatjs%2fecma402-abstract set size:undefined disposed:false
+357 silly fetch manifest debug@^4.4.1
+358 silly packumentCache full:https://registry.npmjs.org/debug cache-miss
+359 http fetch GET 200 https://registry.npmjs.org/@formatjs%2ffast-memoize 155ms (cache miss)
+360 silly packumentCache full:https://registry.npmjs.org/@formatjs%2ffast-memoize set size:undefined disposed:false
+361 silly fetch manifest marky@^1.2.2
+362 silly packumentCache full:https://registry.npmjs.org/marky cache-miss
+363 http fetch GET 200 https://registry.npmjs.org/@formatjs%2ficu-messageformat-parser 132ms (cache miss)
+364 silly packumentCache full:https://registry.npmjs.org/@formatjs%2ficu-messageformat-parser set size:undefined disposed:false
+365 silly fetch manifest is-docker@^2.1.1
+366 silly packumentCache full:https://registry.npmjs.org/is-docker cache-miss
+367 http fetch GET 200 https://registry.npmjs.org/marky 81ms (cache miss)
+368 silly packumentCache full:https://registry.npmjs.org/marky set size:undefined disposed:false
+369 silly fetch manifest define-lazy-prop@^2.0.0
+370 silly packumentCache full:https://registry.npmjs.org/define-lazy-prop cache-miss
+371 http fetch GET 200 https://registry.npmjs.org/is-docker 97ms (cache miss)
+372 silly packumentCache full:https://registry.npmjs.org/is-docker set size:undefined disposed:false
+373 silly fetch manifest ws@^8.20.0
+374 silly packumentCache full:https://registry.npmjs.org/ws cache-miss
+375 http cache https://registry.npmjs.org/ws 6ms (cache hit)
+376 silly packumentCache full:https://registry.npmjs.org/ws set size:450180 disposed:false
+377 silly fetch manifest debug@^4.4.3
+378 silly packumentCache full:https://registry.npmjs.org/debug cache-miss
+379 http fetch GET 200 https://registry.npmjs.org/define-lazy-prop 81ms (cache miss)
+380 silly fetch manifest chromium-bidi@14.0.0
+381 silly packumentCache full:https://registry.npmjs.org/chromium-bidi cache-miss
+382 silly fetch manifest devtools-protocol@0.0.1608973
+383 silly packumentCache full:https://registry.npmjs.org/devtools-protocol cache-miss
+384 http cache https://registry.npmjs.org/devtools-protocol 12ms (cache hit)
+385 silly packumentCache full:https://registry.npmjs.org/devtools-protocol set size:3126739 disposed:false
+386 silly fetch manifest @puppeteer/browsers@2.13.2
+387 silly packumentCache full:https://registry.npmjs.org/@puppeteer%2fbrowsers cache-miss
+388 silly fetch manifest typed-query-selector@^2.12.2
+389 silly packumentCache full:https://registry.npmjs.org/typed-query-selector cache-miss
+390 silly fetch manifest webdriver-bidi-protocol@0.4.1
+391 silly packumentCache full:https://registry.npmjs.org/webdriver-bidi-protocol cache-miss
+392 silly fetch manifest @types/node@*
+393 silly packumentCache full:https://registry.npmjs.org/@types%2fnode cache-miss
+394 silly fetch manifest image-ssim@^0.2.0
+395 silly packumentCache full:https://registry.npmjs.org/image-ssim cache-miss
+396 silly fetch manifest tldts-core@^7.4.19
+397 silly packumentCache full:https://registry.npmjs.org/tldts-core cache-miss
+398 http fetch GET 200 https://registry.npmjs.org/image-ssim 81ms (cache miss)
+399 silly packumentCache full:https://registry.npmjs.org/image-ssim set size:undefined disposed:false
+400 silly fetch manifest y18n@^5.0.5
+401 silly packumentCache full:https://registry.npmjs.org/y18n cache-miss
+402 silly fetch manifest cliui@^8.0.1
+403 silly packumentCache full:https://registry.npmjs.org/cliui cache-miss
+404 silly fetch manifest escalade@^3.1.1
+405 silly packumentCache full:https://registry.npmjs.org/escalade cache-miss
+406 http fetch GET 200 https://registry.npmjs.org/cliui 81ms (cache miss)
+407 silly fetch manifest string-width@^4.2.3
+408 silly packumentCache full:https://registry.npmjs.org/string-width cache-miss
+409 silly fetch manifest yargs-parser@^21.1.1
+410 silly packumentCache full:https://registry.npmjs.org/yargs-parser cache-miss
+411 http cache https://registry.npmjs.org/yargs-parser 4ms (cache hit)
+412 silly packumentCache full:https://registry.npmjs.org/yargs-parser set size:238681 disposed:false
+413 silly fetch manifest get-caller-file@^2.0.5
+414 silly packumentCache full:https://registry.npmjs.org/get-caller-file cache-miss
+415 http fetch GET 200 https://registry.npmjs.org/string-width 79ms (cache miss)
+416 silly fetch manifest require-directory@^2.1.1
+417 silly packumentCache full:https://registry.npmjs.org/require-directory cache-miss
+418 http fetch GET 200 https://registry.npmjs.org/get-caller-file 119ms (cache miss)
+419 silly packumentCache full:https://registry.npmjs.org/get-caller-file set size:undefined disposed:false
+420 http fetch GET 200 https://registry.npmjs.org/require-directory 81ms (cache miss)
+421 silly placeDep ROOT legacy-javascript@0.0.4 OK for: @paulirish/trace_engine@0.0.59 want: latest
+422 silly placeDep ROOT @opentelemetry/api@1.10.0 OK for: @sentry/node@9.47.2 want: ^1.9.0
+423 silly placeDep ROOT @opentelemetry/context-async-hooks@1.30.1 OK for: @sentry/node@9.47.2 want: ^1.30.1
+424 silly placeDep ROOT @opentelemetry/core@1.30.1 OK for: @sentry/node@9.47.2 want: ^1.30.1
+425 silly placeDep ROOT @opentelemetry/instrumentation@0.57.2 OK for: @sentry/node@9.47.2 want: ^0.57.2
+426 silly placeDep ROOT @opentelemetry/instrumentation-amqplib@0.46.1 OK for: @sentry/node@9.47.2 want: ^0.46.1
+427 silly placeDep ROOT @opentelemetry/instrumentation-connect@0.43.1 OK for: @sentry/node@9.47.2 want: 0.43.1
+428 silly placeDep ROOT @opentelemetry/instrumentation-dataloader@0.16.1 OK for: @sentry/node@9.47.2 want: 0.16.1
+429 silly placeDep ROOT @opentelemetry/instrumentation-express@0.47.1 OK for: @sentry/node@9.47.2 want: 0.47.1
+430 silly placeDep ROOT @opentelemetry/instrumentation-fs@0.19.1 OK for: @sentry/node@9.47.2 want: 0.19.1
+431 silly placeDep ROOT @opentelemetry/instrumentation-generic-pool@0.43.1 OK for: @sentry/node@9.47.2 want: 0.43.1
+432 silly placeDep ROOT @opentelemetry/instrumentation-graphql@0.47.1 OK for: @sentry/node@9.47.2 want: 0.47.1
+433 silly placeDep ROOT @opentelemetry/instrumentation-hapi@0.45.2 OK for: @sentry/node@9.47.2 want: 0.45.2
+434 silly placeDep ROOT @opentelemetry/instrumentation-http@0.57.2 OK for: @sentry/node@9.47.2 want: 0.57.2
+435 silly placeDep ROOT @opentelemetry/instrumentation-ioredis@0.47.1 OK for: @sentry/node@9.47.2 want: 0.47.1
+436 silly placeDep ROOT @opentelemetry/instrumentation-kafkajs@0.7.1 OK for: @sentry/node@9.47.2 want: 0.7.1
+437 silly placeDep ROOT @opentelemetry/instrumentation-knex@0.44.1 OK for: @sentry/node@9.47.2 want: 0.44.1
+438 silly placeDep ROOT @opentelemetry/instrumentation-koa@0.47.1 OK for: @sentry/node@9.47.2 want: 0.47.1
+439 silly placeDep ROOT @opentelemetry/instrumentation-lru-memoizer@0.44.1 OK for: @sentry/node@9.47.2 want: 0.44.1
+440 silly placeDep ROOT @opentelemetry/instrumentation-mongodb@0.52.0 OK for: @sentry/node@9.47.2 want: 0.52.0
+441 silly placeDep ROOT @opentelemetry/instrumentation-mongoose@0.46.1 OK for: @sentry/node@9.47.2 want: 0.46.1
+442 silly placeDep ROOT @opentelemetry/instrumentation-mysql@0.45.1 OK for: @sentry/node@9.47.2 want: 0.45.1
+443 silly placeDep ROOT @opentelemetry/instrumentation-mysql2@0.45.2 OK for: @sentry/node@9.47.2 want: 0.45.2
+444 silly placeDep ROOT @opentelemetry/instrumentation-pg@0.51.1 OK for: @sentry/node@9.47.2 want: 0.51.1
+445 silly placeDep ROOT @opentelemetry/instrumentation-redis-4@0.46.1 OK for: @sentry/node@9.47.2 want: 0.46.1
+446 silly placeDep ROOT @opentelemetry/instrumentation-tedious@0.18.1 OK for: @sentry/node@9.47.2 want: 0.18.1
+447 silly placeDep ROOT @opentelemetry/instrumentation-undici@0.10.1 OK for: @sentry/node@9.47.2 want: 0.10.1
+448 silly placeDep ROOT @opentelemetry/resources@1.30.1 OK for: @sentry/node@9.47.2 want: ^1.30.1
+449 silly placeDep ROOT @opentelemetry/sdk-trace-base@1.30.1 OK for: @sentry/node@9.47.2 want: ^1.30.1
+450 silly placeDep ROOT @opentelemetry/semantic-conventions@1.43.0 OK for: @sentry/node@9.47.2 want: ^1.34.0
+451 silly placeDep ROOT @prisma/instrumentation@6.11.1 OK for: @sentry/node@9.47.2 want: 6.11.1
+452 silly placeDep ROOT @sentry/core@9.47.2 OK for: @sentry/node@9.47.2 want: 9.47.2
+453 silly placeDep ROOT @sentry/node-core@9.47.2 OK for: @sentry/node@9.47.2 want: 9.47.2
+454 silly placeDep ROOT @sentry/opentelemetry@9.47.2 OK for: @sentry/node@9.47.2 want: 9.47.2
+455 silly placeDep ROOT import-in-the-middle@1.15.0 OK for: @sentry/node@9.47.2 want: ^1.14.2
+456 silly placeDep ROOT minimatch@9.0.9 OK for: @sentry/node@9.47.2 want: ^9.0.0
+457 silly fetch manifest @opentelemetry/semantic-conventions@1.28.0
+458 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fsemantic-conventions cache-miss
+459 silly fetch manifest semver@^7.5.2
+460 silly packumentCache full:https://registry.npmjs.org/semver cache-miss
+461 silly fetch manifest shimmer@^1.2.1
+462 silly packumentCache full:https://registry.npmjs.org/shimmer cache-miss
+463 http cache https://registry.npmjs.org/@opentelemetry%2fsemantic-conventions 8ms (cache hit)
+464 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fsemantic-conventions set size:428824 disposed:false
+465 silly fetch manifest @types/shimmer@^1.2.0
+466 silly packumentCache full:https://registry.npmjs.org/@types%2fshimmer cache-miss
+467 silly fetch manifest import-in-the-middle@^1.8.1
+468 silly packumentCache full:https://registry.npmjs.org/import-in-the-middle cache-miss
+469 http cache https://registry.npmjs.org/import-in-the-middle 4ms (cache hit)
+470 silly packumentCache full:https://registry.npmjs.org/import-in-the-middle set size:197817 disposed:false
+471 silly fetch manifest require-in-the-middle@^7.1.1
+472 silly packumentCache full:https://registry.npmjs.org/require-in-the-middle cache-miss
+473 http fetch GET 200 https://registry.npmjs.org/@types%2fshimmer 88ms (cache miss)
+474 silly fetch manifest @opentelemetry/api-logs@0.57.2
+475 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fapi-logs cache-miss
+476 silly fetch manifest @opentelemetry/semantic-conventions@^1.27.0
+477 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fsemantic-conventions cache-hit
+478 silly fetch manifest @types/connect@3.4.38
+479 silly packumentCache full:https://registry.npmjs.org/@types%2fconnect cache-miss
+480 http fetch GET 200 https://registry.npmjs.org/shimmer 110ms (cache miss)
+481 silly fetch manifest semver@^7.5.2
+482 silly packumentCache full:https://registry.npmjs.org/semver cache-miss
+483 silly fetch manifest forwarded-parse@2.1.2
+484 silly packumentCache full:https://registry.npmjs.org/forwarded-parse cache-miss
+485 http fetch GET 200 https://registry.npmjs.org/@types%2fconnect 94ms (cache miss)
+486 silly fetch manifest @opentelemetry/redis-common@^0.36.2
+487 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fredis-common cache-miss
+488 silly fetch manifest @types/mysql@2.15.26
+489 silly packumentCache full:https://registry.npmjs.org/@types%2fmysql cache-miss
+490 silly fetch manifest @opentelemetry/sql-common@^0.40.1
+491 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fsql-common cache-miss
+492 http fetch GET 200 https://registry.npmjs.org/forwarded-parse 112ms (cache miss)
+493 silly fetch manifest @types/pg@8.6.1
+494 silly packumentCache full:https://registry.npmjs.org/@types%2fpg cache-miss
+495 silly fetch manifest @types/pg-pool@2.0.6
+496 silly packumentCache full:https://registry.npmjs.org/@types%2fpg-pool cache-miss
+497 silly fetch manifest @opentelemetry/sql-common@^0.40.1
+498 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fsql-common cache-miss
+499 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2fsql-common 131ms (cache miss)
+500 silly fetch manifest @opentelemetry/redis-common@^0.36.2
+501 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fredis-common cache-miss
+502 silly fetch manifest @types/tedious@^4.0.14
+503 silly packumentCache full:https://registry.npmjs.org/@types%2ftedious cache-miss
+504 silly fetch manifest acorn@^8.14.0
+505 silly packumentCache full:https://registry.npmjs.org/acorn cache-miss
+506 http fetch GET 200 https://registry.npmjs.org/@opentelemetry%2fredis-common 99ms (cache miss)
+507 silly fetch manifest cjs-module-lexer@^1.2.2
+508 silly packumentCache full:https://registry.npmjs.org/cjs-module-lexer cache-miss
+509 silly fetch manifest acorn-import-attributes@^1.9.5
+510 silly packumentCache full:https://registry.npmjs.org/acorn-import-attributes cache-miss
+511 silly fetch manifest module-details-from-path@^1.0.3
+512 silly packumentCache full:https://registry.npmjs.org/module-details-from-path cache-miss
+513 silly fetch manifest brace-expansion@^2.0.2
+514 silly packumentCache full:https://registry.npmjs.org/brace-expansion cache-miss
+515 http fetch GET 200 https://registry.npmjs.org/acorn-import-attributes 84ms (cache miss)
+516 http fetch GET 200 https://registry.npmjs.org/module-details-from-path 102ms (cache miss)
+517 silly placeDep node_modules/@opentelemetry/core @opentelemetry/semantic-conventions@1.28.0 OK for: @opentelemetry/core@1.30.1 want: 1.28.0
+518 silly fetch manifest semver@^7.5.2
+519 silly packumentCache full:https://registry.npmjs.org/semver cache-miss
+520 silly fetch manifest shimmer@^1.2.1
+521 silly packumentCache full:https://registry.npmjs.org/shimmer cache-miss
+522 silly fetch manifest @types/shimmer@^1.2.0
+523 silly packumentCache full:https://registry.npmjs.org/@types%2fshimmer cache-miss
+524 http fetch GET 200 https://registry.npmjs.org/@types%2fshimmer 86ms (cache miss)
+525 silly fetch manifest require-in-the-middle@^7.1.1
+526 silly packumentCache full:https://registry.npmjs.org/require-in-the-middle cache-miss
+527 silly fetch manifest @opentelemetry/api-logs@0.57.2
+528 silly packumentCache full:https://registry.npmjs.org/@

@@ -1,0 +1,24 @@
+.specify/memory/constitution.md:18:  on a selection (specs/003-private-beta, FR-015–FR-021). That needs no host permission at all,
+.specify/memory/constitution.md:22:- Superseded artifacts: specs/003-private-beta/plan.md constitution check noted the old wording;
+docs/ship-first-dollar.md:5:2.0.0, `specs/003-private-beta`).
+docs/ship-first-dollar.md:7:> **2026-10-19 — change of plan:** Phase 2 is now a **private beta** (owner + 3–5 friends): install
+docs/ship-first-dollar.md:85:- **Phase 2 — private beta (current):** see `specs/003-private-beta` — model judge pass, install
+docs/ship-first-dollar.md:118:  bad-translation report only on click). Plan changed to a private beta; payments deferred until the
+docs/ship-first-dollar.md:119:  16 Nov 2026 beta review. Spec: `specs/003-private-beta`.
+docs/store-listing.md:1:# Chrome Web Store listing — Sprachweise (private beta)
+docs/store-listing.md:5:<https://sprachweise.vercel.app/privacy>. Spec: `specs/003-private-beta`.
+docs/research/2026-10-25-exercise-types/README.md:32:   входит в private beta.
+specs/003-private-beta/checklists/requirements.md:1:# Specification Quality Checklist: Private Beta
+specs/003-private-beta/spec.md:1:# Feature Specification: Private Beta
+specs/003-private-beta/spec.md:9:**Input**: User description: "Phase 2 is a private beta for me and 3–5 friends. Scope: install ID,
+specs/003-private-beta/metrics.sql:1:-- Private-beta usage metrics over the `events` table (apps/cms/src/db.ts).
+specs/003-private-beta/tasks.md:1:# Tasks: Private Beta
+specs/003-private-beta/tasks.md:5:> **Handoff (2026-10-19, end of Part 1, branch `003-private-beta-part1`)**
+specs/003-private-beta/tasks.md:42:  - [x] PR `003-private-beta-part1` → `main`
+specs/003-private-beta/plan.md:1:# Implementation Plan: Private Beta
+store/test-instructions.md:18:Notes: The text goes to our server (https://sprachweise.vercel.app) and is translated by Google Gemini, so an internet connection is required; a first translation can take a few seconds, repeated text is instant. A selection over 1,500 characters is refused with a message, by design. If a notice says today's translation limit is used up, new translations are paused until tomorrow (this is a private-beta daily cap), but text translated before still works. The extension does nothing on chrome:// pages and the Chrome Web Store.
+store/description.en.txt:22:This is a private beta. Translations can contain mistakes; please flag them with the "Bad translation" button. A daily limit on new translations applies.
+store/test-instructions.txt:13:Notes: The text goes to our server (https://sprachweise.vercel.app) and is translated by Google Gemini, so an internet connection is required; a first translation can take a few seconds, repeated text is instant. A selection over 1,500 characters is refused with a message, by design. If a notice says today's translation limit is used up, new translations are paused until tomorrow (this is a private-beta daily cap), but text translated before still works. The extension does nothing on chrome:// pages and the Chrome Web Store.
+store/description.txt:22:Это закрытая бета: возможны ошибки перевода — пожалуйста, отмечайте их кнопкой «Плохой перевод». Есть дневной лимит на новые переводы.
+apps/cms/tests/integration/metrics-sql.test.ts:6:const SQL_PATH = new URL("../../../../specs/003-private-beta/metrics.sql", import.meta.url);
+apps/cms/tests/integration/metrics-sql.test.ts:53:describe("specs/003-private-beta/metrics.sql", () => {
