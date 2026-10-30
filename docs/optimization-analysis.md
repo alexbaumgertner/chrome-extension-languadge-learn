@@ -34,7 +34,7 @@
 
 | # | ID | Область | Находка | Доказательство | Ожидаемый эффект | Риск | Усилие | Статус |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | A1 | Расходы / abuse | Нет `maxOutputTokens`. Лимит 5000 символов при типичном абзаце ≈250. Allowance считает запуски pipeline, а не деньги и не HTTP-попытки: ретрай идёт внутри одной резервации, поэтому 1500 резерваций допускают до 3000 платных попыток. Худший запрос стоит ≈6–8× типичного, а при зацикленной генерации ограничен только лимитом модели | `apps/cms/src/pipeline/translate.ts:90-114`, `apps/cms/src/config.ts:11,13`, `apps/cms/src/usage/ledger.ts:72-84`, `apps/cms/src/routes/translate.ts:54-67`, `apps/cms/src/pipeline/retry.ts:5-16` | Худший день при исчерпании лимита: ≈$15–20 сейчас, ≈$30–40 с 2027 (сейчас не ограничено сверху по $). После фикса ≈$2–5/день | Слишком низкий `maxOutputTokens` обрежет JSON, и ответ уйдёт в 502 | S | VERIFIED (код) / HYPOTHESIS (оценка $) |
+| 1 | A1 | Расходы / abuse | Нет `maxOutputTokens`. Лимит 5000 символов при типичном абзаце ≈250. Allowance считает запуски pipeline, а не деньги и не HTTP-попытки: ретрай идёт внутри одной резервации, поэтому 1500 резерваций допускают до 3000 платных попыток. Худший запрос стоит ≈6–8× типичного, а при зацикленной генерации ограничен только лимитом модели | `apps/cms/src/pipeline/translate.ts:90-114`, `apps/cms/src/config.ts:11,13`, `apps/cms/src/usage/ledger.ts:72-84`, `apps/cms/src/routes/translate.ts:54-67`, `apps/cms/src/pipeline/retry.ts:5-16` | Худший день при исчерпании лимита длинными текстами: без ретраев (1500 попыток) ≈$15–20 сейчас и ≈$30–40 с 2027; если каждая резервация ретраится (3000 попыток) ≈$27–39 и ≈$54–78. Это оценка для длинного, но нормального ответа, а не потолок: при зацикленной генерации верхней границы в $ нет. После фикса ≈$2–5/день | Слишком низкий `maxOutputTokens` обрежет JSON, и ответ уйдёт в 502 | S | VERIFIED (код) / HYPOTHESIS (оценка $) |
 | 2 | A2 | Abuse | CORS только выставляет заголовки и не отклоняет запросы. Любой HTTP-клиент тратит общий лимит. Когда лимит исчерпан, сервис ложится у всех пользователей | `apps/cms/src/build-app.ts:32-38`, `apps/cms/tests/integration/cors.test.ts:21-28`, `apps/extension/lib/config.ts:6` | Защита от «бесплатного API перевода» и от DoS через лимит | Проверку Origin легко подделать, это только порог от наивных скриптов | S | VERIFIED |
 | 3 | L1 | Стоимость LLM | 3.8-flash дорожает ×2 с 2027-01-01. `costUsd` не учитывает дату, поэтому `provider_calls.cost_usd` начнёт занижать расходы | `apps/cms/src/pipeline/pricing.ts:7-9,13-21` | Корректный учёт. Решение по модели нужно принять до 1 января | Нет | S | VERIFIED |
 | 4 | L2 | Стоимость LLM | flash-lite в 3× дешевле и в 2.3× быстрее. Отставание сосредоточено в A1-A2 (4.02 против 4.91), в B1-B2 оно небольшое (4.64 против 4.81). На prompt v2 flash-lite **не проверялся** | `docs/quality/2026-10-19/judge-4-models.md:9,11`, `docs/quality/2026-10-19/README.md:14` | −60…80% $/абзац, −2 s задержки, если пройдёт порог качества (полностью или для части уровней) | Грамматические ошибки (неверный артикль) вредны для учащихся | M | HYPOTHESIS |
@@ -62,8 +62,9 @@
 
 **A1. Цена худшего запроса.** `TranslateRequestSchema` ограничивает текст только снизу (`packages/shared/src/schemas/cms.ts:4-8`), сервер режет на 5000 символах (`apps/cms/src/routes/translate.ts:34`). Клиент шлёт абзацы длиннее 80 символов (`apps/extension/lib/dom/paragraph-parser.ts:3`), в среднем в тестовом наборе около 253 символов. Абзац в 5000 символов примерно в 20 раз длиннее среднего.
 - Оценка: ≈1500 входных токенов и ≈2200–3200 выходных, то есть ≈$0.009–0.013 за вызов при сегодняшней цене.
-- Если выжечь все 1500 вызовов такими текстами, получится ≈$15–20 в сутки (≈$450–600 в месяц), а с 2027 вдвое больше.
-- Без `maxOutputTokens` редкая зацикленная генерация ограничена только потолком модели.
+- Без ретраев: если выжечь все 1500 резерваций такими текстами по одной попытке, получится ≈$15–20 в сутки (≈$450–600 в месяц), а с 2027 вдвое больше (≈$30–40).
+- С ретраями: каждая резервация допускает две оплачиваемые попытки (см. VERIFIED ниже), то есть до 3000 попыток × $0.009–0.013 ≈ $27–39 в сутки сейчас и ≈$54–78 с 2027.
+- Обе цифры описывают обычный длинный ответ, а не максимум расходов. Без `maxOutputTokens` редкая зацикленная генерация ограничена только потолком модели, поэтому сверху по $ сутки не ограничены.
 - VERIFIED: резерв делается один раз на запуск pipeline, внутри `coalescing.run`, а ретрай повторяет `fetch` без новой резервации (`apps/cms/src/routes/translate.ts:54-67`, `apps/cms/src/pipeline/retry.ts:5-16`). Значит, 1500 резерваций в сутки допускают до 3000 HTTP-попыток к Gemini. «Сутки» здесь означают UTC-день резервации, а сама попытка может закончиться уже после полуночи (`apps/cms/src/usage/ledger.ts:72-84`).
 - Как закрыть: SQL «token_distribution» (раздел 3) даёт p99/max `prompt_tokens` и `output_tokens` в проде. Отдельно стоит проверить в Google Billing, тарифицируются ли вызовы, оборванные по таймауту.
 
@@ -101,7 +102,7 @@
 
 **L3.** Как закрыть: прогнать `quality-check` с компактной схемой vocab и сравнить строку `Tokens:` и оценки судьи с baseline.
 
-**S4.** Как закрыть: проверить регион функций и Neon в дашбордах, `suspend_timeout` compute и SQL «idle_gaps» (доля платных вызовов после простоя больше 5 минут).
+**S4.** Как закрыть: проверить регион функций и Neon в дашбордах, `suspend_timeout` compute и SQL «idle_gaps» (доля платных вызовов после паузы в платных вызовах больше 5 минут). Это прокси без гарантированной границы: cache hit, `/api/events` и `/api/report` тоже обращаются к БД, не создавая строк `provider_calls`, так что пауза здесь не означает простоя Neon. Фактические suspend/resume проверять отдельно по истории compute в Neon, иначе эксперимент припишет простои тёплым запросам.
 
 **K2.** Как закрыть: SQL «server_cache_hit_rate». Если доля hit на сервере в единицах процентов, серверный кэш почти не экономит и цена bump пренебрежима.
 
@@ -113,7 +114,7 @@
 Почему первым: изменения S-размера, а без них публичный листинг даёт расходы без верхней границы в $ и общий DoS через лимит.
 1. Выполнить SQL `token_distribution` (раздел 3) и получить p99/max `prompt_tokens` и `output_tokens` по модели.
 2. Добавить в `generationConfig` значение `maxOutputTokens` ≈ 2× p99 output (по бете ожидаю ≈1000–1500) (`apps/cms/src/pipeline/translate.ts:90-114`). Если ответ упрётся в лимит (`finishReason: MAX_TOKENS`), он не пройдёт парсинг и вернётся 502 без кэширования. Это уже обрабатывается (`translate.ts:163-172`).
-3. Снизить `TRANSLATE_MAX_CHARS` до p99 длины реальных абзацев с запасом (ожидаю 1500–2000). Значение берётся из env, кода не нужно (`apps/cms/src/config.ts:11`).
+3. Снизить лимит входа до p99 длины реальных абзацев с запасом (ожидаю 1500–2000). Просто поменять env нельзя: тот же `TRANSLATE_MAX_CHARS` (`apps/cms/src/config.ts:11`) ограничивает и немецкий `variantText` в `/api/exercises` (`apps/cms/src/routes/exercises.ts:15-19`). Перевод допустимого исходника может оказаться длиннее него, и тогда ответ будет оплачен и закэширован, а упражнения получат 400. Поэтому сначала разделить лимиты: `TRANSLATE_MAX_CHARS` для входа `/api/translate` и отдельный лимит для `variantText`, не ниже текущих 5000. Так продолжат работать уже закэшированные ответы и старые версии расширения, которые и дальше ходят в `/api/exercises`: перенос генератора в новые версии (R3, шаг 1) их не исправит. Только после этого снижать лимит входа через env.
 4. Сделать единицей лимита фактическую HTTP-попытку к Gemini: резервировать перед каждым `fetch`, включая ретрай, а не один раз на pipeline (`apps/cms/src/routes/translate.ts:57`, `apps/cms/src/pipeline/retry.ts:5-16`). Мемоизированный `ProviderConfigError` до `fetch` не доходит и резервацию тратить не должен. Вторым счётчиком в `reserveCounters` (`apps/cms/src/usage/ledger.ts:53-66`) ввести дневной бюджет в токенах, где резерв равен оценке по длине текста. Механизм «всё или ничего» уже есть.
 4a. Писать строку `provider_calls` на каждую попытку: номер попытки, статус, usage при наличии (M2). Неизвестную стоимость оставлять `NULL`, не 0.
 5. Отклонять на сервере запросы с `Origin`, которого нет в `CORS_ALLOWED_ORIGINS` (хук `onRequest` в `apps/cms/src/build-app.ts`), с ответом 403. Это не аутентификация, а отсечение браузерных злоупотреблений и наивных скриптов.
@@ -129,9 +130,9 @@
 2. Провести офлайн-эксперимент из раздела 3.2: 3.1-flash-lite на prompt v2 против 3.8 на prompt v2, по уровням.
 3. Принять решение:
    - lite проходит порог на всех уровнях: переключить `GEMINI_MODEL` (env, без кода);
-   - lite проходит только для B1-B2/C1+: добавить маршрутизацию модели по `level` в `translateParagraph`. В ключе кэша модель уже есть (`apps/cms/src/cache/key.ts:21`), так что ответы не смешаются;
+   - lite проходит только для B1-B2/C1+: добавить маршрутизацию модели по `level`, но не внутри `translateParagraph`. Обработчик заранее берёт модель из глобального `cfg.GEMINI_MODEL` для `producedBy`, ключа кэша, `call` и `provider_calls` (`apps/cms/src/routes/translate.ts:24,42-85`). Если выбирать модель только в `translateParagraph`, существующие записи 3.8 обойдут маршрутизацию, а новые lite-ответы будут записаны в кэш и учтены как 3.8. Поэтому фактическую конфигурацию `{ model, thinkingLevel }` нужно выбирать в начале обработчика, до `cacheKey`/`getCacheEntry`, и передавать её во всё остальное: ключ, `producedBy`, `recordProviderCall`, `translateParagraph`. Модель в ключе кэша уже есть (`apps/cms/src/cache/key.ts:21`), так что при правильном выборе ответы не смешаются;
    - lite не проходит: оставить 3.8, заложить в бюджет ≈$0.0031 за абзац и вернуться к L3.
-4. Выкатить на неделю и следить за SQL `report_rate_by_model`, `provider_latency` и `cost_per_day`. Откатить, если доля «Плохой перевод» выросла больше чем вдвое к baseline или p95 ухудшилась.
+4. Выкатить на неделю и следить за `provider_latency` и `cost_per_day`. Откатить, если ухудшилась p95. `report_rate_by_model` для порога отката не годится: жалобы приходят и на показы из кэша (обоих уровней), а знаменатель считает только новые генерации, поэтому после смены модели отношение зависит от возраста кэша и hit rate, а не только от качества. Для порога «доля „Плохой перевод“ не больше 2× baseline» нужен учёт показов по фактической модели, включая оба уровня кэша (например, `model` в событии `paragraph_translated`, `packages/shared/src/schemas/cms.ts:136-141`). Пока его нет, запрос только диагностический, а решение держится на офлайн-эксперименте (3.2).
 5. Учесть, что смена модели обнуляет серверный кэш. Это дёшево (K2): локальные кэши пользователей продолжат отдавать старые переводы.
 
 Ожидаемый эффект при полном переходе: ≈$0.0006 за абзац (386×0.25 + ~340×1.5 µ$) против $0.00156 сейчас и $0.00312 с 2027, то есть в 2.6–5× дешевле. Задержка ≈1.3 s против ≈3.5 s. Это HYPOTHESIS до эксперимента. Токены lite взяты из прогона v1 (там thinking `minimal`), а на v2 их число вырастет.
@@ -347,25 +348,27 @@ WHERE name = 'client_error'
 GROUP BY error_code, http_status
 ORDER BY failures DESC;
 
--- name: retries_lower_bound
+-- name: retries_heuristic
 -- Retries aren't recorded (one provider_calls row per withRetry), so the exact retry share is
 -- unobservable. Estimate: an OK call slower than the 15 s timeout (GEMINI_TIMEOUT_MS) must have
 -- retried after a timeout; a non-config error is retried once. Caveats: a fast failure followed by
--- a fast success is invisible (undercount); a first-time ProviderConfigError (not retried, not yet
--- memoized) lands in errors_retried (overcount, rare). Use it as a trend, not a precise share.
+-- a fast success is invisible (undercount); an error that was never retried (ProviderConfigError,
+-- which pipeline/translate.ts excludes from retries) but took >= 50 ms lands in errors_retried
+-- (overcount). So it is neither a lower nor an upper bound: an unverified heuristic, trend only.
+-- Exact counts need per-attempt rows (M2).
 SELECT
   (created_at AT TIME ZONE 'UTC')::date AS day,
   COUNT(*) FILTER (WHERE status = 'ok') AS ok_calls,
   COUNT(*) FILTER (WHERE status = 'ok' AND latency_ms >= 15000) AS ok_after_timeout_retry,
   COUNT(*) FILTER (WHERE status = 'error' AND latency_ms >= 50) AS errors_retried,
   COUNT(*) FILTER (WHERE status = 'ok' AND latency_ms >= 15000)
-    + COUNT(*) FILTER (WHERE status = 'error' AND latency_ms >= 50) AS retries_at_least,
+    + COUNT(*) FILTER (WHERE status = 'error' AND latency_ms >= 50) AS retries_est,
   ROUND(
     100.0 * (COUNT(*) FILTER (WHERE status = 'ok' AND latency_ms >= 15000)
              + COUNT(*) FILTER (WHERE status = 'error' AND latency_ms >= 50))
       / NULLIF(COUNT(*), 0),
     2
-  ) AS retry_pct_at_least
+  ) AS retry_pct_est
 FROM provider_calls
 WHERE created_at > now() - interval '30 days'
 GROUP BY 1
@@ -473,8 +476,10 @@ WHERE relname IN ('cache_entries', 'provider_calls', 'events', 'usage_counters',
 ORDER BY pg_total_relation_size(relid) DESC;
 
 -- name: idle_gaps
--- How often a paid call follows > 5 min of paid-call silence (lower bound for "Neon may have
--- suspended"; cache hits make no rows). latency_ms covers only Gemini, not the DB wake-up.
+-- How often a paid call follows > 5 min of paid-call silence. PROXY, not a bound in either
+-- direction: cache hits, /api/events and /api/report also query the DB without writing
+-- provider_calls rows, so a long gap here does not mean Neon was idle. latency_ms covers only
+-- Gemini, not the DB wake-up. Confirm real suspend/resume from Neon compute history separately.
 WITH ordered AS (
   SELECT
     created_at,
@@ -491,8 +496,10 @@ FROM ordered
 GROUP BY 1;
 
 -- name: report_rate_by_model
--- "Плохой перевод" reports per 100 fresh translations of each model (denominator excludes cache
--- hits, so this overstates the per-view rate; use it to compare models, not as an absolute).
+-- DIAGNOSTIC ONLY. "Плохой перевод" reports per 100 fresh translations of each model. Reports
+-- also come from cache hits (server and local), but the denominator counts fresh generations only,
+-- so the ratio depends on cache age and hit rate, not just on quality. Not usable as a rollback
+-- threshold or a model comparison until impressions are counted per actual model.
 WITH reports AS (
   SELECT model, COUNT(*) AS reports
   FROM translation_reports
@@ -543,6 +550,8 @@ ORDER BY ok_calls DESC;
 Прогоны: каждый ≈$0.05–0.15 на 60 абзацах, судья ≈$0.3–1. Все кандидаты оценивает **один и тот же прогон судьи**, потому что оценки разных прогонов несопоставимы (L2):
 ```bash
 cd apps/cms
+# quality-check.ts writes with writeFileSync and does not create the parent dir
+mkdir -p exp
 # baseline, twice to measure run-to-run variance
 GEMINI_MODEL=gemini-3.8-flash      GEMINI_THINKING_LEVEL=low     pnpm quality-check --out exp/38-v2-a.md
 GEMINI_MODEL=gemini-3.8-flash      GEMINI_THINKING_LEVEL=low     pnpm quality-check --out exp/38-v2-b.md
@@ -579,7 +588,7 @@ pnpm judge exp/38-v2-a.json exp/38-v2-b.json exp/lite31-v2-minimal.json exp/lite
 - ничего не прошло: остаться на 3.8.
 
 Онлайн-проверка неделю после выката:
-- `report_rate_by_model` не больше 2× baseline;
+- `report_rate_by_model` только как диагностика (см. R2, шаг 4). Порог «жалоб не больше 2× baseline» применять, когда появится учёт показов по модели;
 - p95 в `provider_latency` не хуже;
 - `wasted_paid_calls` не растёт.
 
@@ -595,7 +604,7 @@ pnpm judge exp/38-v2-a.json exp/38-v2-b.json exp/lite31-v2-minimal.json exp/lite
 | Перевод нескольких абзацев одним вызовом или prefetch видимых абзацев | Пользователь кликает по одному абзацу. Батч увеличит задержку, а prefetch будет оплачивать абзацы, на которые никто не кликнет |
 | Streaming ответа | Ответ валидируется и кэшируется целиком (`apps/cms/src/routes/translate.ts:86-91`), подстановка в DOM атомарна. Выигрыш в UX мал, а сложность большая |
 | Redis/KV перед Neon | Hit — это 1 RTT внутри региона (`apps/cms/src/cache/store.ts:13-19`). Нет данных, что он заметен на фоне всего остального |
-| Распределённое (межинстансное) слияние запросов | Одинаковые параллельные запросы на разных инстансах редки. Худший случай — один лишний вызов, который `ON CONFLICT DO NOTHING` не сохранит дважды |
+| Распределённое (межинстансное) слияние запросов | Пока не рекомендую, сначала измерить. Coalescing хранится в локальном Map (`apps/cms/src/routes/translate.ts:22`), поэтому N инстансов, одновременно увидевших один miss, выполнят N pipeline и до 2N HTTP-попыток с ретраями. `ON CONFLICT DO NOTHING` устраняет только повторную запись, а не расходы. Предел задаёт число конкурирующих инстансов, а не единица. Насколько это часто, HYPOTHESIS: проверить SQL `wasted_paid_calls` |
 | Отдавать после bump записи старой версии промпта | Это намеренно худший вывод. Стоимость bump и так мала, потому что повторы гасит локальный кэш (K2) |
 | Урезать инструкции промпта ради цены | Вход ≈19% цены, а добавления v2 дали глоссы +1.05 балла (`judge-3.8-prompt-v1-vs-v2.md:9-10`) |
 | Вытеснение локального кэша или перенос vocab в IndexedDB прямо сейчас | Запись словаря ~150 байт. До квоты `chrome.storage.local` около 10 МБ (нет `unlimitedStorage`, `apps/extension/wxt.config.ts:36`), то есть десятки тысяч слов. Сначала надо исправить шаблон записи (C1) |
