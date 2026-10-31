@@ -103,3 +103,22 @@ export type ClientErrorCode = z.infer<typeof ClientErrorCodeSchema>;
 export type MetricEvent = z.infer<typeof MetricEventSchema>;
 export type EventsRequest = z.infer<typeof EventsRequestSchema>;
 export type ReportRequest = z.infer<typeof ReportRequestSchema>;
+
+// selection tools (side panel)
+import type {
+  GetPendingSelectionRequestSchema,
+  GetPendingSelectionResponseSchema,
+  SelectionPayloadSchema,
+  SelectionToolMessageSchema,
+  SelectionToolSchema,
+  TranslateSelectionRequestSchema,
+  TranslateSelectionResponseSchema,
+} from "../schemas/messages";
+
+export type SelectionTool = z.infer<typeof SelectionToolSchema>;
+export type SelectionPayload = z.infer<typeof SelectionPayloadSchema>;
+export type SelectionToolMessage = z.infer<typeof SelectionToolMessageSchema>;
+export type GetPendingSelectionRequest = z.infer<typeof GetPendingSelectionRequestSchema>;
+export type GetPendingSelectionResponse = z.infer<typeof GetPendingSelectionResponseSchema>;
+export type TranslateSelectionRequest = z.infer<typeof TranslateSelectionRequestSchema>;
+export type TranslateSelectionResponse = z.infer<typeof TranslateSelectionResponseSchema>;

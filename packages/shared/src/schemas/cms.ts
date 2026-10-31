@@ -128,7 +128,8 @@ export const ExercisesResponseSchema = z.object({
  * TRANSLATE_MAX_CHARS (not sent at all, or a 413); `failed` anything else (other 4xx, bad schema).
  * Selection codes: the extension refused the selection before sending anything — `excluded` it
  * includes code or a form field; `mixed` it includes text outside every leaf block (directly in a
- * container that holds other blocks).
+ * container that holds other blocks). `selection-panel-failed`: a side-panel tool (translate to my
+ * level) got no usable answer; the HTTP status says why when there was one.
  */
 export const ClientErrorCodeSchema = z.enum([
   "translate-failed",
@@ -142,6 +143,7 @@ export const ClientErrorCodeSchema = z.enum([
   "selection-mixed",
   "exercises-failed",
   "report-failed",
+  "selection-panel-failed",
 ]);
 
 /**

@@ -25,9 +25,12 @@ export default defineConfig({
     //   (Constitution IV). No site data.
     // - "activeTab": the temporary, gesture-only access above.
     // - "scripting": chrome.scripting.executeScript, to inject the content script on that gesture.
-    // - "contextMenus": the "Translate to German" and "Restore original text" items.
-    // None of the four shows an install or update warning.
-    permissions: ["storage", "activeTab", "scripting", "contextMenus"],
+    // - "contextMenus": the "Sprachweise" submenu on a selection ("Translate to German", "Translate
+    //   to my level", "Read aloud") and the "Restore original text" item.
+    // - "sidePanel": shows the result of "Translate to my level" and "Read aloud" in Chrome's side
+    //   panel (an extension page, opened from the menu click). Reads no page.
+    // None of the five shows an install or update warning.
+    permissions: ["storage", "activeTab", "scripting", "contextMenus", "sidePanel"],
     // The fallback for sites that replace the right-click menu. Also grants activeTab.
     commands: {
       "translate-selection": {

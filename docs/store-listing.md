@@ -41,7 +41,7 @@ one-time CORS setup.
 | Name | Sprachweise (from `_locales/*/messages.json`) |
 | Version | from the release tag: `vX.Y.Z` → `X.Y.Z`; must be higher than the version in the store |
 | Default locale | `en`; also `ru` |
-| Permissions | `storage`, `activeTab`, `scripting`, `contextMenus` |
+| Permissions | `storage`, `activeTab`, `scripting`, `contextMenus`, `sidePanel` |
 | Optional host permissions | none |
 | Host permissions | none |
 | Content scripts in manifest | none (injected into the current tab only when the user picks the menu item or presses the shortcut) |
@@ -88,6 +88,14 @@ exercise generator, so they never call production.
 From [`store/permissions.json`](../store/permissions.json), one justification per permission or
 host pattern. The release body lists every permission the release manifest requests next to its
 justification, flags any that have none, and names entries the manifest no longer requests.
+
+Added with the selection tools (specs/005-selection-tools, constitution Principle I):
+
+- `contextMenus` also carries the "Sprachweise" submenu items "Translate to my level" and "Read
+  aloud". It is how the user starts a tool on a selection; it reads no page.
+- `sidePanel` shows the result of those two items in Chrome's side panel (an extension page opened
+  from the menu click). It reads no page or site data and shows no install warning, which
+  `install-permissions.spec.ts` checks with `getPermissionWarningsByManifest`.
 
 The keyboard shortcut (`commands`, suggested Alt+Shift+G) does the same as the menu item, for
 sites that replace the right-click menu. It needs no permission and shows no warning.

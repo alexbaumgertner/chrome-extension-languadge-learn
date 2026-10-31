@@ -38,9 +38,13 @@ import { mapCmsExercisesToEntities } from "@/lib/exercises/generate";
 import { checkExerciseAnswer } from "@/lib/exercises/match";
 import { recordVocabEncounters, vocabIdFor } from "@/lib/vocab/upsert";
 import { flushEvents, recordEvent, recordInstallIfNew } from "@/lib/metrics/events";
+import { translateSelection } from "@/lib/selection/translate-selection";
+import { getPendingSelection, openSelectionTool } from "@/lib/selection/open-tool";
 import {
   RESTORE_MENU_ID,
+  SPEAK_MENU_ID,
   TRANSLATE_COMMAND,
+  TRANSLATE_LEVEL_MENU_ID,
   TRANSLATE_MENU_ID,
   createContextMenus,
   refreshRestoreMenu,
@@ -255,6 +259,12 @@ async function dispatch(message: RequestMessage): Promise<unknown> {
     case "REPORT_BAD_TRANSLATION":
       return handleReportBadTranslation(message);
 
+    case "GET_PENDING_SELECTION":
+      return { selection: await getPendingSelection() };
+
+    case "TRANSLATE_SELECTION":
+      return translateSelection(message.text);
+
     case "GET_PROGRESS_SNAPSHOT": {
       const [profile, vocabRecord, reviewQueueRecord] = await Promise.all([
         getProgressProfile(),
@@ -297,10 +307,21 @@ function broadcastStorageChanged(slice: StorageChangedMessage["slice"]): void {
 function onMenuClicked(info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.Tab): void {
   if (tab?.id === undefined) return;
   const frameId = info.frameId ?? 0;
-  if (info.menuItemId === TRANSLATE_MENU_ID) {
-    void runPageAction(tab.id, frameId, "translate-selection");
-  } else if (info.menuItemId === RESTORE_MENU_ID) {
-    void runPageAction(tab.id, frameId, "restore");
+  // A plain switch: each further selection tool (explain, rewrite, ...) is one more case that
+  // opens the side panel. No synchronous work may precede openSelectionTool (user gesture).
+  switch (info.menuItemId) {
+    case TRANSLATE_MENU_ID:
+      void runPageAction(tab.id, frameId, "translate-selection");
+      break;
+    case RESTORE_MENU_ID:
+      void runPageAction(tab.id, frameId, "restore");
+      break;
+    case TRANSLATE_LEVEL_MENU_ID:
+      void openSelectionTool("translate", tab.id, info.selectionText);
+      break;
+    case SPEAK_MENU_ID:
+      void openSelectionTool("speak", tab.id, info.selectionText);
+      break;
   }
 }
 

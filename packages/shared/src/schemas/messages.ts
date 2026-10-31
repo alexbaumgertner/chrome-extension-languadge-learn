@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ClientErrorCodeSchema } from "./cms";
+import { ClientErrorCodeSchema, isSafeHtmlSubset } from "./cms";
 import {
   ExerciseSchema,
   GermanVariantSchema,
@@ -122,7 +122,78 @@ export const PageActionResponseSchema = z.object({
   hasTranslations: z.boolean(),
 });
 
-/** Every message sent from content/popup/options to the background router. */
+/** Longest fragment a side-panel tool takes from a selection; longer ones are cut. */
+export const SELECTION_MAX_CHARS = 600;
+
+export const SelectionToolSchema = z.enum(["translate", "speak"]);
+
+/**
+ * The selected fragment as the side panel receives it. `id` is new for every menu choice, so the
+ * panel can tell a repeat of the same message from a new choice on the same text.
+ */
+export const SelectionPayloadSchema = z.object({
+  id: z.string().min(1),
+  tool: SelectionToolSchema,
+  text: z.string().min(1).max(SELECTION_MAX_CHARS),
+  /** The selection was longer than SELECTION_MAX_CHARS and `text` is its start. */
+  truncated: z.boolean(),
+});
+
+/** Background → side panel after a menu choice. */
+export const SelectionToolMessageSchema = z.object({
+  type: z.literal("SELECTION_TOOL"),
+  selection: SelectionPayloadSchema,
+});
+
+/** Side panel → background on open: the last choice, in case it was sent before the panel listened. */
+export const GetPendingSelectionRequestSchema = z.object({
+  type: z.literal("GET_PENDING_SELECTION"),
+});
+
+export const GetPendingSelectionResponseSchema = z.object({
+  selection: SelectionPayloadSchema.nullable(),
+});
+
+/** Side panel → background: translate this fragment at the learner's current level. */
+export const TranslateSelectionRequestSchema = z.object({
+  type: z.literal("TRANSLATE_SELECTION"),
+  text: z.string().min(1).max(SELECTION_MAX_CHARS),
+});
+
+export const TranslateSelectionResponseSchema = z.union([
+  z
+    .object({
+      ok: z.literal(true),
+      /** Safe-subset HTML (bare strong/em tags), as in a paragraph variant. */
+      text: z.string().min(1),
+      /** Glossed words, offsets into `text`; ordered, not overlapping. */
+      spans: z.array(
+        z.object({
+          start: z.number().int().nonnegative(),
+          end: z.number().int().positive(),
+          russian: z.string().min(1),
+        }),
+      ),
+    })
+    .refine((res) => isSafeHtmlSubset(res.text), { message: "text must be the safe HTML subset" })
+    .refine(
+      (res) => {
+        let prevEnd = 0;
+        return res.spans.every((s) => {
+          const ok = s.start >= prevEnd && s.start < s.end && s.end <= res.text.length;
+          prevEnd = s.end;
+          return ok;
+        });
+      },
+      { message: "spans must be ordered, non-overlapping and inside the text" },
+    ),
+  z.object({
+    ok: z.literal(false),
+    reason: z.enum(["offline", "unavailable", "limit", "too-long", "failed"]),
+  }),
+]);
+
+/** Every message sent from content/popup/options/side panel to the background router. */
 export const RequestMessageSchema = z.discriminatedUnion("type", [
   TranslateParagraphRequestSchema,
   SubmitExerciseAttemptRequestSchema,
@@ -132,6 +203,8 @@ export const RequestMessageSchema = z.discriminatedUnion("type", [
   ReportBadTranslationRequestSchema,
   TranslationsChangedMessageSchema,
   RecordClientErrorRequestSchema,
+  GetPendingSelectionRequestSchema,
+  TranslateSelectionRequestSchema,
 ]);
 
 /** Every message crossing a chrome.runtime boundary, including the background-originated broadcast. */
@@ -144,6 +217,9 @@ export const AnyMessageSchema = z.discriminatedUnion("type", [
   ReportBadTranslationRequestSchema,
   TranslationsChangedMessageSchema,
   RecordClientErrorRequestSchema,
+  GetPendingSelectionRequestSchema,
+  TranslateSelectionRequestSchema,
   StorageChangedMessageSchema,
   PageActionMessageSchema,
+  SelectionToolMessageSchema,
 ]);
