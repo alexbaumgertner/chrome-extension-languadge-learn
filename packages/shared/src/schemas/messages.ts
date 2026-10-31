@@ -56,6 +56,22 @@ export const SubmitExerciseAttemptResponseSchema = z.object({
   updatedProgress: ProgressProfileSchema,
 });
 
+/**
+ * Options page -> background after a word in the review session was answered. The page grades
+ * locally (no exercise is stored for a review), the background applies the SRS/streak/accuracy
+ * update through the same path as an exercise on a page.
+ */
+export const SubmitReviewAttemptRequestSchema = z.object({
+  type: z.literal("SUBMIT_REVIEW_ATTEMPT"),
+  vocabId: z.string().min(1),
+  correct: z.boolean(),
+});
+
+export const SubmitReviewAttemptResponseSchema = z.object({
+  ok: z.literal(true),
+  updatedProgress: ProgressProfileSchema,
+});
+
 export const GetLearnerSettingsRequestSchema = z.object({
   type: z.literal("GET_LEARNER_SETTINGS"),
 });
@@ -126,6 +142,7 @@ export const PageActionResponseSchema = z.object({
 export const RequestMessageSchema = z.discriminatedUnion("type", [
   TranslateParagraphRequestSchema,
   SubmitExerciseAttemptRequestSchema,
+  SubmitReviewAttemptRequestSchema,
   GetLearnerSettingsRequestSchema,
   SetLearnerSettingsRequestSchema,
   GetProgressSnapshotRequestSchema,
@@ -138,6 +155,7 @@ export const RequestMessageSchema = z.discriminatedUnion("type", [
 export const AnyMessageSchema = z.discriminatedUnion("type", [
   TranslateParagraphRequestSchema,
   SubmitExerciseAttemptRequestSchema,
+  SubmitReviewAttemptRequestSchema,
   GetLearnerSettingsRequestSchema,
   SetLearnerSettingsRequestSchema,
   GetProgressSnapshotRequestSchema,

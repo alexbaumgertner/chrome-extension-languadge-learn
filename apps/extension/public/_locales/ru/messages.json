@@ -112,5 +112,25 @@
     "message": "Изменения действуют на текст, переведённый после сохранения. Уже переведённый текст на странице не меняется."
   },
   "settingsLevel": { "message": "Уровень" },
-  "settingsSaved": { "message": "Сохранено." }
+  "settingsSaved": { "message": "Сохранено." },
+
+  "optionsTabReview": { "message": "Повторение" },
+  "topicReview": { "message": "повторение" },
+  "reviewHeading": { "message": "Повторение" },
+  "reviewNothingDue": { "message": "На сегодня повторять нечего. Возвращайтесь завтра." },
+  "reviewProgress": { "message": "Слово $1 из $2" },
+  "reviewKickerCloze": { "message": "Вставьте слово" },
+  "reviewKickerRecall": { "message": "Вспомните перевод" },
+  "reviewHint": { "message": "Значение: $1" },
+  "reviewShowAnswer": { "message": "Показать перевод" },
+  "reviewKnew": { "message": "Помню" },
+  "reviewForgot": { "message": "Не помню" },
+  "reviewNext": { "message": "Дальше" },
+  "reviewDoneHeading": { "message": "Сессия завершена" },
+  "reviewDoneScore": { "message": "Верно: $1 из $2" },
+  "reviewMore": { "message": "Повторить ещё" },
+  "popupReviewOne": { "message": "Повторить $1 слово" },
+  "popupReviewFew": { "message": "Повторить $1 слова" },
+  "popupReviewMany": { "message": "Повторить $1 слов" },
+  "popupReviewOther": { "message": "Повторить $1 слова" }
 }

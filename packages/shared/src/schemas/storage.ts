@@ -34,6 +34,10 @@ export const VocabularyItemSchema = z.object({
   encounterCount: z.number().int().nonnegative(),
   status: VocabStatusSchema,
   firstEncounteredAt: z.number().int().nonnegative(),
+  /** The German sentence the word was last seen in (at most 200 characters); absent on older records. */
+  contextSentence: z.string().min(1).max(200).optional(),
+  /** The word as it appears in `contextSentence` (an inflected form of `german`). */
+  contextForm: z.string().min(1).max(200).optional(),
 });
 
 export const ReviewQueueEntrySchema = z.object({

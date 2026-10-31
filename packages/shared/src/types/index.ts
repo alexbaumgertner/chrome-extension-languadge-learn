@@ -17,6 +17,8 @@ import type {
   StorageChangedMessageSchema,
   SubmitExerciseAttemptRequestSchema,
   SubmitExerciseAttemptResponseSchema,
+  SubmitReviewAttemptRequestSchema,
+  SubmitReviewAttemptResponseSchema,
   TranslateParagraphRequestSchema,
   TranslateParagraphResponseSchema,
   TranslationsChangedMessageSchema,
@@ -79,6 +81,8 @@ export type ReportBadTranslationRequest = z.infer<typeof ReportBadTranslationReq
 export type ReportBadTranslationResponse = z.infer<typeof ReportBadTranslationResponseSchema>;
 export type SubmitExerciseAttemptRequest = z.infer<typeof SubmitExerciseAttemptRequestSchema>;
 export type SubmitExerciseAttemptResponse = z.infer<typeof SubmitExerciseAttemptResponseSchema>;
+export type SubmitReviewAttemptRequest = z.infer<typeof SubmitReviewAttemptRequestSchema>;
+export type SubmitReviewAttemptResponse = z.infer<typeof SubmitReviewAttemptResponseSchema>;
 export type GetLearnerSettingsRequest = z.infer<typeof GetLearnerSettingsRequestSchema>;
 export type GetLearnerSettingsResponse = z.infer<typeof GetLearnerSettingsResponseSchema>;
 export type SetLearnerSettingsRequest = z.infer<typeof SetLearnerSettingsRequestSchema>;

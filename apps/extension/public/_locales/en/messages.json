@@ -108,5 +108,25 @@
     "message": "Changes apply to text translated after you save — text already translated on the page keeps its current version."
   },
   "settingsLevel": { "message": "Level" },
-  "settingsSaved": { "message": "Saved." }
+  "settingsSaved": { "message": "Saved." },
+
+  "optionsTabReview": { "message": "Review" },
+  "topicReview": { "message": "review" },
+  "reviewHeading": { "message": "Review" },
+  "reviewNothingDue": { "message": "Nothing is due today. Come back tomorrow." },
+  "reviewProgress": { "message": "Word $1 of $2" },
+  "reviewKickerCloze": { "message": "Fill the blank" },
+  "reviewKickerRecall": { "message": "Recall the meaning" },
+  "reviewHint": { "message": "Meaning: $1" },
+  "reviewShowAnswer": { "message": "Show translation" },
+  "reviewKnew": { "message": "I remember" },
+  "reviewForgot": { "message": "I don't remember" },
+  "reviewNext": { "message": "Next" },
+  "reviewDoneHeading": { "message": "Session complete" },
+  "reviewDoneScore": { "message": "Correct: $1 of $2" },
+  "reviewMore": { "message": "Review more words" },
+  "popupReviewOne": { "message": "Review $1 word" },
+  "popupReviewFew": { "message": "Review $1 words" },
+  "popupReviewMany": { "message": "Review $1 words" },
+  "popupReviewOther": { "message": "Review $1 words" }
 }
