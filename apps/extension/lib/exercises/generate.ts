@@ -60,6 +60,14 @@ export function mapCmsExercisesToEntities(
           prompt: { audioSentence: cms.sourceSentence },
           correctAnswer: cms.answer,
         };
+      case "article-choice":
+        return {
+          ...base,
+          kind: "article-choice",
+          sourceSentence: "",
+          prompt: { noun: cms.noun, russian: cms.russian },
+          correctAnswer: cms.article,
+        };
     }
   });
 }

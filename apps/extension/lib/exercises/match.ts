@@ -36,6 +36,9 @@ export function checkExerciseAnswer(exercise: Exercise, submitted: AnswerPayload
     case "fill-blank":
     case "audio-dictation":
       return typeof submitted === "string" && isLenientMatch(submitted, exercise.correctAnswer);
+    case "article-choice":
+      // Exact: the three buttons are the only input, so there is nothing to be lenient about.
+      return submitted === exercise.correctAnswer;
     case "multiple-choice":
       return typeof submitted === "number" && submitted === exercise.correctAnswer;
     case "word-pairing": {

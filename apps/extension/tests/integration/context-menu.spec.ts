@@ -86,7 +86,7 @@ test("a selection across paragraphs translates covered paragraphs whole and exac
   await expect(tab.locator("#three")).toHaveText(/ Absatz wird nur angefangen\.$/);
   await expect(tab.locator("#two .sw-segment")).toHaveCount(0);
   expect(await tab.locator("#four").evaluate((el) => el.outerHTML)).toBe(fourBefore);
-  await expect(tab.locator(".sw-panel .sw-card")).toHaveCount(4);
+  await expect(tab.locator(".sw-panel .sw-card")).toHaveCount(5);
 
   await clickMenu(tab, "restore");
   await expect(tab.locator(".sw-vocab")).toHaveCount(0);

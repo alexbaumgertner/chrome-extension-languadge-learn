@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { isLenientMatch } from "@/lib/exercises/match";
+import type { Exercise } from "@sprachweise/shared";
+import { checkExerciseAnswer, isLenientMatch } from "@/lib/exercises/match";
 
 describe("isLenientMatch", () => {
   it.each([
@@ -27,5 +28,25 @@ describe("isLenientMatch", () => {
 
   it("collapses internal whitespace runs before comparing", () => {
     expect(isLenientMatch("guten   tag", "guten tag")).toBe(true);
+  });
+});
+
+describe("checkExerciseAnswer: article-choice", () => {
+  const exercise: Exercise = {
+    id: "a1",
+    kind: "article-choice",
+    sourceParagraphHash: "h",
+    sourceSentence: "",
+    prompt: { noun: "Riesenrad", russian: "колесо обозрения" },
+    correctAnswer: "das",
+    answered: false,
+    lastAttempt: null,
+  };
+
+  it("accepts only the exact article", () => {
+    expect(checkExerciseAnswer(exercise, "das")).toBe(true);
+    expect(checkExerciseAnswer(exercise, "der")).toBe(false);
+    expect(checkExerciseAnswer(exercise, "DAS")).toBe(false);
+    expect(checkExerciseAnswer(exercise, 2)).toBe(false);
   });
 });

@@ -85,6 +85,8 @@ export const PANEL_CSS = `${DESIGN_CSS}
 
 /* Multiple-choice options and pairing cells: buttons that keep their colours once answered. */
 .sw-options { display: flex; flex-direction: column; gap: 8px; }
+.sw-articles { display: flex; gap: 8px; }
+.sw-articles .sw-choice { flex: 1; justify-content: center; text-align: center; }
 .sw-choice { justify-content: flex-start; text-align: left; font-family: var(--font-body); font-size: 14px; }
 .sw-choice:disabled { opacity: 1; cursor: default; }
 .sw-options .sw-opt:disabled { opacity: .55; }
