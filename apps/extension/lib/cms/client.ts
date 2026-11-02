@@ -3,6 +3,7 @@ import {
   ExercisesRequestSchema,
   ReportRequestSchema,
   ExercisesResponseSchema,
+  ExerciseKindSchema,
   TranslateRequestSchema,
   TranslateResponseSchema,
   type CmsExercise,
@@ -127,7 +128,14 @@ export async function generateExercises(
   level: Level,
   topic: string,
 ): Promise<CmsExercise[]> {
-  const request: CmsExercisesRequest = { variantText, markedVocab, level, topic };
+  // Every kind this build can render; without the list the CMS answers in the v1.0.0 format.
+  const request: CmsExercisesRequest = {
+    variantText,
+    markedVocab,
+    level,
+    topic,
+    supportedKinds: ExerciseKindSchema.options,
+  };
   const response = await postJson(
     "/api/exercises",
     ExercisesRequestSchema,

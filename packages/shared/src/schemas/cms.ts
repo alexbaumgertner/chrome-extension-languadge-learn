@@ -1,5 +1,12 @@
 import { z } from "zod";
-import { InstallIdSchema, LevelSchema, TranslationDensitySchema } from "./storage";
+import {
+  ArticleSchema,
+  ExerciseKindSchema,
+  InstallIdSchema,
+  LevelSchema,
+  MAX_EXERCISES_PER_PARAGRAPH,
+  TranslationDensitySchema,
+} from "./storage";
 
 /**
  * Longest text one translation may send, in `string.length` units. The extension checks a whole
@@ -76,11 +83,30 @@ export const TranslateResponseSchema = z
       "text must be a safe-subset HTML fragment (only bare <strong>/<em>, no attributes, no other elements)",
   });
 
+/**
+ * What a client that does not send `supportedKinds` gets: the four kinds and the cap of extension
+ * v1.0.0, whose response schema rejects the whole set on any other kind or a fifth entry. The CMS
+ * deploys before the store review lets an extension update, so this format is frozen.
+ */
+export const LEGACY_EXERCISE_KINDS = [
+  "fill-blank",
+  "multiple-choice",
+  "word-pairing",
+  "audio-dictation",
+] as const satisfies ReadonlyArray<z.infer<typeof ExerciseKindSchema>>;
+export const LEGACY_MAX_EXERCISES = 4;
+
 export const ExercisesRequestSchema = z.object({
   variantText: z.string().min(1),
   markedVocab: z.array(CmsMarkedVocabSpanSchema),
   level: LevelSchema,
   topic: z.string().min(1),
+  /**
+   * The exercise kinds this client can render. Absent: LEGACY_EXERCISE_KINDS and
+   * LEGACY_MAX_EXERCISES. Plain strings, not ExerciseKindSchema: a newer client may name a kind
+   * this server does not know yet, and the server ignores it instead of failing the request.
+   */
+  supportedKinds: z.array(z.string().min(1).max(64)).max(32).optional(),
 });
 
 const CmsFillBlankExerciseSchema = z.object({
@@ -109,15 +135,24 @@ const CmsAudioDictationExerciseSchema = z.object({
   answer: z.string().min(1),
 });
 
+const CmsArticleChoiceExerciseSchema = z.object({
+  kind: z.literal("article-choice"),
+  /** The noun without its article, e.g. "Riesenrad". */
+  noun: z.string().min(1),
+  article: ArticleSchema,
+  russian: z.string().min(1),
+});
+
 export const CmsExerciseSchema = z.discriminatedUnion("kind", [
   CmsFillBlankExerciseSchema,
   CmsMultipleChoiceExerciseSchema,
   CmsWordPairingExerciseSchema,
   CmsAudioDictationExerciseSchema,
+  CmsArticleChoiceExerciseSchema,
 ]);
 
 export const ExercisesResponseSchema = z.object({
-  exercises: z.array(CmsExerciseSchema).min(0).max(4),
+  exercises: z.array(CmsExerciseSchema).min(0).max(MAX_EXERCISES_PER_PARAGRAPH),
 });
 
 /**

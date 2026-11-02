@@ -1,4 +1,12 @@
-import type { CmsExercise } from "@sprachweise/shared";
+import {
+  ArticleSchema,
+  ExerciseKindSchema,
+  LEGACY_EXERCISE_KINDS,
+  LEGACY_MAX_EXERCISES,
+  type Article,
+  type CmsExercise,
+  type ExerciseKind,
+} from "@sprachweise/shared";
 
 export interface VocabTerm {
   german: string;
@@ -10,6 +18,47 @@ const BLANK = "___";
 const MAX_PAIRS = 5;
 const DICTATION_MIN_WORDS = 3;
 const DICTATION_MAX_WORDS = 12;
+/** How many exercises one paragraph shows at most, however many candidates there are. */
+export const MAX_SHOWN = 5;
+/** A single word may anchor at most this many exercises (pairing is a set and does not count). */
+const MAX_PER_WORD = 2;
+
+/**
+ * Nouns that only exist in the plural. Their article ("die") is not a gender, so asking for it as
+ * der/die/das would teach the wrong thing. The glosses carry no number, so this is a plain list.
+ */
+const PLURAL_ONLY_NOUNS = new Set(
+  [
+    "Leute",
+    "Eltern",
+    "Ferien",
+    "Kosten",
+    "Geschwister",
+    "Möbel",
+    "Lebensmittel",
+    "Zinsen",
+    "Memoiren",
+    "Flitterwochen",
+    "Trümmer",
+    "Unterlagen",
+    "Gliedmaßen",
+    "Ostern",
+    "Weihnachten",
+  ].map((n) => n.toLowerCase()),
+);
+
+const NOUN_LEMMA_RE = /^(der|die|das)\s+(\p{Lu}[\p{L}-]*)$/iu;
+
+/** Splits a lemma like "das Riesenrad"; null for anything that is not a single article + noun. */
+export function parseArticleLemma(
+  lemma: string | undefined,
+): { article: Article; noun: string } | null {
+  const match = lemma ? NOUN_LEMMA_RE.exec(lemma.trim()) : null;
+  const article = ArticleSchema.safeParse(match?.[1]?.toLowerCase());
+  const noun = match?.[2];
+  if (!article.success || !noun || PLURAL_ONLY_NOUNS.has(noun.toLowerCase())) return null;
+  return { article: article.data, noun };
+}
 
 function stripTags(html: string): string {
   return html.replace(/<\/?[a-zA-Z][^>]*>/g, "");
@@ -46,13 +95,72 @@ interface Placed {
   sentence: string;
 }
 
+/** One possible exercise, plus the word it is about (for the per-word cap). */
+interface Candidate {
+  exercise: CmsExercise;
+  word?: string;
+}
+
+/** Which kinds a response may contain and how many entries, for one client. */
+export interface ExercisePolicy {
+  kinds: ReadonlySet<ExerciseKind>;
+  max: number;
+}
+
 /**
- * Builds up to four exercises from a translated paragraph without any model call: word pairing
- * from the glossed vocabulary, a fill-the-blank (with the Russian meaning as the hint), a multiple
- * choice when there are enough terms for distractors, and a dictation sentence. Deterministic for
- * a given input. A paragraph too short for a kind just yields fewer exercises.
+ * The policy for a request's `supportedKinds`. Absent: exactly what extension v1.0.0 parses
+ * (LEGACY_EXERCISE_KINDS, at most LEGACY_MAX_EXERCISES). Present: the declared kinds this server
+ * knows, unknown names ignored, at most MAX_SHOWN.
  */
-export function generateExercises(variantText: string, markedVocab: VocabTerm[]): CmsExercise[] {
+export function exercisePolicy(supportedKinds: readonly string[] | undefined): ExercisePolicy {
+  if (supportedKinds === undefined) {
+    return { kinds: new Set(LEGACY_EXERCISE_KINDS), max: LEGACY_MAX_EXERCISES };
+  }
+  const known = supportedKinds.filter(
+    (k): k is ExerciseKind => ExerciseKindSchema.safeParse(k).success,
+  );
+  return { kinds: new Set(known), max: MAX_SHOWN };
+}
+
+/** Every kind this server builds; the default for callers that do not negotiate. */
+const ALL_KINDS: ExercisePolicy = { kinds: new Set(ExerciseKindSchema.options), max: MAX_SHOWN };
+
+/**
+ * Picks the exercises to show from all candidates, in candidate order. Rules: only kinds the
+ * policy allows, at most one per kind, at most MAX_PER_WORD per word, at most policy.max overall.
+ * The caller orders candidates, so the result is as deterministic as the input.
+ */
+export function selectExercises(
+  candidates: Candidate[],
+  policy: ExercisePolicy = ALL_KINDS,
+): CmsExercise[] {
+  const kinds = new Set<string>();
+  const perWord = new Map<string, number>();
+  const chosen: CmsExercise[] = [];
+  for (const { exercise, word } of candidates) {
+    if (chosen.length >= policy.max) break;
+    if (!policy.kinds.has(exercise.kind) || kinds.has(exercise.kind)) continue;
+    if (word !== undefined && (perWord.get(word) ?? 0) >= MAX_PER_WORD) continue;
+    kinds.add(exercise.kind);
+    if (word !== undefined) perWord.set(word, (perWord.get(word) ?? 0) + 1);
+    chosen.push(exercise);
+  }
+  return chosen;
+}
+
+/**
+ * Builds the exercises for a translated paragraph without any model call. All candidates are
+ * built first: word pairing from the glossed vocabulary, a fill-the-blank (with the Russian
+ * meaning as the hint), a multiple choice when there are enough terms for distractors, a dictation
+ * sentence, and der/die/das for the nouns. selectExercises then keeps the ones the client's policy
+ * allows, at most policy.max. Deterministic for a given input (the noun is picked by a hash of the
+ * text). A paragraph too short for a kind just yields fewer exercises.
+ */
+export function generateExercises(
+  variantText: string,
+  markedVocab: VocabTerm[],
+  policy: ExercisePolicy = ALL_KINDS,
+): CmsExercise[] {
   const sentences = splitSentences(stripTags(variantText));
 
   const terms: VocabTerm[] = [];
@@ -66,28 +174,34 @@ export function generateExercises(variantText: string, markedVocab: VocabTerm[])
     if (sentence) placed.push({ term, sentence });
   }
 
-  const exercises: CmsExercise[] = [];
+  const candidates: Candidate[] = [];
+  const lemmaOf = (t: VocabTerm): string => (t.lemma ?? t.german).toLowerCase();
 
   if (terms.length >= 2) {
-    exercises.push({
-      kind: "word-pairing",
-      // Pairing teaches the dictionary form; blanks below use the in-text form.
-      pairs: terms
-        .slice(0, MAX_PAIRS)
-        .map(({ german, lemma, russian }) => ({ german: lemma ?? german, russian })),
+    candidates.push({
+      exercise: {
+        kind: "word-pairing",
+        // Pairing teaches the dictionary form; blanks below use the in-text form.
+        pairs: terms
+          .slice(0, MAX_PAIRS)
+          .map(({ german, lemma, russian }) => ({ german: lemma ?? german, russian })),
+      },
     });
   }
 
   const fill = placed[0];
   if (fill) {
-    exercises.push({
-      kind: "fill-blank",
-      sourceSentence: fill.sentence,
-      blankedSentence: fill.sentence.replace(
-        wholeWord(fill.term.german),
-        `${BLANK} (${fill.term.russian})`,
-      ),
-      answer: fill.term.german,
+    candidates.push({
+      word: lemmaOf(fill.term),
+      exercise: {
+        kind: "fill-blank",
+        sourceSentence: fill.sentence,
+        blankedSentence: fill.sentence.replace(
+          wholeWord(fill.term.german),
+          `${BLANK} (${fill.term.russian})`,
+        ),
+        answer: fill.term.german,
+      },
     });
   }
 
@@ -101,12 +215,15 @@ export function generateExercises(variantText: string, markedVocab: VocabTerm[])
     const options = [choice.term.german, ...distractors].sort(
       (a, b) => hash(`${choice.sentence}${a}`) - hash(`${choice.sentence}${b}`),
     );
-    exercises.push({
-      kind: "multiple-choice",
-      sourceSentence: choice.sentence,
-      blankedSentence: choice.sentence.replace(wholeWord(choice.term.german), BLANK),
-      options,
-      correctIndex: options.indexOf(choice.term.german),
+    candidates.push({
+      word: lemmaOf(choice.term),
+      exercise: {
+        kind: "multiple-choice",
+        sourceSentence: choice.sentence,
+        blankedSentence: choice.sentence.replace(wholeWord(choice.term.german), BLANK),
+        options,
+        correctIndex: options.indexOf(choice.term.german),
+      },
     });
   }
 
@@ -117,8 +234,34 @@ export function generateExercises(variantText: string, markedVocab: VocabTerm[])
     })
     .sort((a, b) => wordCount(a) - wordCount(b))[0];
   if (dictation) {
-    exercises.push({ kind: "audio-dictation", sourceSentence: dictation, answer: dictation });
+    candidates.push({
+      exercise: { kind: "audio-dictation", sourceSentence: dictation, answer: dictation },
+    });
   }
 
-  return exercises;
+  // Nouns not yet anchoring another exercise come first; within a tier a hash of the text decides.
+  const usedWords = new Set(candidates.map((c) => c.word));
+  const nouns: Array<Candidate & { word: string }> = [];
+  for (const term of terms) {
+    const parsed = parseArticleLemma(term.lemma);
+    const word = lemmaOf(term);
+    if (!parsed || nouns.some((n) => n.word === word)) continue;
+    nouns.push({
+      word,
+      exercise: {
+        kind: "article-choice",
+        noun: parsed.noun,
+        article: parsed.article,
+        russian: term.russian,
+      },
+    });
+  }
+  nouns.sort(
+    (a, b) =>
+      Number(usedWords.has(a.word)) - Number(usedWords.has(b.word)) ||
+      hash(`${variantText}${a.word}`) - hash(`${variantText}${b.word}`),
+  );
+  candidates.push(...nouns);
+
+  return selectExercises(candidates, policy);
 }
