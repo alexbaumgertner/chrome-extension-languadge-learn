@@ -3,21 +3,43 @@ import { PageActionResponseSchema, type PageActionMessage } from "@sprachweise/s
 /** WXT's build output path for `entrypoints/content/index.tsx`. */
 const CONTENT_SCRIPT_FILE = "content-scripts/content.js";
 
+export const TOOLS_MENU_ID = "sprachweise-tools";
 export const TRANSLATE_MENU_ID = "sprachweise-translate";
+export const TRANSLATE_LEVEL_MENU_ID = "sprachweise-translate-level";
+export const SPEAK_MENU_ID = "sprachweise-speak";
 export const RESTORE_MENU_ID = "sprachweise-restore";
 export const TRANSLATE_COMMAND = "translate-selection";
 
 /**
- * Both items are created on install/update (Chrome keeps them across service-worker restarts).
- * "Translate" shows only on a selection. "Restore original" uses the plain "page" context, so a
- * right-click on a selection never shows both items — Chrome would fold two items into a
- * "Sprachweise" submenu — and it stays hidden until the active tab has a translation.
+ * The items are created on install/update (Chrome keeps them across service-worker restarts).
+ * On a selection there is one parent, "Sprachweise", with the in-page translation and the two
+ * side-panel tools under it; later tools (explain, rewrite, ...) are further children.
+ * "Restore original" uses the plain "page" context, so a right-click on a selection never shows
+ * it next to the parent, and it stays hidden until the active tab has a translation.
  */
 export async function createContextMenus(): Promise<void> {
   await chrome.contextMenus.removeAll();
   chrome.contextMenus.create({
+    id: TOOLS_MENU_ID,
+    title: chrome.i18n.getMessage("extName"),
+    contexts: ["selection"],
+  });
+  chrome.contextMenus.create({
     id: TRANSLATE_MENU_ID,
+    parentId: TOOLS_MENU_ID,
     title: chrome.i18n.getMessage("menuTranslate"),
+    contexts: ["selection"],
+  });
+  chrome.contextMenus.create({
+    id: TRANSLATE_LEVEL_MENU_ID,
+    parentId: TOOLS_MENU_ID,
+    title: chrome.i18n.getMessage("menuTranslateLevel"),
+    contexts: ["selection"],
+  });
+  chrome.contextMenus.create({
+    id: SPEAK_MENU_ID,
+    parentId: TOOLS_MENU_ID,
+    title: chrome.i18n.getMessage("menuSpeak"),
     contexts: ["selection"],
   });
   chrome.contextMenus.create({

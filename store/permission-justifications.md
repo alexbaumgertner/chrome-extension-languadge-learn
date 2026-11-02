@@ -1,7 +1,7 @@
 # Permission justifications
 
 Source of truth: the production manifest built from `apps/extension/wxt.config.ts`
-(`wxt build` → `.output/chrome-mv3/manifest.json`). It requests exactly four permissions and no
+(`wxt build` → `.output/chrome-mv3/manifest.json`). It requests exactly five permissions and no
 hosts. Paste each paragraph into the matching field of Privacy practices in the dashboard.
 (`store/permissions.json` holds the same justifications in the form the release workflow reads; keep
 the two in step.)
@@ -16,10 +16,18 @@ the extension.
 
 ## `contextMenus`
 
-Adds two right-click items: "Translate to German (Sprachweise)", shown only when text is selected,
-and "Restore original text (Sprachweise)", shown only while the current tab displays a translation.
-Choosing the translate item is how the user starts every translation; no page content is read and no
+Adds a "Sprachweise" submenu to the right-click menu, shown only when text is selected, with
+"Translate to German (Sprachweise)", "Translate to my level" and "Read aloud", and a separate
+"Restore original text (Sprachweise)" item, shown only while the current tab displays a translation.
+Choosing an item is how the user starts every translation or tool; no page content is read and no
 text is sent before that.
+
+## `sidePanel`
+
+Shows the result of "Translate to my level" and "Read aloud" in Chrome's side panel, which is an
+extension page. It is opened with `chrome.sidePanel.open` from the user's menu click. The panel
+reads nothing from the page and the page is not changed; it receives only the text the user
+selected. Declaring `sidePanel` shows no install or update warning.
 
 ## `activeTab`
 

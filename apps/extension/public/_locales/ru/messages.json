@@ -5,6 +5,16 @@
   },
   "menuTranslate": { "message": "Перевести на немецкий (Sprachweise)" },
   "menuRestore": { "message": "Вернуть исходный текст (Sprachweise)" },
+  "menuTranslateLevel": { "message": "Перевести на мой уровень" },
+  "menuSpeak": { "message": "Озвучить" },
+  "sideEmpty": {
+    "message": "Выделите текст на странице, нажмите правой кнопкой мыши, выберите Sprachweise и нужный инструмент."
+  },
+  "sideOriginal": { "message": "Выделенный текст" },
+  "sideTranslated": { "message": "На вашем уровне" },
+  "sideTruncated": { "message": "Выделение длиннее $1 знаков, взято только начало." },
+  "sideTapWord": { "message": "Нажмите на подсвеченное слово, чтобы увидеть перевод." },
+  "sideNoSpeech": { "message": "Этот браузер не умеет озвучивать текст." },
   "commandTranslate": { "message": "Перевести выделенный текст на немецкий" },
 
   "popupHowto": {

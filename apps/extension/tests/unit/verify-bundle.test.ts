@@ -10,7 +10,7 @@ const API = "https://example.test";
 const manifest = {
   manifest_version: 3,
   version: "1.2.3",
-  permissions: ["storage", "activeTab", "scripting", "contextMenus"],
+  permissions: ["storage", "activeTab", "scripting", "contextMenus", "sidePanel"],
   commands: { "translate-selection": { suggested_key: { default: "Alt+Shift+G" } } },
   icons: { "128": "icon/128.png" },
 };

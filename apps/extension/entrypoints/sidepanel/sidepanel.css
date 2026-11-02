@@ -1,0 +1,72 @@
+/* The side panel for selection tools. Uses the design tokens; the panel is as wide as Chrome makes it. */
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+.side-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.side-title {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 17px;
+  line-height: 1.2;
+  margin: 0 auto 0 0;
+  letter-spacing: 0;
+}
+.side-empty,
+.side-note {
+  margin: 0;
+  font-size: 14px;
+  color: color-mix(in srgb, var(--color-text) 65%, transparent);
+}
+.side-text {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.side-german {
+  font-size: 17px;
+}
+.sp-word {
+  background: var(--color-accent-200);
+  color: var(--color-accent-900);
+  border-radius: 6px;
+  padding: 0 5px;
+  box-shadow: inset 0 -2px 0 var(--color-accent-400);
+  cursor: pointer;
+}
+.side-gloss {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+.side-gloss-sep::before {
+  content: "\2013";
+}
+.side-error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-accent-100);
+  color: var(--color-accent-900);
+}
+.side-error p {
+  margin: 0;
+}
+.side-actions {
+  display: flex;
+}

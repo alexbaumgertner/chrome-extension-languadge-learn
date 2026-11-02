@@ -4,8 +4,8 @@
  * stores (src/db.ts) and for how long (RETENTION_DAYS, the write-once translation cache). Gemini's
  * and Vercel's handling is linked, not paraphrased.
  */
-const UPDATED_RU = "23 октября 2026";
-const UPDATED_EN = "23 October 2026";
+const UPDATED_RU = "25 октября 2026";
+const UPDATED_EN = "25 October 2026";
 const CONTACT = "alex.baumgertner+sprachweise@gmail.com";
 
 const GEMINI_TERMS = "https://ai.google.dev/gemini-api/terms";
@@ -31,6 +31,11 @@ const RU = `
 расширения. Отправляется только выделенный текст (если выделен уже переведённый текст — исходный
 текст этого абзаца); за один раз — не больше 1500 знаков. До вашего выбора расширение не видит страницу и не отправляет ни текста, ни адресов (единственное исключение — событие установки, см. «Метрики использования»). Адрес
 страницы и остальной текст страницы не отправляются.</li>
+<li><strong>Учебные инструменты над выделением.</strong> Если вы выбрали в меню «Sprachweise» пункт
+«Перевести на мой уровень», выделенный текст (не больше 600 знаков) и ваш уровень отправляются на
+сервер так же, как при обычном переводе, а результат показывается на боковой панели Chrome. Пункт
+«Озвучить» ничего не отправляет: текст читает встроенный синтез речи браузера. Адрес страницы не
+отправляется ни в одном из случаев.</li>
 <li><strong>Текст для упражнений.</strong> После перевода расширение отправляет на наш сервер полученный
 немецкий текст, подсвеченные слова с русскими подсказками и уровень, чтобы собрать упражнения. Это
 вычисление на нашем сервере: Google Gemini для упражнений не вызывается, идентификатор установки не
@@ -88,8 +93,9 @@ IP-адреса в свою базу, и журналы нашего прило�
 требования Limited Use.</p>
 
 <h2>Разрешения расширения</h2>
-<p><code>contextMenus</code> — пункты «Перевести на немецкий» и «Вернуть исходный текст» в меню
-правой кнопки; <code>activeTab</code> — временный доступ к текущей вкладке, который Chrome даёт только
+<p><code>contextMenus</code> — подменю «Sprachweise» («Перевести на немецкий», «Перевести на мой уровень», «Озвучить») и пункт «Вернуть исходный текст» в меню
+правой кнопки; <code>sidePanel</code> — боковая панель Chrome, где показываются результаты
+двух последних пунктов (страницу она не читает); <code>activeTab</code> — временный доступ к текущей вкладке, который Chrome даёт только
 в момент, когда вы выбрали пункт меню или нажали сочетание клавиш расширения; <code>scripting</code> —
 запустить расширение в этой вкладке в этот момент; <code>storage</code> — хранить ваши данные
 локально. Постоянного доступа к сайтам у расширения нет.</p>
@@ -116,6 +122,11 @@ choose "Translate to German (Sprachweise)" from the right-click menu or press th
 keyboard shortcut. Only the selected text is sent (for text already shown in German, the original
 text of that paragraph); at most 1,500 characters at a time. Until you make that choice the extension cannot see the page and
 sends no text and no addresses (the one exception is the install event, see "Usage metrics"). The page address and the rest of the page are not sent.</li>
+<li><strong>Study tools on a selection.</strong> If you choose "Translate to my level" under
+"Sprachweise" in the menu, the selected text (at most 600 characters) and your level are sent to the
+server the same way as for a normal translation, and the result is shown in Chrome's side panel.
+"Read aloud" sends nothing: the browser's built-in speech synthesis reads the text. The page address
+is never sent in either case.</li>
 <li><strong>Text for exercises.</strong> After a translation the extension sends our server the German
 text it received, the highlighted words with their Russian glosses and the level, so the server can build
 the exercises. This is computed on our server: Google Gemini is not called for exercises, the install ID
@@ -172,8 +183,9 @@ not sell data or use it for advertising. The use of information received by the 
 the ${link(CWS_POLICY, "Chrome Web Store User Data Policy")}, including the Limited Use requirements.</p>
 
 <h2>Extension permissions</h2>
-<p><code>contextMenus</code> adds "Translate to German" and "Restore original text" to the right-click
-menu; <code>activeTab</code> is temporary access to the current tab that Chrome grants only at the
+<p><code>contextMenus</code> adds the "Sprachweise" submenu ("Translate to German", "Translate to my
+level", "Read aloud") and "Restore original text" to the right-click menu; <code>sidePanel</code> is
+Chrome's side panel, where the last two items show their result (it reads no page); <code>activeTab</code> is temporary access to the current tab that Chrome grants only at the
 moment you choose one of those items or press the extension's keyboard shortcut;
 <code>scripting</code> starts the extension in that tab at that moment; <code>storage</code> keeps
 your data locally. The extension has no standing access to any website.</p>

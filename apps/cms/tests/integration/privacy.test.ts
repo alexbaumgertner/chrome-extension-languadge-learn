@@ -25,6 +25,10 @@ describe("GET /privacy", () => {
       // The exercises request carries derived text, so the policy says so.
       "Text for exercises",
       "Текст для упражнений",
+      // The side-panel study tools are a purpose of their own.
+      "Study tools on a selection",
+      "Учебные инструменты над выделением",
+      "<code>sidePanel</code>",
     ]) {
       expect(html).toContain(phrase);
     }
