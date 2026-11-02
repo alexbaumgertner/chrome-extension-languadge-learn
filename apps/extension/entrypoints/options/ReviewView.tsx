@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import type { GetProgressSnapshotResponse } from "@sprachweise/shared";
+import type { GetProgressSnapshotResponse, SubmitReviewAttemptResponse } from "@sprachweise/shared";
 import { sendMessage } from "@/lib/messaging/send";
 import { formatLocalDate } from "@/lib/srs/scheduler";
 import {
@@ -85,8 +85,18 @@ export default function ReviewView() {
   );
 }
 
-function submitResult(vocabId: string, correct: boolean): Promise<unknown> {
-  return sendMessage({ type: "SUBMIT_REVIEW_ATTEMPT", vocabId, correct });
+/** True only when the background confirmed the answer is stored. */
+async function submitResult(vocabId: string, correct: boolean): Promise<boolean> {
+  try {
+    const response = await sendMessage<SubmitReviewAttemptResponse | undefined>({
+      type: "SUBMIT_REVIEW_ATTEMPT",
+      vocabId,
+      correct,
+    });
+    return response?.ok === true;
+  } catch {
+    return false;
+  }
 }
 
 function ReviewCard({
@@ -100,10 +110,43 @@ function ReviewCard({
   const [result, setResult] = useState<boolean | null>(null);
   const [typed, setTyped] = useState("");
   const [revealed, setRevealed] = useState(false);
+  // "Next" waits for the stored answer, so the next card never races this one's write.
+  const [save, setSave] = useState<"saving" | "saved" | "failed">("saving");
+
+  function send(correct: boolean): void {
+    setSave("saving");
+    void submitResult(exercise.vocabId, correct).then((ok) => setSave(ok ? "saved" : "failed"));
+  }
 
   function answer(correct: boolean): void {
     setResult(correct);
-    void submitResult(exercise.vocabId, correct);
+    send(correct);
+  }
+
+  function nextControls(correct: boolean) {
+    return (
+      <>
+        {save === "failed" && (
+          <p role="alert" className="card-meta">
+            {t("reviewSaveFailed")}
+          </p>
+        )}
+        {save === "failed" ? (
+          <button className="btn btn-primary" type="button" onClick={() => send(correct)}>
+            {t("reviewRetry")}
+          </button>
+        ) : (
+          <button
+            className="btn btn-primary"
+            type="button"
+            disabled={save !== "saved"}
+            onClick={() => onNext(correct)}
+          >
+            {t("reviewNext")}
+          </button>
+        )}
+      </>
+    );
   }
 
   if (exercise.kind === "cloze") {
@@ -136,9 +179,7 @@ function ReviewCard({
             <p role="status" className="card-body">
               {result ? t("exerciseCorrect") : t("fillBlankWrong", exercise.answer)}
             </p>
-            <button className="btn btn-primary" type="button" onClick={() => onNext(result)}>
-              {t("reviewNext")}
-            </button>
+            {nextControls(result)}
           </>
         )}
       </form>
@@ -166,9 +207,7 @@ function ReviewCard({
       ) : (
         <>
           <p className="card-body">{exercise.russian}</p>
-          <button className="btn btn-primary" onClick={() => onNext(result)}>
-            {t("reviewNext")}
-          </button>
+          {nextControls(result)}
         </>
       )}
     </div>

@@ -25,6 +25,20 @@ export const DEFAULT_PROGRESS_PROFILE: ProgressProfile = {
   solvedTodayCount: 0,
 };
 
+/**
+ * Every read-modify-write of the vocabulary / review queue / profile runs through
+ * this chain, one at a time: two overlapping writers would each read the same
+ * snapshot and the later write would drop the earlier one's changes. A failed
+ * task rejects its own caller but never blocks the ones queued behind it.
+ */
+let writeChain: Promise<unknown> = Promise.resolve();
+
+function serialized<T>(task: () => Promise<T>): Promise<T> {
+  const run = writeChain.then(task, task);
+  writeChain = run.catch(() => undefined);
+  return run;
+}
+
 export async function getAllVocabulary(): Promise<Record<string, VocabularyItem>> {
   const stored = await chrome.storage.local.get(VOCABULARY_KEY);
   const raw = stored[VOCABULARY_KEY];
@@ -35,9 +49,11 @@ export async function getAllVocabulary(): Promise<Record<string, VocabularyItem>
 
 export async function upsertVocabularyItem(item: VocabularyItem): Promise<void> {
   const validated = VocabularyItemSchema.parse(item);
-  const vocab = await getAllVocabulary();
-  vocab[validated.id] = validated;
-  await chrome.storage.local.set({ [VOCABULARY_KEY]: vocab });
+  await serialized(async () => {
+    const vocab = await getAllVocabulary();
+    vocab[validated.id] = validated;
+    await chrome.storage.local.set({ [VOCABULARY_KEY]: vocab });
+  });
 }
 
 export async function getAllReviewQueue(): Promise<Record<string, ReviewQueueEntry>> {
@@ -50,9 +66,11 @@ export async function getAllReviewQueue(): Promise<Record<string, ReviewQueueEnt
 
 export async function upsertReviewQueueEntry(entry: ReviewQueueEntry): Promise<void> {
   const validated = ReviewQueueEntrySchema.parse(entry);
-  const queue = await getAllReviewQueue();
-  queue[validated.vocabId] = validated;
-  await chrome.storage.local.set({ [REVIEW_QUEUE_KEY]: queue });
+  await serialized(async () => {
+    const queue = await getAllReviewQueue();
+    queue[validated.vocabId] = validated;
+    await chrome.storage.local.set({ [REVIEW_QUEUE_KEY]: queue });
+  });
 }
 
 export async function getProgressProfile(): Promise<ProgressProfile> {
@@ -82,7 +100,11 @@ export interface RecordAttemptInput {
  * one atomic pass, returning the fresh Progress Profile (messaging-contract.md
  * SUBMIT_EXERCISE_ATTEMPT response).
  */
-export async function recordAttempt(attempt: RecordAttemptInput): Promise<ProgressProfile> {
+export function recordAttempt(attempt: RecordAttemptInput): Promise<ProgressProfile> {
+  return serialized(() => applyAttempt(attempt));
+}
+
+async function applyAttempt(attempt: RecordAttemptInput): Promise<ProgressProfile> {
   const today = formatLocalDate(new Date(attempt.timestamp));
 
   const vocab = await getAllVocabulary();

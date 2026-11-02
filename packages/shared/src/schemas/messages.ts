@@ -67,10 +67,10 @@ export const SubmitReviewAttemptRequestSchema = z.object({
   correct: z.boolean(),
 });
 
-export const SubmitReviewAttemptResponseSchema = z.object({
-  ok: z.literal(true),
-  updatedProgress: ProgressProfileSchema,
-});
+export const SubmitReviewAttemptResponseSchema = z.discriminatedUnion("ok", [
+  z.object({ ok: z.literal(true), updatedProgress: ProgressProfileSchema }),
+  z.object({ ok: z.literal(false) }),
+]);
 
 export const GetLearnerSettingsRequestSchema = z.object({
   type: z.literal("GET_LEARNER_SETTINGS"),

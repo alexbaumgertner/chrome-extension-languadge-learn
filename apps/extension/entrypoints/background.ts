@@ -196,13 +196,18 @@ async function handleSubmitReviewAttempt(
   message: Extract<RequestMessage, { type: "SUBMIT_REVIEW_ATTEMPT" }>,
 ): Promise<SubmitReviewAttemptResponse> {
   void recordEvent({ name: "exercise_completed" });
-  const updatedProgress = await recordAttempt({
-    correct: message.correct,
-    affectedVocabIds: [message.vocabId],
-    topic: REVIEW_TOPIC,
-    timestamp: Date.now(),
-  });
-  return { ok: true, updatedProgress };
+  try {
+    const updatedProgress = await recordAttempt({
+      correct: message.correct,
+      affectedVocabIds: [message.vocabId],
+      topic: REVIEW_TOPIC,
+      timestamp: Date.now(),
+    });
+    return { ok: true, updatedProgress };
+  } catch (error) {
+    console.error("Sprachweise: recording a review attempt failed", error);
+    return { ok: false };
+  }
 }
 
 /**

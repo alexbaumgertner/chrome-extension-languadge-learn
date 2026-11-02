@@ -126,6 +126,8 @@
   "reviewKnew": { "message": "Помню" },
   "reviewForgot": { "message": "Не помню" },
   "reviewNext": { "message": "Дальше" },
+  "reviewSaveFailed": { "message": "Не удалось сохранить ответ. Попробуйте ещё раз." },
+  "reviewRetry": { "message": "Повторить" },
   "reviewDoneHeading": { "message": "Сессия завершена" },
   "reviewDoneScore": { "message": "Верно: $1 из $2" },
   "reviewMore": { "message": "Повторить ещё" },

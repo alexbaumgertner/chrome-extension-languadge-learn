@@ -122,6 +122,8 @@
   "reviewKnew": { "message": "I remember" },
   "reviewForgot": { "message": "I don't remember" },
   "reviewNext": { "message": "Next" },
+  "reviewSaveFailed": { "message": "Could not save your answer. Try again." },
+  "reviewRetry": { "message": "Retry" },
   "reviewDoneHeading": { "message": "Session complete" },
   "reviewDoneScore": { "message": "Correct: $1 of $2" },
   "reviewMore": { "message": "Review more words" },
