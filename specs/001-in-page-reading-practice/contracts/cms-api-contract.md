@@ -23,8 +23,14 @@ A response failing schema validation is treated identically to a network failure
 
 Request body:
 ```
-{ variantText: string, markedVocab: [...], level: Level, topic: string }
+{ variantText: string, markedVocab: [...], level: Level, topic: string, supportedKinds?: string[] }
 ```
+`supportedKinds` lists the exercise kinds the client can render (the extension sends every kind it
+was built with). Without it the response is exactly the v1.0.0 format below: the four original
+kinds and at most 4 entries, because v1.0.0 rejects the whole response on anything else and the
+CMS deploys before a store update reaches installed extensions. With it, the CMS returns only the
+declared kinds it knows (unknown names are ignored) and up to 5 entries. Anything that caches
+responses must key on the declared kinds too.
 Response body:
 ```
 {
@@ -33,10 +39,12 @@ Response body:
     | { kind: 'multiple-choice'; sourceSentence: string; blankedSentence: string; options: string[]; correctIndex: number }
     | { kind: 'word-pairing'; pairs: Array<{ german: string; russian: string }> }
     | { kind: 'audio-dictation'; sourceSentence: string; answer: string }
+    // only when declared in supportedKinds:
+    | { kind: 'article-choice'; noun: string; article: 'der' | 'die' | 'das'; russian: string }
   >
 }
 ```
-Constraints: 0–4 entries; the CMS (or background, post-validation) omits kinds it cannot construct from short/low-vocabulary paragraphs rather than returning a malformed entry (Edge Case).
+Constraints: 0–4 entries without `supportedKinds`, 0–5 with it (the schema allows up to 6); the CMS (or background, post-validation) omits kinds it cannot construct from short/low-vocabulary paragraphs rather than returning a malformed entry (Edge Case).
 
 ## POST /api/tts
 

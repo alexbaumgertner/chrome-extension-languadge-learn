@@ -389,6 +389,16 @@ describe("cms schemas", () => {
     expect(ExerciseSetSchema.safeParse(legacy).success).toBe(true);
   });
 
+  it("ExercisesRequest takes supportedKinds as optional strings, including unknown kinds", () => {
+    const base = { variantText: "Ich.", markedVocab: [], level: "A1-A2", topic: "general" };
+    expect(ExercisesRequestSchema.parse(base).supportedKinds).toBeUndefined();
+    const kinds = ["article-choice", "a-kind-from-a-newer-client"];
+    expect(ExercisesRequestSchema.parse({ ...base, supportedKinds: kinds }).supportedKinds).toEqual(
+      kinds,
+    );
+    expect(ExercisesRequestSchema.safeParse({ ...base, supportedKinds: [""] }).success).toBe(false);
+  });
+
   it("ExercisesResponse accepts zero exercises", () => {
     const fixture = { exercises: [] };
     expect(ExercisesResponseSchema.parse(fixture)).toEqual(fixture);

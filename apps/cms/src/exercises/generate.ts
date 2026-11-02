@@ -1,4 +1,12 @@
-import { ArticleSchema, type Article, type CmsExercise } from "@sprachweise/shared";
+import {
+  ArticleSchema,
+  ExerciseKindSchema,
+  LEGACY_EXERCISE_KINDS,
+  LEGACY_MAX_EXERCISES,
+  type Article,
+  type CmsExercise,
+  type ExerciseKind,
+} from "@sprachweise/shared";
 
 export interface VocabTerm {
   german: string;
@@ -93,18 +101,45 @@ interface Candidate {
   word?: string;
 }
 
+/** Which kinds a response may contain and how many entries, for one client. */
+export interface ExercisePolicy {
+  kinds: ReadonlySet<ExerciseKind>;
+  max: number;
+}
+
 /**
- * Picks the exercises to show from all candidates, in candidate order. Rules: at most one per
- * kind, at most MAX_PER_WORD per word, at most MAX_SHOWN overall. The caller orders candidates, so
- * the result is as deterministic as the input.
+ * The policy for a request's `supportedKinds`. Absent: exactly what extension v1.0.0 parses
+ * (LEGACY_EXERCISE_KINDS, at most LEGACY_MAX_EXERCISES). Present: the declared kinds this server
+ * knows, unknown names ignored, at most MAX_SHOWN.
  */
-export function selectExercises(candidates: Candidate[]): CmsExercise[] {
+export function exercisePolicy(supportedKinds: readonly string[] | undefined): ExercisePolicy {
+  if (supportedKinds === undefined) {
+    return { kinds: new Set(LEGACY_EXERCISE_KINDS), max: LEGACY_MAX_EXERCISES };
+  }
+  const known = supportedKinds.filter(
+    (k): k is ExerciseKind => ExerciseKindSchema.safeParse(k).success,
+  );
+  return { kinds: new Set(known), max: MAX_SHOWN };
+}
+
+/** Every kind this server builds; the default for callers that do not negotiate. */
+const ALL_KINDS: ExercisePolicy = { kinds: new Set(ExerciseKindSchema.options), max: MAX_SHOWN };
+
+/**
+ * Picks the exercises to show from all candidates, in candidate order. Rules: only kinds the
+ * policy allows, at most one per kind, at most MAX_PER_WORD per word, at most policy.max overall.
+ * The caller orders candidates, so the result is as deterministic as the input.
+ */
+export function selectExercises(
+  candidates: Candidate[],
+  policy: ExercisePolicy = ALL_KINDS,
+): CmsExercise[] {
   const kinds = new Set<string>();
   const perWord = new Map<string, number>();
   const chosen: CmsExercise[] = [];
   for (const { exercise, word } of candidates) {
-    if (chosen.length >= MAX_SHOWN) break;
-    if (kinds.has(exercise.kind)) continue;
+    if (chosen.length >= policy.max) break;
+    if (!policy.kinds.has(exercise.kind) || kinds.has(exercise.kind)) continue;
     if (word !== undefined && (perWord.get(word) ?? 0) >= MAX_PER_WORD) continue;
     kinds.add(exercise.kind);
     if (word !== undefined) perWord.set(word, (perWord.get(word) ?? 0) + 1);
@@ -117,11 +152,15 @@ export function selectExercises(candidates: Candidate[]): CmsExercise[] {
  * Builds the exercises for a translated paragraph without any model call. All candidates are
  * built first: word pairing from the glossed vocabulary, a fill-the-blank (with the Russian
  * meaning as the hint), a multiple choice when there are enough terms for distractors, a dictation
- * sentence, and der/die/das for the nouns. selectExercises then keeps at most MAX_SHOWN of them.
- * Deterministic for a given input (the noun is picked by a hash of the text). A paragraph too
- * short for a kind just yields fewer exercises.
+ * sentence, and der/die/das for the nouns. selectExercises then keeps the ones the client's policy
+ * allows, at most policy.max. Deterministic for a given input (the noun is picked by a hash of the
+ * text). A paragraph too short for a kind just yields fewer exercises.
  */
-export function generateExercises(variantText: string, markedVocab: VocabTerm[]): CmsExercise[] {
+export function generateExercises(
+  variantText: string,
+  markedVocab: VocabTerm[],
+  policy: ExercisePolicy = ALL_KINDS,
+): CmsExercise[] {
   const sentences = splitSentences(stripTags(variantText));
 
   const terms: VocabTerm[] = [];
@@ -224,5 +263,5 @@ export function generateExercises(variantText: string, markedVocab: VocabTerm[])
   );
   candidates.push(...nouns);
 
-  return selectExercises(candidates);
+  return selectExercises(candidates, policy);
 }
