@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import type { GetProgressSnapshotResponse } from "@sprachweise/shared";
 import { sendMessage } from "@/lib/messaging/send";
+import { countDue } from "@/lib/review/session";
+import { formatLocalDate } from "@/lib/srs/scheduler";
 import { TRANSLATE_COMMAND } from "@/lib/page-actions";
 import { FlameIcon } from "@/lib/design/icons";
-import { t, tNode } from "@/lib/i18n";
+import { t, tNode, tPlural } from "@/lib/i18n";
 
 export default function App() {
   const [snapshot, setSnapshot] = useState<GetProgressSnapshotResponse | null>(null);
@@ -22,6 +24,18 @@ export default function App() {
   }, []);
 
   const solvedToday = snapshot?.profile.solvedTodayCount ?? null;
+  const dueCount = snapshot
+    ? countDue(
+        snapshot.reviewQueue,
+        Object.fromEntries(snapshot.vocab.map((item) => [item.id, item])),
+        formatLocalDate(new Date()),
+      )
+    : 0;
+
+  function openReview(): void {
+    void chrome.tabs.create({ url: chrome.runtime.getURL("/options.html#review") });
+    window.close();
+  }
 
   return (
     <div className="popup">
@@ -46,6 +60,11 @@ export default function App() {
           </p>
         )}
       </div>
+      {dueCount > 0 && (
+        <button className="btn btn-primary" onClick={openReview}>
+          {tPlural(dueCount, "popupReview")}
+        </button>
+      )}
       {solvedToday !== null && (
         <div className="popup-row">
           <span>{t("popupSolvedToday")}</span>
