@@ -1,0 +1,980 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "thinkingLevel": "minimal",
+  "costPerParagraph": 0.00052,
+  "avgLatencyMs": 1445,
+  "rows": [
+    {
+      "index": 1,
+      "genre": "news",
+      "level": "A1-A2",
+      "source": "В понедельник в Германии снова бастуют машинисты поездов. Профсоюз GDL призвал своих членов прекратить работу с двух часов ночи до вечера вторника. Deutsche Bahn советует пассажирам по возможности перенести поездки и заранее проверять расписание в приложении.",
+      "german": "Am Montag streiken die Zugführer in Deutschland. Der Verband GDL sagt: Die Arbeit stoppt ab zwei Uhr nachts. Die Arbeit endet am Dienstagabend. Die Deutsche Bahn gibt einen Rat. Die Passagiere sollen ihre Reise verschieben. Bitte prüfen Sie das Fahrplan-App vor der Reise.",
+      "glosses": [
+        {
+          "start": 10,
+          "end": 18,
+          "german": "streiken",
+          "lemma": "streiken",
+          "russian": "бастовать"
+        },
+        {
+          "start": 82,
+          "end": 88,
+          "german": "stoppt",
+          "lemma": "stoppen",
+          "russian": "прекращаться"
+        },
+        {
+          "start": 173,
+          "end": 176,
+          "german": "Rat",
+          "lemma": "der Rat",
+          "russian": "совет"
+        },
+        {
+          "start": 211,
+          "end": 222,
+          "german": "verschieben",
+          "lemma": "verschieben",
+          "russian": "переносить"
+        },
+        {
+          "start": 230,
+          "end": 236,
+          "german": "prüfen",
+          "lemma": "prüfen",
+          "russian": "проверять"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "index": 2,
+      "genre": "news",
+      "level": "B1-B2",
+      "source": "Бундестаг принял закон, который упрощает получение гражданства. Теперь подать заявление можно уже через пять лет проживания в стране, а при особых успехах в интеграции — через три года. Кроме того, двойное гражданство больше не будет исключением: новым гражданам не придётся отказываться от прежнего паспорта.",
+      "german": "Der Bundestag hat ein neues Gesetz verabschiedet, das die Einbürgerung deutlich vereinfacht. Ab sofort kann man schon nach fünf Jahren Aufenthalt in Deutschland die Staatsbürgerschaft beantragen. Wenn jemand besonders gute Leistungen bei der Integration zeigt, geht das sogar schon nach drei Jahren. Zudem ist die doppelte Staatsbürgerschaft nun die Regel und keine Ausnahme mehr: Neue Bürger müssen ihren alten Pass nicht mehr abgeben.",
+      "glosses": [
+        {
+          "start": 35,
+          "end": 48,
+          "german": "verabschiedet",
+          "lemma": "verabschieden",
+          "russian": "принимать (закон)"
+        },
+        {
+          "start": 58,
+          "end": 70,
+          "german": "Einbürgerung",
+          "lemma": "die Einbürgerung",
+          "russian": "получение гражданства"
+        },
+        {
+          "start": 135,
+          "end": 145,
+          "german": "Aufenthalt",
+          "lemma": "der Aufenthalt",
+          "russian": "пребывание"
+        },
+        {
+          "start": 184,
+          "end": 194,
+          "german": "beantragen",
+          "lemma": "beantragen",
+          "russian": "подавать заявление"
+        },
+        {
+          "start": 366,
+          "end": 374,
+          "german": "Ausnahme",
+          "lemma": "die Ausnahme",
+          "russian": "исключение"
+        },
+        {
+          "start": 428,
+          "end": 435,
+          "german": "abgeben",
+          "lemma": "abgeben",
+          "russian": "отдавать, сдавать"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "index": 3,
+      "genre": "news",
+      "level": "A1-A2",
+      "source": "С января стоимость проездного Deutschlandticket выросла до 63 евро в месяц. Билет по-прежнему действует во всех автобусах, трамваях и региональных поездах по всей стране. Скоростные поезда ICE и IC в него не входят.",
+      "german": "Das Deutschlandticket kostet ab Januar 63 Euro pro Monat. Der Preis ist höher als früher. Das Ticket gilt für alle Busse, Straßenbahnen und Regionalzüge in Deutschland. Schnelle Züge wie ICE oder IC gehören nicht dazu.",
+      "glosses": [
+        {
+          "start": 22,
+          "end": 28,
+          "german": "kostet",
+          "lemma": "kosten",
+          "russian": "стоить"
+        },
+        {
+          "start": 82,
+          "end": 88,
+          "german": "früher",
+          "lemma": "früh",
+          "russian": "раньше"
+        },
+        {
+          "start": 101,
+          "end": 105,
+          "german": "gilt",
+          "lemma": "gelten",
+          "russian": "действовать"
+        },
+        {
+          "start": 199,
+          "end": 206,
+          "german": "gehören",
+          "lemma": "gehören",
+          "russian": "принадлежать"
+        },
+        {
+          "start": 213,
+          "end": 217,
+          "german": "dazu",
+          "lemma": "dazu",
+          "russian": "к этому"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "index": 4,
+      "genre": "news",
+      "level": "B1-B2",
+      "source": "Арендная плата в крупных немецких городах продолжает расти. По данным исследовательского института, за последний год средняя цена квадратного метра в Мюнхене поднялась почти на семь процентов. Эксперты связывают это с нехваткой нового жилья и высокими процентными ставками, из-за которых многие откладывают покупку квартиры.",
+      "german": "Die Mieten in den großen deutschen Städten steigen immer weiter. Laut einem Forschungsinstitut ist der durchschnittliche Preis pro Quadratmeter in München im letzten Jahr um fast sieben Prozent gestiegen. Experten führen das auf den Mangel an neuen Wohnungen und die hohen Zinsen zurück, weshalb viele Menschen den Kauf einer Wohnung aufschieben.",
+      "glosses": [
+        {
+          "start": 43,
+          "end": 50,
+          "german": "steigen",
+          "lemma": "steigen",
+          "russian": "подниматься, расти"
+        },
+        {
+          "start": 103,
+          "end": 120,
+          "german": "durchschnittliche",
+          "lemma": "durchschnittlich",
+          "russian": "средний"
+        },
+        {
+          "start": 214,
+          "end": 220,
+          "german": "führen",
+          "lemma": "auf etwas zurückführen",
+          "russian": "объяснять чем-либо"
+        },
+        {
+          "start": 233,
+          "end": 239,
+          "german": "Mangel",
+          "lemma": "der Mangel",
+          "russian": "нехватка, дефицит"
+        },
+        {
+          "start": 273,
+          "end": 279,
+          "german": "Zinsen",
+          "lemma": "die Zinsen",
+          "russian": "процентные ставки"
+        },
+        {
+          "start": 334,
+          "end": 345,
+          "german": "aufschieben",
+          "lemma": "aufschieben",
+          "russian": "откладывать"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "index": 5,
+      "genre": "news",
+      "level": "A1-A2",
+      "source": "Метеорологи предупреждают о сильной жаре на юге Германии. В выходные температура может подняться до 36 градусов. Врачи советуют пить больше воды, не выходить на солнце в обед и чаще проведывать пожилых соседей.",
+      "german": "Im Süden von Deutschland wird es sehr heiß. Am Wochenende steigt die Temperatur auf 36 Grad. Die Ärzte geben einen Rat: Trinken Sie viel Wasser. Gehen Sie am Mittag nicht in die Sonne. Besuchen Sie Ihre alten Nachbarn.",
+      "glosses": [
+        {
+          "start": 38,
+          "end": 42,
+          "german": "heiß",
+          "lemma": "heiß",
+          "russian": "жаркий"
+        },
+        {
+          "start": 58,
+          "end": 64,
+          "german": "steigt",
+          "lemma": "steigen",
+          "russian": "подниматься"
+        },
+        {
+          "start": 115,
+          "end": 118,
+          "german": "Rat",
+          "lemma": "der Rat",
+          "russian": "совет"
+        },
+        {
+          "start": 185,
+          "end": 193,
+          "german": "Besuchen",
+          "lemma": "besuchen",
+          "russian": "навещать"
+        },
+        {
+          "start": 209,
+          "end": 217,
+          "german": "Nachbarn",
+          "lemma": "der Nachbar",
+          "russian": "сосед"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "index": 6,
+      "genre": "news",
+      "level": "B1-B2",
+      "source": "Федеральное агентство по труду сообщило, что число открытых вакансий для специалистов в сфере ухода за больными снова увеличилось. Особенно не хватает медсестёр в домах престарелых. Правительство надеется привлечь больше работников из-за рубежа и ускорить признание иностранных дипломов.",
+      "german": "Die Bundesagentur für Arbeit hat mitgeteilt, dass die Anzahl der offenen Stellen für Fachkräfte in der Krankenpflege erneut gestiegen ist. Besonders in Seniorenheimen fehlen dringend Pflegekräfte. Die Regierung hofft, mehr Arbeitskräfte aus dem Ausland zu gewinnen und die Anerkennung ausländischer Abschlüsse zu beschleunigen.",
+      "glosses": [
+        {
+          "start": 33,
+          "end": 43,
+          "german": "mitgeteilt",
+          "lemma": "mitteilen",
+          "russian": "сообщать"
+        },
+        {
+          "start": 124,
+          "end": 133,
+          "german": "gestiegen",
+          "lemma": "steigen",
+          "russian": "подниматься, расти"
+        },
+        {
+          "start": 152,
+          "end": 166,
+          "german": "Seniorenheimen",
+          "lemma": "das Seniorenheim",
+          "russian": "дом престарелых"
+        },
+        {
+          "start": 167,
+          "end": 173,
+          "german": "fehlen",
+          "lemma": "fehlen",
+          "russian": "не хватать"
+        },
+        {
+          "start": 256,
+          "end": 264,
+          "german": "gewinnen",
+          "lemma": "gewinnen",
+          "russian": "привлекать, получать"
+        },
+        {
+          "start": 313,
+          "end": 326,
+          "german": "beschleunigen",
+          "lemma": "beschleunigen",
+          "russian": "ускорять"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "index": 7,
+      "genre": "news",
+      "level": "A1-A2",
+      "source": "В Берлине открылся новый рождественский рынок у Красной ратуши. Посетители могут покататься на колесе обозрения, попробовать глинтвейн и купить подарки ручной работы. Рынок работает каждый день с полудня до десяти вечера до конца декабря.",
+      "german": "In Berlin gibt es einen neuen Weihnachtsmarkt. Er ist bei der Roten Rathaus. Sie können mit dem Riesenrad fahren. Sie können Glühwein trinken. Sie können Geschenke kaufen. Der Markt ist jeden Tag offen. Er ist von Mittag bis zehn Uhr abends offen. Das ist bis Ende Dezember.",
+      "glosses": [
+        {
+          "start": 30,
+          "end": 45,
+          "german": "Weihnachtsmarkt",
+          "lemma": "der Weihnachtsmarkt",
+          "russian": "рождественский рынок"
+        },
+        {
+          "start": 96,
+          "end": 105,
+          "german": "Riesenrad",
+          "lemma": "das Riesenrad",
+          "russian": "колесо обозрения"
+        },
+        {
+          "start": 134,
+          "end": 141,
+          "german": "trinken",
+          "lemma": "trinken",
+          "russian": "пить"
+        },
+        {
+          "start": 154,
+          "end": 163,
+          "german": "Geschenke",
+          "lemma": "das Geschenk",
+          "russian": "подарок"
+        },
+        {
+          "start": 214,
+          "end": 220,
+          "german": "Mittag",
+          "lemma": "der Mittag",
+          "russian": "полдень"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "index": 8,
+      "genre": "blog",
+      "level": "A1-A2",
+      "source": "Сегодня я наконец сделала анмельдунг! Записаться в бюргерамт было сложно: свободных окошек не было три недели. Но сама встреча заняла всего десять минут. Сотрудница была очень вежливой, и я даже смогла сказать пару фраз по-немецки.",
+      "german": "Heute habe ich endlich die Anmeldung gemacht. Es war schwer, einen Termin beim Bürgeramt zu finden. Es gab drei Wochen lang keine Termine. Aber der Termin hat nur zehn Minuten gedauert. Die Mitarbeiterin war sehr freundlich. Ich habe sogar ein paar Sätze auf Deutsch gesagt.",
+      "glosses": [
+        {
+          "start": 27,
+          "end": 36,
+          "german": "Anmeldung",
+          "lemma": "die Anmeldung",
+          "russian": "регистрация"
+        },
+        {
+          "start": 67,
+          "end": 73,
+          "german": "Termin",
+          "lemma": "der Termin",
+          "russian": "встреча, запись"
+        },
+        {
+          "start": 176,
+          "end": 184,
+          "german": "gedauert",
+          "lemma": "dauern",
+          "russian": "длиться"
+        },
+        {
+          "start": 190,
+          "end": 203,
+          "german": "Mitarbeiterin",
+          "lemma": "die Mitarbeiterin",
+          "russian": "сотрудница"
+        },
+        {
+          "start": 213,
+          "end": 223,
+          "german": "freundlich",
+          "lemma": "freundlich",
+          "russian": "вежливый, дружелюбный"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "index": 9,
+      "genre": "blog",
+      "level": "B1-B2",
+      "source": "Первые полгода в Германии я пыталась жить так же, как дома: искала привычные продукты, смотрела русские сериалы и общалась только с соотечественниками. В какой-то момент поняла, что так язык не выучу никогда. Тогда я записалась в хор при местной церкви — и это лучшее решение за весь год.",
+      "german": "Die ersten sechs Monate in Deutschland habe ich versucht, genauso zu leben wie zu Hause. Ich habe nach vertrauten Lebensmitteln gesucht, russische Serien geschaut und mich nur mit Landsleuten unterhalten. Irgendwann wurde mir klar, dass ich die Sprache auf diese Weise niemals lernen würde. Also habe ich mich bei einem Chor in der lokalen Kirche angemeldet, und das war die beste Entscheidung des ganzen Jahres.",
+      "glosses": [
+        {
+          "start": 103,
+          "end": 113,
+          "german": "vertrauten",
+          "lemma": "vertraut",
+          "russian": "знакомый"
+        },
+        {
+          "start": 180,
+          "end": 191,
+          "german": "Landsleuten",
+          "lemma": "der Landsmann",
+          "russian": "соотечественник"
+        },
+        {
+          "start": 226,
+          "end": 230,
+          "german": "klar",
+          "lemma": "klar",
+          "russian": "ясный"
+        },
+        {
+          "start": 347,
+          "end": 357,
+          "german": "angemeldet",
+          "lemma": "sich anmelden",
+          "russian": "записаться"
+        },
+        {
+          "start": 381,
+          "end": 393,
+          "german": "Entscheidung",
+          "lemma": "die Entscheidung",
+          "russian": "решение"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "index": 10,
+      "genre": "blog",
+      "level": "A1-A2",
+      "source": "В Германии в воскресенье почти все магазины закрыты. Сначала меня это очень удивляло. Теперь я покупаю продукты в субботу, а в воскресенье гуляю в парке или хожу в гости. Оказалось, что один спокойный день в неделю — это очень приятно.",
+      "german": "In Deutschland sind am Sonntag fast alle Geschäfte geschlossen. Am Anfang hat mich das sehr gewundert. Jetzt kaufe ich am Samstag ein. Am Sonntag gehe ich in den Park oder besuche Freunde. Ein ruhiger Tag in der Woche ist sehr schön.",
+      "glosses": [
+        {
+          "start": 41,
+          "end": 50,
+          "german": "Geschäfte",
+          "lemma": "das Geschäft",
+          "russian": "магазин"
+        },
+        {
+          "start": 92,
+          "end": 101,
+          "german": "gewundert",
+          "lemma": "sich wundern",
+          "russian": "удивляться"
+        },
+        {
+          "start": 172,
+          "end": 179,
+          "german": "besuche",
+          "lemma": "besuchen",
+          "russian": "посещать"
+        },
+        {
+          "start": 193,
+          "end": 200,
+          "german": "ruhiger",
+          "lemma": "ruhig",
+          "russian": "спокойный"
+        }
+      ],
+      "problems": [
+        "1 vocab item(s) not found verbatim in the German text"
+      ]
+    },
+    {
+      "index": 11,
+      "genre": "blog",
+      "level": "B1-B2",
+      "source": "Многие жалуются на немецкую бюрократию, но у неё есть и плюсы. Если ты один раз правильно заполнил все формы, дальше система работает предсказуемо: письма приходят вовремя, сроки соблюдаются, а ответ всегда можно получить в письменном виде. Главное — не выбрасывать ни одного письма и завести отдельную папку для документов.",
+      "german": "Viele Leute beschweren sich über die deutsche Bürokratie, aber sie hat auch ihre Vorteile. Wenn man einmal alle Formulare richtig ausgefüllt hat, arbeitet das System danach sehr verlässlich: Briefe kommen pünktlich an, Fristen werden eingehalten und man bekommt immer eine schriftliche Antwort. Das Wichtigste ist, dass man keinen Brief wegwirft und einen eigenen Ordner für seine Dokumente anlegt.",
+      "glosses": [
+        {
+          "start": 12,
+          "end": 22,
+          "german": "beschweren",
+          "lemma": "sich beschweren",
+          "russian": "жаловаться"
+        },
+        {
+          "start": 130,
+          "end": 140,
+          "german": "ausgefüllt",
+          "lemma": "ausfüllen",
+          "russian": "заполнять"
+        },
+        {
+          "start": 178,
+          "end": 189,
+          "german": "verlässlich",
+          "lemma": "verlässlich",
+          "russian": "надежный"
+        },
+        {
+          "start": 234,
+          "end": 245,
+          "german": "eingehalten",
+          "lemma": "einhalten",
+          "russian": "соблюдать"
+        },
+        {
+          "start": 337,
+          "end": 345,
+          "german": "wegwirft",
+          "lemma": "wegwerfen",
+          "russian": "выбрасывать"
+        },
+        {
+          "start": 391,
+          "end": 397,
+          "german": "anlegt",
+          "lemma": "anlegen",
+          "russian": "заводить"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "index": 12,
+      "genre": "blog",
+      "level": "A1-A2",
+      "source": "Мой сын пошёл в немецкий детский сад три месяца назад. Первую неделю он плакал каждое утро. Сейчас он рассказывает мне про друзей, поёт немецкие песни и поправляет моё произношение. Дети учат язык намного быстрее, чем взрослые.",
+      "german": "Mein Sohn geht seit drei Monaten in einen deutschen Kindergarten. In der ersten Woche hat er jeden Morgen geweint. Jetzt erzählt er mir von seinen Freunden. Er singt deutsche Lieder. Er korrigiert meine Aussprache. Kinder lernen eine Sprache viel schneller als Erwachsene.",
+      "glosses": [
+        {
+          "start": 10,
+          "end": 14,
+          "german": "geht",
+          "lemma": "gehen",
+          "russian": "идти, ходить"
+        },
+        {
+          "start": 106,
+          "end": 113,
+          "german": "geweint",
+          "lemma": "weinen",
+          "russian": "плакать"
+        },
+        {
+          "start": 121,
+          "end": 128,
+          "german": "erzählt",
+          "lemma": "erzählen",
+          "russian": "рассказывать"
+        },
+        {
+          "start": 203,
+          "end": 213,
+          "german": "Aussprache",
+          "lemma": "die Aussprache",
+          "russian": "произношение"
+        },
+        {
+          "start": 247,
+          "end": 256,
+          "german": "schneller",
+          "lemma": "schnell",
+          "russian": "быстрее"
+        },
+        {
+          "start": 261,
+          "end": 271,
+          "german": "Erwachsene",
+          "lemma": "der Erwachsene",
+          "russian": "взрослый"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "index": 13,
+      "genre": "blog",
+      "level": "B1-B2",
+      "source": "Собеседование на немецком оказалось не таким страшным, как я себе представлял. Меня спросили о прошлом опыте, о том, почему я выбрал именно эту компанию, и как я справляюсь со стрессом. Сложнее всего было понимать быстрые вопросы с диалектом, поэтому я пару раз честно попросил повторить — и это никого не смутило.",
+      "german": "Das Vorstellungsgespräch auf Deutsch war nicht so schlimm, wie ich es mir vorgestellt hatte. Man fragte mich nach meinen bisherigen Erfahrungen, warum ich ausgerechnet diese Firma gewählt habe und wie ich mit Stress umgehe. Am schwierigsten war es, die schnellen Fragen mit Dialekt zu verstehen. Deshalb habe ich ein paar Mal ehrlich darum gebeten, das Gesagte zu wiederholen – und das hat niemanden gestört.",
+      "glosses": [
+        {
+          "start": 4,
+          "end": 24,
+          "german": "Vorstellungsgespräch",
+          "lemma": "das Vorstellungsgespräch",
+          "russian": "собеседование"
+        },
+        {
+          "start": 74,
+          "end": 85,
+          "german": "vorgestellt",
+          "lemma": "sich vorstellen",
+          "russian": "представлять себе"
+        },
+        {
+          "start": 121,
+          "end": 131,
+          "german": "bisherigen",
+          "lemma": "bisherig",
+          "russian": "предыдущий"
+        },
+        {
+          "start": 155,
+          "end": 167,
+          "german": "ausgerechnet",
+          "lemma": "ausgerechnet",
+          "russian": "именно"
+        },
+        {
+          "start": 216,
+          "end": 222,
+          "german": "umgehe",
+          "lemma": "umgehen",
+          "russian": "обращаться"
+        },
+        {
+          "start": 400,
+          "end": 407,
+          "german": "gestört",
+          "lemma": "stören",
+          "russian": "беспокоить"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "index": 14,
+      "genre": "blog",
+      "level": "A1-A2",
+      "source": "Летом мы впервые поехали на Балтийское море. Вода была холодная, но дети всё равно купались весь день. Вечером мы ели рыбные булочки в порту и смотрели на корабли. В следующем году хотим вернуться туда на целую неделю.",
+      "german": "Im Sommer sind wir zum ersten Mal an die Ostsee gefahren. Das Wasser war kalt. Aber die Kinder haben den ganzen Tag gebadet. Am Abend haben wir Fischbrötchen im Hafen gegessen. Wir haben die Schiffe gesehen. Nächstes Jahr wollen wir wieder dorthin fahren. Wir wollen eine ganze Woche bleiben.",
+      "glosses": [
+        {
+          "start": 48,
+          "end": 56,
+          "german": "gefahren",
+          "lemma": "fahren",
+          "russian": "ехать, ездить"
+        },
+        {
+          "start": 116,
+          "end": 123,
+          "german": "gebadet",
+          "lemma": "baden",
+          "russian": "купаться"
+        },
+        {
+          "start": 161,
+          "end": 166,
+          "german": "Hafen",
+          "lemma": "der Hafen",
+          "russian": "порт"
+        },
+        {
+          "start": 167,
+          "end": 175,
+          "german": "gegessen",
+          "lemma": "essen",
+          "russian": "есть"
+        },
+        {
+          "start": 191,
+          "end": 198,
+          "german": "Schiffe",
+          "lemma": "das Schiff",
+          "russian": "корабль"
+        },
+        {
+          "start": 233,
+          "end": 239,
+          "german": "wieder",
+          "lemma": "wieder",
+          "russian": "снова"
+        },
+        {
+          "start": 284,
+          "end": 291,
+          "german": "bleiben",
+          "lemma": "bleiben",
+          "russian": "оставаться"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "index": 15,
+      "genre": "forum",
+      "level": "A1-A2",
+      "source": "Привет всем! Подскажите, пожалуйста, где в Дюссельдорфе можно недорого купить подержанный велосипед? В магазинах цены очень высокие. Может быть, есть хорошие сайты или блошиные рынки? Заранее спасибо!",
+      "german": "Hallo zusammen! Ich suche ein gebrauchtes Fahrrad in Düsseldorf. Ich möchte nicht viel Geld ausgeben. Die neuen Fahrräder im Geschäft sind zu teuer. Gibt es gute Webseiten oder Flohmärkte für Fahrräder? Vielen Dank für eure Hilfe!",
+      "glosses": [
+        {
+          "start": 30,
+          "end": 41,
+          "german": "gebrauchtes",
+          "lemma": "gebraucht",
+          "russian": "подержанный"
+        },
+        {
+          "start": 92,
+          "end": 100,
+          "german": "ausgeben",
+          "lemma": "ausgeben",
+          "russian": "тратить"
+        },
+        {
+          "start": 142,
+          "end": 147,
+          "german": "teuer",
+          "lemma": "teuer",
+          "russian": "дорогой"
+        },
+        {
+          "start": 177,
+          "end": 187,
+          "german": "Flohmärkte",
+          "lemma": "der Flohmarkt",
+          "russian": "блошиный рынок"
+        },
+        {
+          "start": 224,
+          "end": 229,
+          "german": "Hilfe",
+          "lemma": "die Hilfe",
+          "russian": "помощь"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "index": 16,
+      "genre": "forum",
+      "level": "B1-B2",
+      "source": "Пришло письмо из налоговой с требованием подать декларацию за прошлый год, хотя я работаю по найму и думал, что мне это не нужно. Оказалось, что из-за смены работы посреди года и пособия по безработице декларация обязательна. Кто-нибудь пользовался программами вроде ELSTER без помощи консультанта? Насколько это сложно?",
+      "german": "Ich habe einen Brief vom Finanzamt bekommen, in dem ich aufgefordert werde, eine Steuererklärung für das letzte Jahr abzugeben. Eigentlich dachte ich, dass ich das nicht muss, weil ich angestellt bin. Es hat sich aber herausgestellt, dass die Erklärung Pflicht ist, weil ich im Laufe des Jahres den Job gewechselt habe und Arbeitslosengeld bezogen habe. Hat jemand von euch schon einmal Programme wie ELSTER ohne die Hilfe eines Steuerberaters genutzt? Wie kompliziert ist das?",
+      "glosses": [
+        {
+          "start": 56,
+          "end": 68,
+          "german": "aufgefordert",
+          "lemma": "auffordern",
+          "russian": "призывать, требовать"
+        },
+        {
+          "start": 185,
+          "end": 195,
+          "german": "angestellt",
+          "lemma": "angestellt",
+          "russian": "наемный работник"
+        },
+        {
+          "start": 218,
+          "end": 232,
+          "german": "herausgestellt",
+          "lemma": "sich herausstellen",
+          "russian": "выясняться"
+        },
+        {
+          "start": 253,
+          "end": 260,
+          "german": "Pflicht",
+          "lemma": "die Pflicht",
+          "russian": "обязанность"
+        },
+        {
+          "start": 340,
+          "end": 347,
+          "german": "bezogen",
+          "lemma": "beziehen",
+          "russian": "получать (пособие, пенсию)"
+        },
+        {
+          "start": 429,
+          "end": 443,
+          "german": "Steuerberaters",
+          "lemma": "der Steuerberater",
+          "russian": "налоговый консультант"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "index": 17,
+      "genre": "forum",
+      "level": "A1-A2",
+      "source": "У нас в квартире уже неделю не работает отопление. Я написала хаусферверальтунгу два раза, но ответа нет. Что мне делать? Могу ли я платить меньше аренды, пока не починят?",
+      "german": "Die Heizung in meiner Wohnung funktioniert seit einer Woche nicht. Ich habe zweimal an die Hausverwaltung geschrieben. Aber ich bekomme keine Antwort. Was soll ich tun? Kann ich weniger Miete bezahlen, bis sie die Heizung reparieren?",
+      "glosses": [
+        {
+          "start": 4,
+          "end": 11,
+          "german": "Heizung",
+          "lemma": "die Heizung",
+          "russian": "отопление"
+        },
+        {
+          "start": 54,
+          "end": 59,
+          "german": "Woche",
+          "lemma": "die Woche",
+          "russian": "неделя"
+        },
+        {
+          "start": 91,
+          "end": 105,
+          "german": "Hausverwaltung",
+          "lemma": "die Hausverwaltung",
+          "russian": "управляющая компания"
+        },
+        {
+          "start": 142,
+          "end": 149,
+          "german": "Antwort",
+          "lemma": "die Antwort",
+          "russian": "ответ"
+        },
+        {
+          "start": 186,
+          "end": 191,
+          "german": "Miete",
+          "lemma": "die Miete",
+          "russian": "арендная плата"
+        },
+        {
+          "start": 222,
+          "end": 232,
+          "german": "reparieren",
+          "lemma": "reparieren",
+          "russian": "чинить"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "index": 18,
+      "genre": "forum",
+      "level": "B1-B2",
+      "source": "Хочу сменить больничную кассу: моя повысила дополнительный взнос, а услуги остались прежними. Насколько я понимаю, при повышении взноса есть особое право на расторжение договора. Подскажите, нужно ли сначала найти новую кассу или можно сразу отправить заявление старой?",
+      "german": "Ich möchte meine Krankenkasse wechseln: Meine hat den Zusatzbeitrag erhöht, aber die Leistungen sind gleich geblieben. Soweit ich weiß, gibt es bei einer Beitragserhöhung ein Sonderkündigungsrecht. Könnt ihr mir sagen, ob ich zuerst eine neue Kasse finden muss oder ob ich direkt die Kündigung an die alte schicken kann?",
+      "glosses": [
+        {
+          "start": 30,
+          "end": 38,
+          "german": "wechseln",
+          "lemma": "wechseln",
+          "russian": "менять"
+        },
+        {
+          "start": 54,
+          "end": 67,
+          "german": "Zusatzbeitrag",
+          "lemma": "der Zusatzbeitrag",
+          "russian": "дополнительный взнос"
+        },
+        {
+          "start": 85,
+          "end": 95,
+          "german": "Leistungen",
+          "lemma": "die Leistung",
+          "russian": "услуги"
+        },
+        {
+          "start": 175,
+          "end": 196,
+          "german": "Sonderkündigungsrecht",
+          "lemma": "das Sonderkündigungsrecht",
+          "russian": "особое право на расторжение договора"
+        },
+        {
+          "start": 284,
+          "end": 293,
+          "german": "Kündigung",
+          "lemma": "die Kündigung",
+          "russian": "заявление об увольнении/расторжении"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "index": 19,
+      "genre": "forum",
+      "level": "A1-A2",
+      "source": "Кто знает хорошие бесплатные курсы немецкого в Гамбурге? Я работаю днём, поэтому мне нужны вечерние занятия. Мой уровень сейчас примерно A2. Буду рада любым советам!",
+      "german": "Wer kennt gute kostenlose Deutschkurse in Hamburg? Ich arbeite am Tag. Deshalb brauche ich Abendkurse. Mein Niveau ist jetzt ungefähr A2. Ich freue mich über jeden Tipp!",
+      "glosses": [
+        {
+          "start": 15,
+          "end": 25,
+          "german": "kostenlose",
+          "lemma": "kostenlos",
+          "russian": "бесплатный"
+        },
+        {
+          "start": 79,
+          "end": 86,
+          "german": "brauche",
+          "lemma": "brauchen",
+          "russian": "нуждаться"
+        },
+        {
+          "start": 91,
+          "end": 101,
+          "german": "Abendkurse",
+          "lemma": "der Abendkurs",
+          "russian": "вечерний курс"
+        },
+        {
+          "start": 108,
+          "end": 114,
+          "german": "Niveau",
+          "lemma": "das Niveau",
+          "russian": "уровень"
+        },
+        {
+          "start": 125,
+          "end": 133,
+          "german": "ungefähr",
+          "lemma": "ungefähr",
+          "russian": "примерно"
+        },
+        {
+          "start": 164,
+          "end": 168,
+          "german": "Tipp",
+          "lemma": "der Tipp",
+          "russian": "совет"
+        }
+      ],
+      "problems": []
+    },
+    {
+      "index": 20,
+      "genre": "forum",
+      "level": "B1-B2",
+      "source": "Соседи сверху регулярно устраивают шумные вечеринки после десяти вечера, хотя в правилах дома прописан ночной покой. Разговор с ними ничего не дал. Стоит ли сразу писать управляющей компании или сначала вести протокол шума, чтобы потом были доказательства?",
+      "german": "Meine Nachbarn über mir veranstalten regelmäßig laute Partys nach zehn Uhr abends, obwohl die Hausordnung die Nachtruhe vorschreibt. Ein Gespräch mit ihnen hat leider nichts gebracht. Sollte ich mich sofort an die Hausverwaltung wenden oder erst ein Lärmprotokoll führen, damit ich später Beweise habe?",
+      "glosses": [
+        {
+          "start": 24,
+          "end": 36,
+          "german": "veranstalten",
+          "lemma": "veranstalten",
+          "russian": "устраивать, проводить"
+        },
+        {
+          "start": 120,
+          "end": 131,
+          "german": "vorschreibt",
+          "lemma": "vorschreiben",
+          "russian": "предписывать"
+        },
+        {
+          "start": 214,
+          "end": 228,
+          "german": "Hausverwaltung",
+          "lemma": "die Hausverwaltung",
+          "russian": "управляющая компания"
+        },
+        {
+          "start": 250,
+          "end": 263,
+          "german": "Lärmprotokoll",
+          "lemma": "das Lärmprotokoll",
+          "russian": "протокол шума"
+        },
+        {
+          "start": 289,
+          "end": 296,
+          "german": "Beweise",
+          "lemma": "der Beweis",
+          "russian": "доказательство"
+        }
+      ],
+      "problems": []
+    }
+  ]
+}
