@@ -47,11 +47,11 @@ describe("tokenizeSentence", () => {
 describe("isOrderableSentence", () => {
   it.each([
     "Ich trinke jeden Morgen Kaffee.",
-    "Der Hund schläft im Garten.",
-    "Die Kinder spielen heute im Park.",
-    "Meine Schwester wohnt in Berlin.",
-    "Es regnet seit gestern ohne Pause.",
-  ])("accepts a sentence that starts with its subject: %s", (s) => {
+    "Er schläft heute im Garten.",
+    "Wir spielen jeden Tag im Park.",
+    "Du wohnst seit Jahren in Berlin.",
+    "Man trinkt hier gern einen Kaffee.",
+  ])("accepts a sentence that starts with an unambiguous subject pronoun: %s", (s) => {
     expect(isOrderableSentence(s)).toBe(true);
   });
 
@@ -61,6 +61,11 @@ describe("isOrderableSentence", () => {
     ["Den Hund sehe ich nicht mehr.", "fronted object"],
     ["Weil es regnet, bleibe ich zu Hause.", "subordinate clause first"],
     ["Peter wohnt in einer kleinen Stadt.", "proper name first"],
+    ["Die Zeitung lese ich morgens.", "fronted accusative object that looks like a subject"],
+    ["Ihr helfe ich jeden Tag.", "fronted dative object that looks like a subject"],
+    ["Das Buch lese ich heute Abend.", "fronted neuter object"],
+    ["Der Hund schläft im Garten.", "article + noun: the case cannot be told from the form"],
+    ["Sie sehe ich jeden Tag.", "sie can be an accusative object"],
     ["Ich gehe.", "too short"],
     ["Ich gehe heute am Nachmittag mit meiner Schwester nach Hause.", "too long"],
     ["Ich gehe heute nach Hause", "no final punctuation"],
@@ -120,14 +125,14 @@ describe("buildWordOrder / generateExercises", () => {
   });
 
   it("is offered for a paragraph with a subject-first sentence and skipped otherwise", () => {
-    const withOrder = generateExercises("Der Hund schläft im Garten. Gestern regnete es viel.", []);
+    const withOrder = generateExercises("Er schläft heute im Garten. Gestern regnete es viel.", []);
     expect(withOrder.map((e) => e.kind)).toContain("word-order");
     const without = generateExercises("Gestern ging ich in die Stadt. Heute regnet es sehr.", []);
     expect(without.map((e) => e.kind)).not.toContain("word-order");
   });
 
   it("prefers a sentence other than the dictation one", () => {
-    const text = "Ich gehe nach Hause. Der Hund schläft heute im Garten.";
+    const text = "Ich gehe nach Hause. Er schläft heute im Garten.";
     const exercises = generateExercises(text, []);
     const dictation = exercises.find((e) => e.kind === "audio-dictation");
     const order = exercises.find((e) => e.kind === "word-order");
@@ -135,7 +140,7 @@ describe("buildWordOrder / generateExercises", () => {
       "Ich gehe nach Hause.",
     );
     expect(order && "sourceSentence" in order && order.sourceSentence).toBe(
-      "Der Hund schläft heute im Garten.",
+      "Er schläft heute im Garten.",
     );
   });
 });

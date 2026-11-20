@@ -33,6 +33,9 @@ export default function WordOrderCard({
   const [result, setResult] = useState<"correct" | "incorrect" | null>(
     exercise.lastAttempt ? (exercise.lastAttempt.correct ? "correct" : "incorrect") : null,
   );
+  // True from the click on "Check" until the answer is stored: everything is locked meanwhile, so
+  // a second click cannot count another attempt and the line cannot change under the feedback.
+  const [pending, setPending] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   // A moved token's button is a new element (it changes rows), so focus is put back on it
   // explicitly; otherwise focus would fall out of the Shadow DOM onto the host page.
@@ -45,7 +48,7 @@ export default function WordOrderCard({
   }, [placed]);
 
   const bank = tokens.map((_, i) => i).filter((i) => !placed.includes(i));
-  const locked = result !== null;
+  const locked = result !== null || pending;
 
   function place(index: number): void {
     refocus.current = index;
@@ -58,10 +61,17 @@ export default function WordOrderCard({
   }
 
   async function submit(): Promise<void> {
+    if (locked) return;
     const answer = placed.map((i) => tokens[i]).join(" ");
-    // A whole sentence is not tied to one vocabulary item (like the dictation).
-    const correct = await onAnswer(exercise, answer, []);
-    setResult(correct ? "correct" : "incorrect");
+    setPending(true);
+    try {
+      // A whole sentence is not tied to one vocabulary item (like the dictation).
+      const correct = await onAnswer(exercise, answer, []);
+      setResult(correct ? "correct" : "incorrect");
+    } finally {
+      // Also when the request fails: the card must not stay locked without a result.
+      setPending(false);
+    }
   }
 
   const lineState =

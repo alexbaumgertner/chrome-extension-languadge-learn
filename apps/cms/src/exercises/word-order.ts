@@ -6,48 +6,17 @@ export const WORD_ORDER_MIN_TOKENS = 4;
 export const WORD_ORDER_MAX_TOKENS = 9;
 
 /**
- * Words a sentence may start with: a pronoun or a determiner in the nominative, i.e. a subject
- * opens the sentence. German allows any one constituent before the finite verb ("Gestern ging ich
- * ...", "Den Hund sehe ich ..."), so a sentence that starts with an adverb, an object or a
+ * Words a sentence may start with: pronouns that exist only in the nominative, so the first word
+ * is certainly the subject. German allows any one constituent before the finite verb ("Gestern
+ * ging ich ...", "Den Hund sehe ich ..."), so a sentence that starts with an adverb, an object or a
  * subordinate clause has several correct orders and the exercise would mark right answers wrong.
- * Accusative and dative forms (den, dem, einen, einem ...) are left out on purpose: they open a
- * sentence only when the object is fronted. A proper name as the subject cannot be told from a
- * noun by its capital letter (every German noun has one), so such sentences are not used.
- * Compared in lower case.
+ * Forms whose nominative looks like another case are left out on purpose: der/die/das, ein/eine,
+ * kein-, mein- ... (accusative or dative can be fronted: "Die Zeitung lese ich morgens."), and also
+ * sie and es (nominative = accusative) and ihr (also dative: "Ihr helfe ich jeden Tag."). A proper
+ * name as the subject cannot be told from a noun by its capital letter (every German noun has
+ * one), so such sentences are not used. Compared in lower case.
  */
-const SUBJECT_STARTERS = new Set([
-  "ich",
-  "du",
-  "er",
-  "sie",
-  "es",
-  "wir",
-  "ihr",
-  "man",
-  "der",
-  "die",
-  "das",
-  "dieser",
-  "diese",
-  "dieses",
-  "jeder",
-  "jede",
-  "jedes",
-  "ein",
-  "eine",
-  "kein",
-  "keine",
-  "mein",
-  "meine",
-  "dein",
-  "deine",
-  "sein",
-  "seine",
-  "unser",
-  "unsere",
-  "euer",
-  "eure",
-]);
+const SUBJECT_STARTERS = new Set(["ich", "du", "er", "wir", "man"]);
 
 const ENDING_RE = /[.!?…]+$/u;
 const PUNCTUATION_ONLY_RE = /^\p{P}+$/u;
@@ -71,7 +40,7 @@ export function tokenizeSentence(sentence: string): Tokenized {
   return { tokens: body.split(/\s+/).filter(Boolean), ending };
 }
 
-/** True if the sentence has 4-9 words, ends in . ! ? and starts with a subject (see above). */
+/** True if the sentence has 4-9 words, ends in . ! ? and starts with an unambiguous subject pronoun (see above). */
 export function isOrderableSentence(sentence: string): boolean {
   const { tokens, ending } = tokenizeSentence(sentence);
   if (
