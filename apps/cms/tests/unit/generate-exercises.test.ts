@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { ExercisesResponseSchema } from "@sprachweise/shared";
+import {
+  ExercisesResponseSchema,
+  LEGACY_EXERCISE_KINDS,
+  LEGACY_MAX_EXERCISES,
+} from "@sprachweise/shared";
 import {
   MAX_SHOWN,
+  exercisePolicy,
   generateExercises,
   parseArticleLemma,
   selectExercises,
@@ -183,5 +188,38 @@ describe("selection policy", () => {
     // Same word three times: the third (dictation has no word) is fine, the word cap stops a 3rd.
     const picked = selectExercises([fill("w"), mc("w"), article("w"), dictation]);
     expect(picked.map((e) => e.kind)).toEqual(["fill-blank", "multiple-choice", "audio-dictation"]);
+  });
+});
+
+describe("exercisePolicy", () => {
+  const nounText =
+    "Ich möchte einen Kaffee. Danach lese ich die Zeitung. Wir fahren mit dem Riesenrad.";
+  const vocab = [
+    { german: "möchte", lemma: "mögen", russian: "хотел бы" },
+    { german: "Kaffee", lemma: "der Kaffee", russian: "кофе" },
+    { german: "Zeitung", lemma: "die Zeitung", russian: "газета" },
+    { german: "Riesenrad", lemma: "das Riesenrad", russian: "колесо обозрения" },
+  ];
+
+  it("without a declaration: the v1.0.0 kinds and cap, otherwise the same selection", () => {
+    const legacy = generateExercises(nounText, vocab, exercisePolicy(undefined));
+    expect(legacy.length).toBeLessThanOrEqual(LEGACY_MAX_EXERCISES);
+    expect(legacy.every((e) => (LEGACY_EXERCISE_KINDS as readonly string[]).includes(e.kind))).toBe(
+      true,
+    );
+    const all = generateExercises(nounText, vocab);
+    // Article choice and word order compete with the dictation for the last slots (ranked by a
+    // hash of the text), so which of them appears is not fixed; the always-first core is.
+    expect(all.some((e) => e.kind === "article-choice" || e.kind === "word-order")).toBe(true);
+    const core = (list: typeof all) =>
+      list.filter((e) => ["word-pairing", "fill-blank", "multiple-choice"].includes(e.kind));
+    expect(core(legacy)).toEqual(core(all));
+  });
+
+  it("keeps known declared kinds, drops unknown ones, and allows MAX_SHOWN", () => {
+    const policy = exercisePolicy(["article-choice", "fill-blank", "from-the-future"]);
+    expect([...policy.kinds].sort()).toEqual(["article-choice", "fill-blank"]);
+    expect(policy.max).toBe(MAX_SHOWN);
+    expect(exercisePolicy([]).kinds.size).toBe(0);
   });
 });
