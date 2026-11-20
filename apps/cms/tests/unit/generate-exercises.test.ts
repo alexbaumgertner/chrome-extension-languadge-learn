@@ -23,14 +23,12 @@ const vocab = [
 ];
 
 describe("generateExercises", () => {
-  it("builds all four kinds from a paragraph with enough vocabulary", () => {
+  it("builds every kind from a paragraph with enough vocabulary", () => {
     const exercises = generateExercises(text, vocab);
-    expect(exercises.map((e) => e.kind)).toEqual([
-      "word-pairing",
-      "fill-blank",
-      "multiple-choice",
-      "audio-dictation",
-    ]);
+    const kinds = exercises.map((e) => e.kind);
+    // The three core kinds come first; dictation and word order follow in a hash-ranked order.
+    expect(kinds.slice(0, 3)).toEqual(["word-pairing", "fill-blank", "multiple-choice"]);
+    expect(kinds.slice(3).sort()).toEqual(["audio-dictation", "word-order"]);
     expect(ExercisesResponseSchema.safeParse({ exercises }).success).toBe(true);
   });
 
@@ -210,8 +208,12 @@ describe("exercisePolicy", () => {
       true,
     );
     const all = generateExercises(nounText, vocab);
-    expect(all.map((e) => e.kind)).toContain("article-choice");
-    expect(legacy).toEqual(all.filter((e) => e.kind !== "article-choice"));
+    // Article choice and word order compete with the dictation for the last slots (ranked by a
+    // hash of the text), so which of them appears is not fixed; the always-first core is.
+    expect(all.some((e) => e.kind === "article-choice" || e.kind === "word-order")).toBe(true);
+    const core = (list: typeof all) =>
+      list.filter((e) => ["word-pairing", "fill-blank", "multiple-choice"].includes(e.kind));
+    expect(core(legacy)).toEqual(core(all));
   });
 
   it("keeps known declared kinds, drops unknown ones, and allows MAX_SHOWN", () => {

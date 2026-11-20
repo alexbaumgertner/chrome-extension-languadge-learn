@@ -68,6 +68,18 @@ export function mapCmsExercisesToEntities(
           prompt: { noun: cms.noun, russian: cms.russian },
           correctAnswer: cms.article,
         };
+      case "word-order":
+        return {
+          ...base,
+          kind: "word-order",
+          sourceSentence: cms.sourceSentence,
+          prompt: { tokens: cms.tokens, ending: cms.ending },
+          // The tokens arrive shuffled; the answer is the sentence minus its final punctuation.
+          correctAnswer: cms.sourceSentence
+            .trim()
+            .slice(0, cms.ending ? -cms.ending.length : undefined)
+            .replace(/\s+/g, " "),
+        };
     }
   });
 }

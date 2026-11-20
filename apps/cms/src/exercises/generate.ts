@@ -7,6 +7,7 @@ import {
   type CmsExercise,
   type ExerciseKind,
 } from "@sprachweise/shared";
+import { buildWordOrder, isOrderableSentence } from "./word-order";
 
 export interface VocabTerm {
   german: string;
@@ -227,6 +228,8 @@ export function generateExercises(
     });
   }
 
+  // The first candidates are the core; what follows competes for the remaining slots (see below).
+  const coreCount = candidates.length;
   const dictation = sentences
     .filter((s) => {
       const n = wordCount(s);
@@ -262,6 +265,24 @@ export function generateExercises(
       hash(`${variantText}${a.word}`) - hash(`${variantText}${b.word}`),
   );
   candidates.push(...nouns);
+
+  // Word order: a sentence that starts with its subject, preferably not the dictation one.
+  const orderable = sentences
+    .filter(isOrderableSentence)
+    .sort(
+      (a, b) =>
+        Number(a === dictation) - Number(b === dictation) ||
+        hash(`${variantText}${a}`) - hash(`${variantText}${b}`),
+    )[0];
+  const wordOrder = orderable ? buildWordOrder(orderable, hash) : null;
+  if (wordOrder) candidates.push({ exercise: wordOrder });
+
+  // Pairing, fill-blank and multiple-choice always come first. The rest (dictation, article,
+  // word order) compete for what is left, ranked per kind by a hash of the text, so no kind is
+  // always the one cut. The sort is stable: nouns keep their order within the article kind.
+  const rank = (c: Candidate): number => hash(`${variantText}|${c.exercise.kind}`);
+  const extras = candidates.splice(coreCount).sort((a, b) => rank(a) - rank(b));
+  candidates.push(...extras);
 
   return selectExercises(candidates, policy);
 }
