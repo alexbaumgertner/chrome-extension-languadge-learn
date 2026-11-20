@@ -51,7 +51,7 @@ export const GRAMMAR_PHENOMENA = [
   { id: "weil-denn-conjunctions", titleRu: "Союзы weil, denn, dass, wenn, obwohl" },
   { id: "relative-clause", titleRu: "Относительные придаточные" },
   { id: "passive", titleRu: "Пассив" },
-  { id: "konjunktiv-ii", titleRu: "Konjunktiv II (würde, hätte, wäre)" },
+  { id: "konjunktiv-ii", titleRu: "Сослагательное наклонение: Konjunktiv II (würde, hätte, wäre)" },
 ] as const;
 
 const GRAMMAR_IDS = GRAMMAR_PHENOMENA.map((p) => p.id) as [
