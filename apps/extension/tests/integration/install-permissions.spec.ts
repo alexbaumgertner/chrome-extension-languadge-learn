@@ -21,6 +21,7 @@ test("the shipped manifest asks for no site access and triggers no install-time 
     "activeTab",
     "contextMenus",
     "scripting",
+    "sidePanel",
     "storage",
   ]);
   expect(Object.keys(manifest.commands as object)).toEqual(["translate-selection"]);

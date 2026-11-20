@@ -10,7 +10,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 
 const PRODUCTION_API = "https://sprachweise.vercel.app";
-const EXPECTED_PERMISSIONS = ["activeTab", "contextMenus", "scripting", "storage"];
+const EXPECTED_PERMISSIONS = ["activeTab", "contextMenus", "scripting", "sidePanel", "storage"];
 // Only test builds contain these: local hosts (mock API, fixture page) and the test hooks.
 const TEST_ONLY = /localhost|127\.0\.0\.1|:58733|sprachweiseTest/;
 const BINARY = /\.(png|jpe?g|gif|webp|ico|woff2?|ttf|zip)$/i;

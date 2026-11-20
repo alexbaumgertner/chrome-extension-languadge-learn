@@ -5,6 +5,18 @@
   },
   "menuTranslate": { "message": "Translate to German (Sprachweise)" },
   "menuRestore": { "message": "Restore original text (Sprachweise)" },
+  "menuTranslateLevel": { "message": "Translate to my level" },
+  "menuSpeak": { "message": "Read aloud" },
+  "sideEmpty": {
+    "message": "Select text on a page, right-click it, choose Sprachweise and then a tool."
+  },
+  "sideOriginal": { "message": "Selected text" },
+  "sideTranslated": { "message": "At your level" },
+  "sideTruncated": {
+    "message": "The selection is longer than $1 characters; only the start is used."
+  },
+  "sideTapWord": { "message": "Tap a highlighted word to see its meaning." },
+  "sideNoSpeech": { "message": "This browser can't read text aloud." },
   "commandTranslate": { "message": "Translate the selected text to German" },
 
   "popupHowto": { "message": "Select text on any page, right-click it and choose $1." },

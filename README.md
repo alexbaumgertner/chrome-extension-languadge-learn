@@ -29,7 +29,7 @@ words and exercises built from that text. Progress is tracked locally.
 The extension asks for no website access at install. It uses `activeTab`:
 Chrome lets it read a page only when you pick its menu item or press its
 shortcut, and only that tab. Permissions: `storage`, `activeTab`, `scripting`,
-`contextMenus`; no host permissions.
+`contextMenus`, `sidePanel`; no host permissions.
 
 ## Installation (unpacked)
 
