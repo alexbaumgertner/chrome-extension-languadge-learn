@@ -37,7 +37,7 @@ test("exercise panel: traceability, lenient matching, wrong-answer feedback, col
   // Every exercise's own text must be traceable back to the translated paragraph's vocabulary
   // (fill-blank/multiple-choice quote a blanked sentence built from it; word-pairing quotes its words).
   const cards = panel.locator(".sw-card");
-  await expect(cards).toHaveCount(4);
+  await expect(cards).toHaveCount(5);
   const cardTexts = await cards.allTextContents();
   expect(cardTexts.every((text) => text.trim().length > 0)).toBe(true);
   expect(variantText).toContain("moechte");
@@ -58,6 +58,13 @@ test("exercise panel: traceability, lenient matching, wrong-answer feedback, col
   const wrongOption = multipleChoice.locator(".sw-opt", { hasText: "Lärm" });
   await wrongOption.click();
   await expect(multipleChoice.locator(".sw-feedback")).toContainText(variantText.slice(0, 20));
+
+  // Article choice: a wrong pick shows the right article; the three buttons are der/die/das.
+  const articleChoice = panel.locator(".sw-card").filter({ has: page.locator(".sw-articles") });
+  await expect(articleChoice.locator(".sw-articles button")).toHaveText(["der", "die", "das"]);
+  await articleChoice.locator(".sw-articles button", { hasText: "das" }).click();
+  await expect(articleChoice.locator(".sw-feedback")).toContainText("die Zeitung");
+  await expect(articleChoice.locator(".sw-articles button").first()).toBeDisabled();
 
   // Collapse mid-exercise, reopen — answered state must be preserved, not reset.
   await panel.locator(".sw-header button").click();

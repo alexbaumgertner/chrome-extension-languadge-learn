@@ -39,7 +39,11 @@ export async function translateSelection(text: string): Promise<TranslateSelecti
       cache: translated.cache ?? "miss",
       latencyMs: Math.round(performance.now() - started),
     });
-    const vocabIdByGerman = await recordVocabEncounters(translated.markedVocab, Date.now());
+    const vocabIdByGerman = await recordVocabEncounters(
+      translated.markedVocab,
+      Date.now(),
+      translated.text,
+    );
     const markedVocab = translated.markedVocab.map((span) => ({
       start: span.start,
       end: span.end,

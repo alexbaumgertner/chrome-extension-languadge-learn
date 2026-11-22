@@ -14,11 +14,21 @@ export const TranslationDensitySchema = z.enum(["low", "medium", "max"]);
 
 export const VocabStatusSchema = z.enum(["new", "active", "due", "learned"]);
 
+export const ArticleSchema = z.enum(["der", "die", "das"]);
+
+/**
+ * Upper bound on exercises per paragraph. Only ever raise it: a persisted set that was valid
+ * under an older, lower bound must keep parsing, or the cache silently turns empty.
+ */
+export const MAX_EXERCISES_PER_PARAGRAPH = 6;
+
 export const ExerciseKindSchema = z.enum([
   "fill-blank",
   "multiple-choice",
   "word-pairing",
   "audio-dictation",
+  "article-choice",
+  "word-order",
 ]);
 
 export const LearnerSettingsSchema = z.object({
@@ -34,6 +44,10 @@ export const VocabularyItemSchema = z.object({
   encounterCount: z.number().int().nonnegative(),
   status: VocabStatusSchema,
   firstEncounteredAt: z.number().int().nonnegative(),
+  /** The German sentence the word was last seen in (at most 200 characters); absent on older records. */
+  contextSentence: z.string().min(1).max(200).optional(),
+  /** The word as it appears in `contextSentence` (an inflected form of `german`). */
+  contextForm: z.string().min(1).max(200).optional(),
 });
 
 export const ReviewQueueEntrySchema = z.object({
@@ -144,11 +158,28 @@ export const AudioDictationExerciseSchema = ExerciseBaseSchema.extend({
   correctAnswer: z.string().min(1),
 });
 
+export const ArticleChoiceExerciseSchema = ExerciseBaseSchema.extend({
+  kind: z.literal("article-choice"),
+  sourceSentence: z.string(),
+  prompt: z.object({ noun: z.string().min(1), russian: z.string().min(1) }),
+  correctAnswer: ArticleSchema,
+});
+
+export const WordOrderExerciseSchema = ExerciseBaseSchema.extend({
+  kind: z.literal("word-order"),
+  sourceSentence: z.string().min(1),
+  prompt: z.object({ tokens: z.array(z.string().min(1)).min(2), ending: z.string() }),
+  /** The tokens in the right order, joined by single spaces, without the final punctuation. */
+  correctAnswer: z.string().min(1),
+});
+
 export const ExerciseSchema = z.discriminatedUnion("kind", [
   FillBlankExerciseSchema,
   MultipleChoiceExerciseSchema,
   WordPairingExerciseSchema,
   AudioDictationExerciseSchema,
+  ArticleChoiceExerciseSchema,
+  WordOrderExerciseSchema,
 ]);
 
-export const ExerciseSetSchema = z.array(ExerciseSchema).min(0).max(4);
+export const ExerciseSetSchema = z.array(ExerciseSchema).min(0).max(MAX_EXERCISES_PER_PARAGRAPH);
