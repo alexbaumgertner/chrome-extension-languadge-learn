@@ -4,6 +4,7 @@ import { config, type Config } from "./config";
 import { createNeonDb, withSchema, type Db } from "./db";
 import { registerEventsRoute } from "./routes/events";
 import { registerExercisesRoute } from "./routes/exercises";
+import { registerExplainRoute } from "./routes/explain";
 import { registerReportRoute } from "./routes/report";
 import { LANDING_ASSETS } from "./landing/assets.generated";
 import { pickLang, renderLanding } from "./landing/page";
@@ -41,6 +42,7 @@ export function buildApp(cfg: Config = config, db: Db = createNeonDb(cfg)): Fast
 
   const schemaDb = withSchema(db);
   registerTranslateRoute(app, cfg, schemaDb);
+  registerExplainRoute(app, cfg, schemaDb);
   registerExercisesRoute(app, cfg);
   registerEventsRoute(app, schemaDb);
   registerReportRoute(app, schemaDb);

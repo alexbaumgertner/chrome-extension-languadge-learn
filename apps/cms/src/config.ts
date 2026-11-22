@@ -12,6 +12,8 @@ const ConfigSchema = z.object({
   TRANSLATE_MAX_CHARS: z.coerce.number().int().positive().default(TRANSLATE_MAX_CHARS),
   /** Global budget kill switch across all users (cache hits don't count). */
   GEMINI_DAILY_REQUEST_ALLOWANCE: z.coerce.number().int().positive().default(1500),
+  /** "Explain" has its own budget so explanations never use up the translation allowance. */
+  EXPLAIN_DAILY_REQUEST_ALLOWANCE: z.coerce.number().int().positive().default(500),
   /**
    * Comma-separated exact origins allowed to call the API, e.g.
    * `chrome-extension://<store id>,chrome-extension://<unpacked dev id>`. Empty = no CORS grants.

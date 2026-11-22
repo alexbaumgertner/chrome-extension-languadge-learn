@@ -64,6 +64,12 @@ const SCHEMA_STATEMENTS = [
      model TEXT,
      prompt_version TEXT
    )`,
+  // Explanations ("Explain" in the side panel), keyed like cache_entries. Write-once.
+  `CREATE TABLE IF NOT EXISTS explain_cache (
+     cache_key TEXT PRIMARY KEY,
+     result JSONB NOT NULL,
+     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+   )`,
   `CREATE TABLE IF NOT EXISTS usage_counters (
      counter TEXT NOT NULL,
      period_key TEXT NOT NULL,

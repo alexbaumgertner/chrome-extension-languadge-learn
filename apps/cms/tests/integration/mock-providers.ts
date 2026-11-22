@@ -5,7 +5,7 @@
  * coalescing/caching/allowance/resilience scenarios.
  *
  * Gemini prompt format this mock parses (must match apps/cms/src/pipeline/translate.ts):
- *   `...\n\nLevel: ${level}\nSource paragraph:\n${sourceText}`
+ *   `...\n\nLevel: ${level}\nSource paragraph:\n${sourceText}` (explain: `Source fragment:`)
  */
 
 /** "config-error": a 400 like Gemini returns for an unsupported thinking level. */
@@ -17,7 +17,8 @@ export interface TranslatedResult {
 }
 
 export interface MockProvidersOptions {
-  translate?: (source: string, level: string) => TranslatedResult;
+  /** What the model answers; the explain tests return the explain payload shape instead. */
+  translate?: (source: string, level: string) => TranslatedResult | Record<string, unknown>;
 }
 
 export interface MockProvidersController {
@@ -34,7 +35,7 @@ export interface MockProvidersController {
 }
 
 const LEVEL_REGEX = /\nLevel: (\S+)\n/;
-const SOURCE_REGEX = /\nSource paragraph:\n([\s\S]*)$/;
+const SOURCE_REGEX = /\nSource (?:paragraph|fragment):\n([\s\S]*)$/;
 
 export function createMockProviders(options: MockProvidersOptions = {}): MockProvidersController {
   let mode: MockProviderMode = "ok";
