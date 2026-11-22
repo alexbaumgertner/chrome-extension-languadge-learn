@@ -70,3 +70,24 @@
 .side-actions {
   display: flex;
 }
+
+.sp-token {
+  font: inherit;
+  border: 0;
+}
+.sp-token[aria-pressed="true"] {
+  background: var(--color-accent-400);
+  color: var(--color-accent-900);
+}
+.side-token {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+.side-grammar + .side-grammar {
+  margin-top: var(--space-3);
+}
+.side-grammar-title {
+  margin: 0 0 var(--space-1);
+  font-size: 15px;
+}

@@ -12,6 +12,7 @@ import { sendMessage } from "@/lib/messaging/send";
 import { playDictationAudio } from "@/lib/audio/play-dictation";
 import { plainWord, renderSpansHtml, SPAN_CLASS } from "@/lib/selection/render-spans";
 import { t, type MessageKey } from "@/lib/i18n";
+import { ExplainResult } from "./ExplainResult";
 
 type Failure = Extract<TranslateSelectionResponse, { ok: false }>["reason"];
 type Success = Extract<TranslateSelectionResponse, { ok: true }>;
@@ -68,6 +69,8 @@ export default function App() {
       </div>
       {selection.tool === "translate" ? (
         <TranslateResult key={selection.id} text={selection.text} />
+      ) : selection.tool === "explain" ? (
+        <ExplainResult key={selection.id} text={selection.text} />
       ) : (
         <SpeakResult key={selection.id} text={selection.text} />
       )}

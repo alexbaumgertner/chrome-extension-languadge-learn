@@ -6,6 +6,7 @@ const CONTENT_SCRIPT_FILE = "content-scripts/content.js";
 export const TOOLS_MENU_ID = "sprachweise-tools";
 export const TRANSLATE_MENU_ID = "sprachweise-translate";
 export const TRANSLATE_LEVEL_MENU_ID = "sprachweise-translate-level";
+export const EXPLAIN_MENU_ID = "sprachweise-explain";
 export const SPEAK_MENU_ID = "sprachweise-speak";
 export const RESTORE_MENU_ID = "sprachweise-restore";
 export const TRANSLATE_COMMAND = "translate-selection";
@@ -34,6 +35,12 @@ export async function createContextMenus(): Promise<void> {
     id: TRANSLATE_LEVEL_MENU_ID,
     parentId: TOOLS_MENU_ID,
     title: chrome.i18n.getMessage("menuTranslateLevel"),
+    contexts: ["selection"],
+  });
+  chrome.contextMenus.create({
+    id: EXPLAIN_MENU_ID,
+    parentId: TOOLS_MENU_ID,
+    title: chrome.i18n.getMessage("menuExplain"),
     contexts: ["selection"],
   });
   chrome.contextMenus.create({

@@ -1,6 +1,9 @@
 import {
   type ClientErrorCode,
   ExercisesRequestSchema,
+  ExplainRequestSchema,
+  ExplainResponseSchema,
+  type ExplainResponse,
   ReportRequestSchema,
   ExercisesResponseSchema,
   ExerciseKindSchema,
@@ -120,6 +123,11 @@ export function translateParagraph(
 ): Promise<CmsTranslateResponse> {
   const request: CmsTranslateRequest = { text, level, topic };
   return postJson("/api/translate", TranslateRequestSchema, TranslateResponseSchema, request);
+}
+
+/** The fragment (at most EXPLAIN_MAX_CHARS) and the level; never the page address. */
+export function explainText(text: string, level: Level): Promise<ExplainResponse> {
+  return postJson("/api/explain", ExplainRequestSchema, ExplainResponseSchema, { text, level });
 }
 
 export async function generateExercises(

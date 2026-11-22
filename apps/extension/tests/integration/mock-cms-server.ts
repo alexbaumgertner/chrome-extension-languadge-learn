@@ -22,6 +22,38 @@ function markVocab(text: string, words: Array<{ word: string; russian: string }>
     .filter((v): v is NonNullable<typeof v> => v !== null);
 }
 
+/** The request text is taken as German; every word becomes a token, with a few known lemmas. */
+function buildExplainResponse(text: string) {
+  const known: Record<string, { lemma: string; pos: string; glossRu: string }> = {
+    Hund: { lemma: "der Hund", pos: "noun", glossRu: "собака" },
+    habe: { lemma: "haben", pos: "verb", glossRu: "иметь" },
+  };
+  const tokens = [...text.matchAll(/[A-Za-zÄÖÜäöüß]+/g)].map((m) => {
+    const surface = m[0];
+    const start = m.index ?? 0;
+    const info = known[surface] ?? { lemma: surface.toLowerCase(), pos: "other", glossRu: "слово" };
+    return { surface, ...info, start, end: start + surface.length };
+  });
+  const example = text.includes("einen Hund") ? "einen Hund" : (tokens[0]?.surface ?? text);
+  const start = text.indexOf(example);
+  return {
+    germanText: text,
+    translationRu: "Перевод: У меня есть собака.",
+    tokens,
+    grammar: [
+      {
+        id: "accusative-case",
+        titleRu: "Аккузатив (прямое дополнение)",
+        explanationRu: "Прямое дополнение стоит в аккузативе.",
+        surfaceSpans: [{ start, end: start + example.length }],
+      },
+    ],
+    cache: "miss",
+    model: "mock-model",
+    promptVersion: "1",
+  };
+}
+
 function buildTranslateResponse(requestText: string, text: string) {
   if (requestText.includes(SHORT_PARAGRAPH_MARKER)) {
     return {
@@ -92,9 +124,10 @@ function buildExercisesResponse(variantText: string, supportedKinds: string[] | 
 /** Implements the CMS endpoints the extension calls with deterministic canned fixtures, and records request bodies. */
 export function createMockCmsServer() {
   let mode: MockCmsMode = "ok";
-  const callCounts = { translate: 0, exercises: 0 };
+  const callCounts = { translate: 0, exercises: 0, explain: 0 };
   const requests = {
     translate: [] as unknown[],
+    explain: [] as unknown[],
     events: [] as Array<{ installId: string; events: Array<Record<string, unknown>> }>,
     report: [] as Array<Record<string, unknown>>,
   };
@@ -157,6 +190,15 @@ export function createMockCmsServer() {
                 promptVersion: "2",
               }),
             );
+            return;
+          }
+
+          if (req.url === "/api/explain" && req.method === "POST") {
+            callCounts.explain++;
+            const request = JSON.parse(body || "{}") as { text?: string };
+            requests.explain.push(request);
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify(buildExplainResponse(request.text ?? "")));
             return;
           }
 

@@ -41,9 +41,12 @@ import { mapCmsExercisesToEntities } from "@/lib/exercises/generate";
 import { checkExerciseAnswer } from "@/lib/exercises/match";
 import { recordVocabEncounters, vocabIdFor } from "@/lib/vocab/upsert";
 import { flushEvents, recordEvent, recordInstallIfNew } from "@/lib/metrics/events";
+import { explainSelection } from "@/lib/selection/explain-selection";
 import { translateSelection } from "@/lib/selection/translate-selection";
+import { addLemmaToVocabulary } from "@/lib/vocab/add-lemma";
 import { getPendingSelection, openSelectionTool } from "@/lib/selection/open-tool";
 import {
+  EXPLAIN_MENU_ID,
   RESTORE_MENU_ID,
   SPEAK_MENU_ID,
   TRANSLATE_COMMAND,
@@ -294,6 +297,13 @@ async function dispatch(message: RequestMessage): Promise<unknown> {
     case "TRANSLATE_SELECTION":
       return translateSelection(message.text);
 
+    case "EXPLAIN_SELECTION":
+      return explainSelection(message.text);
+
+    case "ADD_TO_VOCABULARY":
+      await addLemmaToVocabulary(message.lemma, message.russian);
+      return { ok: true };
+
     case "GET_PROGRESS_SNAPSHOT": {
       const [profile, vocabRecord, reviewQueueRecord] = await Promise.all([
         getProgressProfile(),
@@ -347,6 +357,9 @@ function onMenuClicked(info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.
       break;
     case TRANSLATE_LEVEL_MENU_ID:
       void openSelectionTool("translate", tab.id, info.selectionText);
+      break;
+    case EXPLAIN_MENU_ID:
+      void openSelectionTool("explain", tab.id, info.selectionText);
       break;
     case SPEAK_MENU_ID:
       void openSelectionTool("speak", tab.id, info.selectionText);
