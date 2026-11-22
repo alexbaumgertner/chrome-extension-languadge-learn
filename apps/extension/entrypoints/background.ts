@@ -7,6 +7,7 @@ import {
   type ReportBadTranslationResponse,
   type RequestMessage,
   type StorageChangedMessage,
+  type SubmitReviewAttemptResponse,
   type TranslateParagraphResponse,
 } from "@sprachweise/shared";
 import { getLearnerSettings, setLearnerSettings } from "@/lib/storage/settings";
@@ -34,13 +35,18 @@ import {
   sendReport,
   translateParagraph,
 } from "@/lib/cms/client";
+import { REVIEW_TOPIC } from "@/lib/review/session";
+import { updateBadge } from "@/lib/review/badge";
 import { mapCmsExercisesToEntities } from "@/lib/exercises/generate";
 import { checkExerciseAnswer } from "@/lib/exercises/match";
 import { recordVocabEncounters, vocabIdFor } from "@/lib/vocab/upsert";
 import { flushEvents, recordEvent, recordInstallIfNew } from "@/lib/metrics/events";
+import { explainSelection } from "@/lib/selection/explain-selection";
 import { translateSelection } from "@/lib/selection/translate-selection";
+import { addLemmaToVocabulary } from "@/lib/vocab/add-lemma";
 import { getPendingSelection, openSelectionTool } from "@/lib/selection/open-tool";
 import {
+  EXPLAIN_MENU_ID,
   RESTORE_MENU_ID,
   SPEAK_MENU_ID,
   TRANSLATE_COMMAND,
@@ -81,7 +87,11 @@ async function handleTranslateParagraph(
         cache: translated.cache ?? "miss",
         latencyMs: Math.round(performance.now() - started),
       });
-      const vocabIdByGerman = await recordVocabEncounters(translated.markedVocab, Date.now());
+      const vocabIdByGerman = await recordVocabEncounters(
+        translated.markedVocab,
+        Date.now(),
+        translated.text,
+      );
 
       variant = {
         id: cacheKey,
@@ -188,6 +198,25 @@ async function handleSubmitExerciseAttempt(
   return { ok: true, correct, updatedProgress };
 }
 
+/** A review-session answer: the same SRS, streak and accuracy update as an exercise on a page. */
+async function handleSubmitReviewAttempt(
+  message: Extract<RequestMessage, { type: "SUBMIT_REVIEW_ATTEMPT" }>,
+): Promise<SubmitReviewAttemptResponse> {
+  void recordEvent({ name: "exercise_completed" });
+  try {
+    const updatedProgress = await recordAttempt({
+      correct: message.correct,
+      affectedVocabIds: [message.vocabId],
+      topic: REVIEW_TOPIC,
+      timestamp: Date.now(),
+    });
+    return { ok: true, updatedProgress };
+  } catch (error) {
+    console.error("Sprachweise: recording a review attempt failed", error);
+    return { ok: false };
+  }
+}
+
 /**
  * The "Плохой перевод" click: the only path that sends a fragment for review (constitution III).
  * Output, level and model come from the cached variant the content script is showing; no install ID.
@@ -241,6 +270,9 @@ async function dispatch(message: RequestMessage): Promise<unknown> {
     case "SUBMIT_EXERCISE_ATTEMPT":
       return handleSubmitExerciseAttempt(message);
 
+    case "SUBMIT_REVIEW_ATTEMPT":
+      return handleSubmitReviewAttempt(message);
+
     case "TRANSLATIONS_CHANGED":
       await refreshRestoreMenu();
       return { ok: true };
@@ -264,6 +296,13 @@ async function dispatch(message: RequestMessage): Promise<unknown> {
 
     case "TRANSLATE_SELECTION":
       return translateSelection(message.text);
+
+    case "EXPLAIN_SELECTION":
+      return explainSelection(message.text);
+
+    case "ADD_TO_VOCABULARY":
+      await addLemmaToVocabulary(message.lemma, message.russian);
+      return { ok: true };
 
     case "GET_PROGRESS_SNAPSHOT": {
       const [profile, vocabRecord, reviewQueueRecord] = await Promise.all([
@@ -319,6 +358,9 @@ function onMenuClicked(info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.
     case TRANSLATE_LEVEL_MENU_ID:
       void openSelectionTool("translate", tab.id, info.selectionText);
       break;
+    case EXPLAIN_MENU_ID:
+      void openSelectionTool("explain", tab.id, info.selectionText);
+      break;
     case SPEAK_MENU_ID:
       void openSelectionTool("speak", tab.id, info.selectionText);
       break;
@@ -341,6 +383,12 @@ async function removeSiteRuleLeftovers(): Promise<void> {
   await chrome.scripting.unregisterContentScripts();
 }
 
+function refreshBadge(): void {
+  updateBadge().catch((err: unknown) =>
+    console.error("Sprachweise: updating the badge failed", err),
+  );
+}
+
 export default defineBackground(() => {
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     routeMessage(message).then(sendResponse);
@@ -355,14 +403,22 @@ export default defineBackground(() => {
       if (slice) slices.add(slice);
     }
     for (const slice of slices) broadcastStorageChanged(slice);
+    if (slices.has("vocab")) refreshBadge();
   });
 
   chrome.contextMenus.onClicked.addListener(onMenuClicked);
   chrome.commands.onCommand.addListener(onCommand);
 
   // "Restore original" follows the tab the learner is looking at.
-  chrome.tabs.onActivated.addListener(() => void refreshRestoreMenu());
-  chrome.windows.onFocusChanged.addListener(() => void refreshRestoreMenu());
+  // The same events pick up a new local day for the toolbar badge (no alarm, no extra permission).
+  chrome.tabs.onActivated.addListener(() => {
+    void refreshRestoreMenu();
+    refreshBadge();
+  });
+  chrome.windows.onFocusChanged.addListener(() => {
+    void refreshRestoreMenu();
+    refreshBadge();
+  });
   chrome.tabs.onUpdated.addListener((_tabId, changeInfo, tab) => {
     if (tab.active && changeInfo.status !== undefined) void refreshRestoreMenu();
   });
@@ -370,13 +426,18 @@ export default defineBackground(() => {
   chrome.runtime.onInstalled.addListener((details) => {
     void createContextMenus();
     void recordInstallIfNew();
+    refreshBadge();
     if (details.reason === "update") {
       void removeSiteRuleLeftovers().catch((err: unknown) =>
         console.error("Sprachweise: removing site-rule leftovers failed", err),
       );
     }
   });
-  chrome.runtime.onStartup.addListener(() => void flushEvents());
+  chrome.runtime.onStartup.addListener(() => {
+    void flushEvents();
+    refreshBadge();
+  });
+  refreshBadge();
 
   // Playwright can't click Chrome's native context menu or press an extension shortcut, so test
   // builds expose the same handlers. Compiled out of production builds.

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ClientErrorCodeSchema, isSafeHtmlSubset } from "./cms";
+import { ExplainResponseSchema } from "./explain";
 import {
   ExerciseSchema,
   GermanVariantSchema,
@@ -55,6 +56,22 @@ export const SubmitExerciseAttemptResponseSchema = z.object({
   correct: z.boolean(),
   updatedProgress: ProgressProfileSchema,
 });
+
+/**
+ * Options page -> background after a word in the review session was answered. The page grades
+ * locally (no exercise is stored for a review), the background applies the SRS/streak/accuracy
+ * update through the same path as an exercise on a page.
+ */
+export const SubmitReviewAttemptRequestSchema = z.object({
+  type: z.literal("SUBMIT_REVIEW_ATTEMPT"),
+  vocabId: z.string().min(1),
+  correct: z.boolean(),
+});
+
+export const SubmitReviewAttemptResponseSchema = z.discriminatedUnion("ok", [
+  z.object({ ok: z.literal(true), updatedProgress: ProgressProfileSchema }),
+  z.object({ ok: z.literal(false) }),
+]);
 
 export const GetLearnerSettingsRequestSchema = z.object({
   type: z.literal("GET_LEARNER_SETTINGS"),
@@ -125,7 +142,7 @@ export const PageActionResponseSchema = z.object({
 /** Longest fragment a side-panel tool takes from a selection; longer ones are cut. */
 export const SELECTION_MAX_CHARS = 600;
 
-export const SelectionToolSchema = z.enum(["translate", "speak"]);
+export const SelectionToolSchema = z.enum(["translate", "speak", "explain"]);
 
 /**
  * The selected fragment as the side panel receives it. `id` is new for every menu choice, so the
@@ -193,10 +210,34 @@ export const TranslateSelectionResponseSchema = z.union([
   }),
 ]);
 
+/** Side panel to background: explain this fragment (translation, word breakdown, grammar). */
+export const ExplainSelectionRequestSchema = z.object({
+  type: z.literal("EXPLAIN_SELECTION"),
+  text: z.string().min(1).max(SELECTION_MAX_CHARS),
+});
+
+export const ExplainSelectionResponseSchema = z.union([
+  z.object({ ok: z.literal(true), explanation: ExplainResponseSchema }),
+  z.object({
+    ok: z.literal(false),
+    reason: z.enum(["offline", "unavailable", "limit", "too-long", "failed"]),
+  }),
+]);
+
+/** Side panel to background: put a word's dictionary form in the vocabulary with an SRS card. */
+export const AddToVocabularyRequestSchema = z.object({
+  type: z.literal("ADD_TO_VOCABULARY"),
+  lemma: z.string().min(1).max(100),
+  russian: z.string().min(1).max(200),
+});
+
+export const AddToVocabularyResponseSchema = z.object({ ok: z.literal(true) });
+
 /** Every message sent from content/popup/options/side panel to the background router. */
 export const RequestMessageSchema = z.discriminatedUnion("type", [
   TranslateParagraphRequestSchema,
   SubmitExerciseAttemptRequestSchema,
+  SubmitReviewAttemptRequestSchema,
   GetLearnerSettingsRequestSchema,
   SetLearnerSettingsRequestSchema,
   GetProgressSnapshotRequestSchema,
@@ -205,12 +246,15 @@ export const RequestMessageSchema = z.discriminatedUnion("type", [
   RecordClientErrorRequestSchema,
   GetPendingSelectionRequestSchema,
   TranslateSelectionRequestSchema,
+  ExplainSelectionRequestSchema,
+  AddToVocabularyRequestSchema,
 ]);
 
 /** Every message crossing a chrome.runtime boundary, including the background-originated broadcast. */
 export const AnyMessageSchema = z.discriminatedUnion("type", [
   TranslateParagraphRequestSchema,
   SubmitExerciseAttemptRequestSchema,
+  SubmitReviewAttemptRequestSchema,
   GetLearnerSettingsRequestSchema,
   SetLearnerSettingsRequestSchema,
   GetProgressSnapshotRequestSchema,
@@ -219,6 +263,8 @@ export const AnyMessageSchema = z.discriminatedUnion("type", [
   RecordClientErrorRequestSchema,
   GetPendingSelectionRequestSchema,
   TranslateSelectionRequestSchema,
+  ExplainSelectionRequestSchema,
+  AddToVocabularyRequestSchema,
   StorageChangedMessageSchema,
   PageActionMessageSchema,
   SelectionToolMessageSchema,

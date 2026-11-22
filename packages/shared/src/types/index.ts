@@ -17,6 +17,8 @@ import type {
   StorageChangedMessageSchema,
   SubmitExerciseAttemptRequestSchema,
   SubmitExerciseAttemptResponseSchema,
+  SubmitReviewAttemptRequestSchema,
+  SubmitReviewAttemptResponseSchema,
   TranslateParagraphRequestSchema,
   TranslateParagraphResponseSchema,
   TranslationsChangedMessageSchema,
@@ -34,6 +36,9 @@ import type {
 } from "../schemas/cms";
 import type {
   AudioDictationExerciseSchema,
+  ArticleChoiceExerciseSchema,
+  ArticleSchema,
+  WordOrderExerciseSchema,
   ExerciseAttemptSchema,
   ExerciseKindSchema,
   ExerciseSchema,
@@ -68,6 +73,9 @@ export type FillBlankExercise = z.infer<typeof FillBlankExerciseSchema>;
 export type MultipleChoiceExercise = z.infer<typeof MultipleChoiceExerciseSchema>;
 export type WordPairingExercise = z.infer<typeof WordPairingExerciseSchema>;
 export type AudioDictationExercise = z.infer<typeof AudioDictationExerciseSchema>;
+export type ArticleChoiceExercise = z.infer<typeof ArticleChoiceExerciseSchema>;
+export type WordOrderExercise = z.infer<typeof WordOrderExerciseSchema>;
+export type Article = z.infer<typeof ArticleSchema>;
 export type Exercise = z.infer<typeof ExerciseSchema>;
 export type ExerciseSet = z.infer<typeof ExerciseSetSchema>;
 
@@ -79,6 +87,8 @@ export type ReportBadTranslationRequest = z.infer<typeof ReportBadTranslationReq
 export type ReportBadTranslationResponse = z.infer<typeof ReportBadTranslationResponseSchema>;
 export type SubmitExerciseAttemptRequest = z.infer<typeof SubmitExerciseAttemptRequestSchema>;
 export type SubmitExerciseAttemptResponse = z.infer<typeof SubmitExerciseAttemptResponseSchema>;
+export type SubmitReviewAttemptRequest = z.infer<typeof SubmitReviewAttemptRequestSchema>;
+export type SubmitReviewAttemptResponse = z.infer<typeof SubmitReviewAttemptResponseSchema>;
 export type GetLearnerSettingsRequest = z.infer<typeof GetLearnerSettingsRequestSchema>;
 export type GetLearnerSettingsResponse = z.infer<typeof GetLearnerSettingsResponseSchema>;
 export type SetLearnerSettingsRequest = z.infer<typeof SetLearnerSettingsRequestSchema>;
@@ -122,3 +132,28 @@ export type GetPendingSelectionRequest = z.infer<typeof GetPendingSelectionReque
 export type GetPendingSelectionResponse = z.infer<typeof GetPendingSelectionResponseSchema>;
 export type TranslateSelectionRequest = z.infer<typeof TranslateSelectionRequestSchema>;
 export type TranslateSelectionResponse = z.infer<typeof TranslateSelectionResponseSchema>;
+
+// explain (P6)
+import type {
+  ExplainGrammarSchema,
+  ExplainRequestSchema,
+  ExplainResponseSchema,
+  ExplainTokenSchema,
+  GrammarIdSchema,
+  PosSchema,
+} from "../schemas/explain";
+import type {
+  AddToVocabularyRequestSchema,
+  ExplainSelectionRequestSchema,
+  ExplainSelectionResponseSchema,
+} from "../schemas/messages";
+
+export type ExplainRequest = z.infer<typeof ExplainRequestSchema>;
+export type ExplainResponse = z.infer<typeof ExplainResponseSchema>;
+export type ExplainToken = z.infer<typeof ExplainTokenSchema>;
+export type ExplainGrammar = z.infer<typeof ExplainGrammarSchema>;
+export type GrammarId = z.infer<typeof GrammarIdSchema>;
+export type Pos = z.infer<typeof PosSchema>;
+export type ExplainSelectionRequest = z.infer<typeof ExplainSelectionRequestSchema>;
+export type ExplainSelectionResponse = z.infer<typeof ExplainSelectionResponseSchema>;
+export type AddToVocabularyRequest = z.infer<typeof AddToVocabularyRequestSchema>;

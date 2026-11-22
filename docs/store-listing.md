@@ -91,9 +91,9 @@ justification, flags any that have none, and names entries the manifest no longe
 
 Added with the selection tools (specs/005-selection-tools, constitution Principle I):
 
-- `contextMenus` also carries the "Sprachweise" submenu items "Translate to my level" and "Read
-  aloud". It is how the user starts a tool on a selection; it reads no page.
-- `sidePanel` shows the result of those two items in Chrome's side panel (an extension page opened
+- `contextMenus` also carries the "Sprachweise" submenu items "Translate to my level", "Explain" and
+  "Read aloud". It is how the user starts a tool on a selection; it reads no page.
+- `sidePanel` shows the result of those three items in Chrome's side panel (an extension page opened
   from the menu click). It reads no page or site data and shows no install warning, which
   `install-permissions.spec.ts` checks with `getPermissionWarningsByManifest`.
 

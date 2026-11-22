@@ -5,7 +5,8 @@ import { createLoopbackServer, withCors } from "./loopback-server";
  * "limit": translate answers 429 like an exhausted daily allowance. "cors-fail": every response
  * lacks the CORS grant, so the browser blocks it although the server is up.
  */
-export type MockCmsMode = "ok" | "fail" | "exercises-fail" | "report-fail" | "limit" | "cors-fail";
+export type MockCmsMode =
+  "ok" | "fail" | "exercises-fail" | "report-fail" | "limit" | "cors-fail" | "word-order";
 
 /** A request paragraph text containing this marker gets a short, low-vocabulary German variant back. */
 export const SHORT_PARAGRAPH_MARKER = "SHORT_PARA_MARKER";
@@ -19,6 +20,38 @@ function markVocab(text: string, words: Array<{ word: string; russian: string }>
       return { start, end: start + word.length, german: word, russian };
     })
     .filter((v): v is NonNullable<typeof v> => v !== null);
+}
+
+/** The request text is taken as German; every word becomes a token, with a few known lemmas. */
+function buildExplainResponse(text: string) {
+  const known: Record<string, { lemma: string; pos: string; glossRu: string }> = {
+    Hund: { lemma: "der Hund", pos: "noun", glossRu: "собака" },
+    habe: { lemma: "haben", pos: "verb", glossRu: "иметь" },
+  };
+  const tokens = [...text.matchAll(/[A-Za-zÄÖÜäöüß]+/g)].map((m) => {
+    const surface = m[0];
+    const start = m.index ?? 0;
+    const info = known[surface] ?? { lemma: surface.toLowerCase(), pos: "other", glossRu: "слово" };
+    return { surface, ...info, start, end: start + surface.length };
+  });
+  const example = text.includes("einen Hund") ? "einen Hund" : (tokens[0]?.surface ?? text);
+  const start = text.indexOf(example);
+  return {
+    germanText: text,
+    translationRu: "Перевод: У меня есть собака.",
+    tokens,
+    grammar: [
+      {
+        id: "accusative-case",
+        titleRu: "Аккузатив (прямое дополнение)",
+        explanationRu: "Прямое дополнение стоит в аккузативе.",
+        surfaceSpans: [{ start, end: start + example.length }],
+      },
+    ],
+    cache: "miss",
+    model: "mock-model",
+    promptVersion: "1",
+  };
 }
 
 function buildTranslateResponse(requestText: string, text: string) {
@@ -35,46 +68,66 @@ function buildTranslateResponse(requestText: string, text: string) {
   return { text, markedVocab: markVocab(text, words) };
 }
 
-function buildExercisesResponse(variantText: string) {
+/** "word-order" mode: exactly one word-order exercise (tokens already shuffled). */
+const WORD_ORDER_ONLY_RESPONSE = {
+  exercises: [
+    {
+      kind: "word-order",
+      sourceSentence: "Ich trinke jeden Morgen Kaffee.",
+      tokens: ["Kaffee", "trinke", "jeden", "ich", "Morgen"],
+      ending: ".",
+    },
+  ],
+};
+
+function buildExercisesResponse(variantText: string, supportedKinds: string[] | undefined) {
   if (variantText === SHORT_VARIANT_TEXT) {
     // Too short/low-vocabulary to support all four kinds — only word-pairing is buildable.
     return {
       exercises: [{ kind: "word-pairing", pairs: [{ german: "Kaffee", russian: "кофе" }] }],
     };
   }
-  return {
-    exercises: [
-      {
-        kind: "fill-blank",
-        sourceSentence: variantText,
-        blankedSentence: variantText.replace("moechte", "___"),
-        answer: "moechte",
-      },
-      {
-        kind: "multiple-choice",
-        sourceSentence: variantText,
-        blankedSentence: variantText.replace("Ruhe", "___"),
-        options: ["Ruhe", "Lärm"],
-        correctIndex: 0,
-      },
-      {
-        kind: "word-pairing",
-        pairs: [
-          { german: "Kaffee", russian: "кофе" },
-          { german: "Zeitung", russian: "газета" },
-        ],
-      },
-      { kind: "audio-dictation", sourceSentence: variantText, answer: variantText },
-    ],
-  };
+  // Like the CMS: a client that does not declare its kinds gets only the four v1.0.0 kinds.
+  const kinds = supportedKinds ?? [
+    "fill-blank",
+    "multiple-choice",
+    "word-pairing",
+    "audio-dictation",
+  ];
+  const exercises = [
+    {
+      kind: "fill-blank",
+      sourceSentence: variantText,
+      blankedSentence: variantText.replace("moechte", "___"),
+      answer: "moechte",
+    },
+    {
+      kind: "multiple-choice",
+      sourceSentence: variantText,
+      blankedSentence: variantText.replace("Ruhe", "___"),
+      options: ["Ruhe", "Lärm"],
+      correctIndex: 0,
+    },
+    {
+      kind: "word-pairing",
+      pairs: [
+        { german: "Kaffee", russian: "кофе" },
+        { german: "Zeitung", russian: "газета" },
+      ],
+    },
+    { kind: "audio-dictation", sourceSentence: variantText, answer: variantText },
+    { kind: "article-choice", noun: "Zeitung", article: "die", russian: "газета" },
+  ];
+  return { exercises: exercises.filter((e) => kinds.includes(e.kind)) };
 }
 
 /** Implements the CMS endpoints the extension calls with deterministic canned fixtures, and records request bodies. */
 export function createMockCmsServer() {
   let mode: MockCmsMode = "ok";
-  const callCounts = { translate: 0, exercises: 0 };
+  const callCounts = { translate: 0, exercises: 0, explain: 0 };
   const requests = {
     translate: [] as unknown[],
+    explain: [] as unknown[],
     events: [] as Array<{ installId: string; events: Array<Record<string, unknown>> }>,
     report: [] as Array<Record<string, unknown>>,
   };
@@ -140,6 +193,15 @@ export function createMockCmsServer() {
             return;
           }
 
+          if (req.url === "/api/explain" && req.method === "POST") {
+            callCounts.explain++;
+            const request = JSON.parse(body || "{}") as { text?: string };
+            requests.explain.push(request);
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify(buildExplainResponse(request.text ?? "")));
+            return;
+          }
+
           if (req.url === "/api/exercises" && req.method === "POST") {
             callCounts.exercises++;
             if (mode === "exercises-fail") {
@@ -147,9 +209,18 @@ export function createMockCmsServer() {
               res.end("mock CMS forced exercises failure");
               return;
             }
-            const parsed = JSON.parse(body || "{}") as { variantText?: string };
+            const parsed = JSON.parse(body || "{}") as {
+              variantText?: string;
+              supportedKinds?: string[];
+            };
             res.setHeader("Content-Type", "application/json");
-            res.end(JSON.stringify(buildExercisesResponse(parsed.variantText ?? "")));
+            res.end(
+              JSON.stringify(
+                mode === "word-order"
+                  ? WORD_ORDER_ONLY_RESPONSE
+                  : buildExercisesResponse(parsed.variantText ?? "", parsed.supportedKinds),
+              ),
+            );
             return;
           }
 

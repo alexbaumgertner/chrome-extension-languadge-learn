@@ -11,6 +11,7 @@
     "test:integration": "vitest run tests/integration",
     "typecheck": "tsc --noEmit",
     "quality-check": "tsx --env-file-if-exists=.env scripts/quality-check.ts",
+    "explain-quality-check": "tsx --env-file-if-exists=.env scripts/explain-quality-check.ts",
     "judge": "tsx --env-file-if-exists=.env scripts/judge.ts"
   },
   "dependencies": {

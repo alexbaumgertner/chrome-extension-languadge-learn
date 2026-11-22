@@ -29,6 +29,9 @@ describe("GET /privacy", () => {
       "Study tools on a selection",
       "Учебные инструменты над выделением",
       "<code>sidePanel</code>",
+      // "Explain" sends the selection to Gemini too, and the policy names it.
+      '"Explain" under "Sprachweise"',
+      "«Объяснить»",
     ]) {
       expect(html).toContain(phrase);
     }

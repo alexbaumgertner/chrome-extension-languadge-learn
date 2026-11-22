@@ -17,14 +17,14 @@ the extension.
 ## `contextMenus`
 
 Adds a "Sprachweise" submenu to the right-click menu, shown only when text is selected, with
-"Translate to German (Sprachweise)", "Translate to my level" and "Read aloud", and a separate
+"Translate to German (Sprachweise)", "Translate to my level", "Explain" and "Read aloud", and a separate
 "Restore original text (Sprachweise)" item, shown only while the current tab displays a translation.
 Choosing an item is how the user starts every translation or tool; no page content is read and no
 text is sent before that.
 
 ## `sidePanel`
 
-Shows the result of "Translate to my level" and "Read aloud" in Chrome's side panel, which is an
+Shows the result of "Translate to my level", "Explain" and "Read aloud" in Chrome's side panel, which is an
 extension page. It is opened with `chrome.sidePanel.open` from the user's menu click. The panel
 reads nothing from the page and the page is not changed; it receives only the text the user
 selected. Declaring `sidePanel` shows no install or update warning.

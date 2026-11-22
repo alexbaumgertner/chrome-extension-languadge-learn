@@ -4,6 +4,7 @@ import {
   ExercisesRequestSchema,
   ExercisesResponseSchema,
   ExerciseSchema,
+  ExerciseSetSchema,
   GermanVariantSchema,
   GetProgressSnapshotResponseSchema,
   InstallIdSchema,
@@ -57,6 +58,33 @@ describe("storage schemas", () => {
       firstEncounteredAt: 1_700_000_000_000,
     };
     expect(VocabularyItemSchema.parse(fixture)).toEqual(fixture);
+  });
+
+  it("VocabularyItem parses records stored without a context sentence and accepts one with it", () => {
+    const old = {
+      id: "termin",
+      german: "Termin",
+      russian: "встреча",
+      encounterCount: 1,
+      status: "active",
+      firstEncounteredAt: 1,
+    };
+    expect(VocabularyItemSchema.parse(old)).toEqual(old);
+    const withContext = {
+      ...old,
+      contextSentence: "Ich habe einen Termin.",
+      contextForm: "Termin",
+    };
+    expect(VocabularyItemSchema.parse(withContext)).toEqual(withContext);
+    expect(
+      VocabularyItemSchema.safeParse({ ...old, contextSentence: "x".repeat(201) }).success,
+    ).toBe(false);
+  });
+
+  it("SUBMIT_REVIEW_ATTEMPT is a valid request message and needs a boolean result", () => {
+    const message = { type: "SUBMIT_REVIEW_ATTEMPT", vocabId: "termin", correct: true };
+    expect(RequestMessageSchema.safeParse(message).success).toBe(true);
+    expect(RequestMessageSchema.safeParse({ ...message, correct: "yes" }).success).toBe(false);
   });
 
   it("VocabularyItem rejects a wrong-type field", () => {
@@ -191,9 +219,48 @@ describe("storage schemas", () => {
       answered: false,
       lastAttempt: null,
     };
-    for (const fixture of [fillBlank, multipleChoice, wordPairing, audioDictation]) {
+    const articleChoice = {
+      id: "ex5",
+      kind: "article-choice",
+      sourceParagraphHash: "abc123",
+      sourceSentence: "",
+      prompt: { noun: "Riesenrad", russian: "колесо обозрения" },
+      correctAnswer: "das",
+      answered: false,
+      lastAttempt: null,
+    };
+    const wordOrder = {
+      id: "ex6",
+      kind: "word-order",
+      sourceParagraphHash: "abc123",
+      sourceSentence: "Ich trinke jeden Morgen Kaffee.",
+      prompt: { tokens: ["Kaffee", "ich", "jeden", "trinke", "Morgen"], ending: "." },
+      correctAnswer: "Ich trinke jeden Morgen Kaffee",
+      answered: false,
+      lastAttempt: null,
+    };
+    for (const fixture of [
+      fillBlank,
+      multipleChoice,
+      wordPairing,
+      audioDictation,
+      articleChoice,
+      wordOrder,
+    ]) {
       expect(ExerciseSchema.parse(fixture)).toEqual(fixture);
     }
+  });
+
+  it("ExercisesResponse accepts a word-order and rejects one with a single token", () => {
+    const ok = {
+      kind: "word-order",
+      sourceSentence: "Ich trinke jeden Morgen Kaffee.",
+      tokens: ["Kaffee", "ich", "jeden", "trinke", "Morgen"],
+      ending: ".",
+    };
+    expect(ExercisesResponseSchema.safeParse({ exercises: [ok] }).success).toBe(true);
+    const bad = { ...ok, tokens: ["Kaffee"] };
+    expect(ExercisesResponseSchema.safeParse({ exercises: [bad] }).success).toBe(false);
   });
 
   it("Exercise rejects a malformed/empty options list for multiple-choice", () => {
@@ -326,12 +393,66 @@ describe("cms schemas", () => {
     expect(ExercisesRequestSchema.parse(fixture)).toEqual(fixture);
   });
 
-  it("ExercisesResponse rejects more than 4 exercises", () => {
+  it("ExercisesResponse rejects more than 6 exercises", () => {
     const entry = { kind: "word-pairing", pairs: [{ german: "Kaffee", russian: "кофе" }] };
-    const result = ExercisesResponseSchema.safeParse({
-      exercises: [entry, entry, entry, entry, entry],
-    });
+    const result = ExercisesResponseSchema.safeParse({ exercises: Array(7).fill(entry) });
     expect(result.success).toBe(false);
+  });
+
+  it("ExercisesResponse accepts an article-choice and rejects an unknown article", () => {
+    const ok = { kind: "article-choice", noun: "Riesenrad", article: "das", russian: "колесо" };
+    expect(ExercisesResponseSchema.safeParse({ exercises: [ok] }).success).toBe(true);
+    const bad = { ...ok, article: "dem" };
+    expect(ExercisesResponseSchema.safeParse({ exercises: [bad] }).success).toBe(false);
+  });
+
+  it("a set of four exercises persisted under the old max(4) still parses", () => {
+    const base = { sourceParagraphHash: "h", answered: false, lastAttempt: null };
+    const legacy = [
+      {
+        ...base,
+        id: "a",
+        kind: "fill-blank",
+        sourceSentence: "Ich moechte.",
+        prompt: { blankedSentence: "Ich ___." },
+        correctAnswer: "moechte",
+      },
+      {
+        ...base,
+        id: "b",
+        kind: "multiple-choice",
+        sourceSentence: "Ich moechte.",
+        prompt: { blankedSentence: "Ich ___.", options: ["moechte", "will"] },
+        correctAnswer: 0,
+      },
+      {
+        ...base,
+        id: "c",
+        kind: "word-pairing",
+        sourceSentence: "",
+        prompt: { pairs: [{ german: "Kaffee", russian: "кофе" }] },
+        correctAnswer: { Kaffee: "кофе" },
+      },
+      {
+        ...base,
+        id: "d",
+        kind: "audio-dictation",
+        sourceSentence: "Ich moechte.",
+        prompt: { audioSentence: "Ich moechte." },
+        correctAnswer: "Ich moechte.",
+      },
+    ];
+    expect(ExerciseSetSchema.safeParse(legacy).success).toBe(true);
+  });
+
+  it("ExercisesRequest takes supportedKinds as optional strings, including unknown kinds", () => {
+    const base = { variantText: "Ich.", markedVocab: [], level: "A1-A2", topic: "general" };
+    expect(ExercisesRequestSchema.parse(base).supportedKinds).toBeUndefined();
+    const kinds = ["article-choice", "a-kind-from-a-newer-client"];
+    expect(ExercisesRequestSchema.parse({ ...base, supportedKinds: kinds }).supportedKinds).toEqual(
+      kinds,
+    );
+    expect(ExercisesRequestSchema.safeParse({ ...base, supportedKinds: [""] }).success).toBe(false);
   });
 
   it("ExercisesResponse accepts zero exercises", () => {

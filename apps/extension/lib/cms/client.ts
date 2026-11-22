@@ -1,8 +1,12 @@
 import {
   type ClientErrorCode,
   ExercisesRequestSchema,
+  ExplainRequestSchema,
+  ExplainResponseSchema,
+  type ExplainResponse,
   ReportRequestSchema,
   ExercisesResponseSchema,
+  ExerciseKindSchema,
   TranslateRequestSchema,
   TranslateResponseSchema,
   type CmsExercise,
@@ -121,13 +125,25 @@ export function translateParagraph(
   return postJson("/api/translate", TranslateRequestSchema, TranslateResponseSchema, request);
 }
 
+/** The fragment (at most EXPLAIN_MAX_CHARS) and the level; never the page address. */
+export function explainText(text: string, level: Level): Promise<ExplainResponse> {
+  return postJson("/api/explain", ExplainRequestSchema, ExplainResponseSchema, { text, level });
+}
+
 export async function generateExercises(
   variantText: string,
   markedVocab: CmsExercisesRequest["markedVocab"],
   level: Level,
   topic: string,
 ): Promise<CmsExercise[]> {
-  const request: CmsExercisesRequest = { variantText, markedVocab, level, topic };
+  // Every kind this build can render; without the list the CMS answers in the v1.0.0 format.
+  const request: CmsExercisesRequest = {
+    variantText,
+    markedVocab,
+    level,
+    topic,
+    supportedKinds: ExerciseKindSchema.options,
+  };
   const response = await postJson(
     "/api/exercises",
     ExercisesRequestSchema,

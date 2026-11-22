@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { isLenientMatch } from "@/lib/exercises/match";
+import type { Exercise } from "@sprachweise/shared";
+import { checkExerciseAnswer, isLenientMatch } from "@/lib/exercises/match";
 
 describe("isLenientMatch", () => {
   it.each([
@@ -27,5 +28,60 @@ describe("isLenientMatch", () => {
 
   it("collapses internal whitespace runs before comparing", () => {
     expect(isLenientMatch("guten   tag", "guten tag")).toBe(true);
+  });
+});
+
+describe("checkExerciseAnswer: word-order", () => {
+  const exercise: Exercise = {
+    id: "w1",
+    kind: "word-order",
+    sourceParagraphHash: "h",
+    sourceSentence: "Ich trinke jeden Morgen Kaffee.",
+    prompt: { tokens: ["Kaffee", "ich", "jeden", "trinke", "Morgen"], ending: "." },
+    correctAnswer: "Ich trinke jeden Morgen Kaffee",
+    answered: false,
+    lastAttempt: null,
+  };
+
+  it("accepts the original order, ignoring the case of the first word and spacing", () => {
+    expect(checkExerciseAnswer(exercise, "ich trinke jeden Morgen Kaffee")).toBe(true);
+    expect(checkExerciseAnswer(exercise, "Ich trinke jeden Morgen Kaffee")).toBe(true);
+    expect(checkExerciseAnswer(exercise, " ich  trinke jeden Morgen Kaffee ")).toBe(true);
+  });
+
+  it("rejects another order, other case further in, and non-string answers", () => {
+    expect(checkExerciseAnswer(exercise, "ich trinke Kaffee jeden Morgen")).toBe(false);
+    expect(checkExerciseAnswer(exercise, "ich trinke jeden morgen Kaffee")).toBe(false);
+    expect(checkExerciseAnswer(exercise, "ich trinke jeden Morgen")).toBe(false);
+    expect(checkExerciseAnswer(exercise, 1)).toBe(false);
+  });
+
+  it("keeps commas attached to their word", () => {
+    const withComma: Exercise = {
+      ...exercise,
+      correctAnswer: "Wir wissen, dass er kommt",
+    };
+    expect(checkExerciseAnswer(withComma, "wir wissen, dass er kommt")).toBe(true);
+    expect(checkExerciseAnswer(withComma, "wir wissen dass, er kommt")).toBe(false);
+  });
+});
+
+describe("checkExerciseAnswer: article-choice", () => {
+  const exercise: Exercise = {
+    id: "a1",
+    kind: "article-choice",
+    sourceParagraphHash: "h",
+    sourceSentence: "",
+    prompt: { noun: "Riesenrad", russian: "колесо обозрения" },
+    correctAnswer: "das",
+    answered: false,
+    lastAttempt: null,
+  };
+
+  it("accepts only the exact article", () => {
+    expect(checkExerciseAnswer(exercise, "das")).toBe(true);
+    expect(checkExerciseAnswer(exercise, "der")).toBe(false);
+    expect(checkExerciseAnswer(exercise, "DAS")).toBe(false);
+    expect(checkExerciseAnswer(exercise, 2)).toBe(false);
   });
 });

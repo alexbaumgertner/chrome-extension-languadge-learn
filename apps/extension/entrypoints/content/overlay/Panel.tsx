@@ -15,6 +15,8 @@ import FillBlankCard from "./FillBlankCard";
 import MultipleChoiceCard from "./MultipleChoiceCard";
 import WordPairingCard from "./WordPairingCard";
 import AudioDictationCard from "./AudioDictationCard";
+import ArticleChoiceCard from "./ArticleChoiceCard";
+import WordOrderCard from "./WordOrderCard";
 import ReportBadTranslation from "./ReportBadTranslation";
 import { PANEL_CSS } from "./styles";
 import { ChevronRightIcon } from "@/lib/design/icons";
@@ -26,6 +28,8 @@ const KICKERS: Record<Exercise["kind"], MessageKey> = {
   "multiple-choice": "kickerMultipleChoice",
   "word-pairing": "kickerWordPairing",
   "audio-dictation": "kickerAudioDictation",
+  "article-choice": "kickerArticleChoice",
+  "word-order": "kickerWordOrder",
 };
 
 function kicker(index: number, kind: Exercise["kind"]): string {
@@ -190,6 +194,24 @@ export default function Panel() {
                 case "audio-dictation":
                   return (
                     <AudioDictationCard
+                      key={exercise.id}
+                      kicker={label}
+                      exercise={exercise}
+                      onAnswer={handleAnswer}
+                    />
+                  );
+                case "article-choice":
+                  return (
+                    <ArticleChoiceCard
+                      key={exercise.id}
+                      kicker={label}
+                      exercise={exercise}
+                      onAnswer={handleAnswer}
+                    />
+                  );
+                case "word-order":
+                  return (
+                    <WordOrderCard
                       key={exercise.id}
                       kicker={label}
                       exercise={exercise}

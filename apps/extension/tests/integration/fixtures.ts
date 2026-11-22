@@ -39,7 +39,7 @@ type Fixtures = {
    */
   clickMenu: (
     page: Page,
-    item: "translate" | "restore" | "translate-level" | "speak",
+    item: "translate" | "restore" | "translate-level" | "explain" | "speak",
     selectionText?: string,
   ) => Promise<void>;
   /** Presses the extension's "translate selection" keyboard shortcut on `page`. */
@@ -50,6 +50,7 @@ const MENU_IDS = {
   translate: "sprachweise-translate",
   restore: "sprachweise-restore",
   "translate-level": "sprachweise-translate-level",
+  explain: "sprachweise-explain",
   speak: "sprachweise-speak",
 } as const;
 
